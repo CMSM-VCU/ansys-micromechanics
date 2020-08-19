@@ -5,13 +5,14 @@ from tuples import Material
 
 
 class TestRunner:
-    def __init__(self, launch_options=None):
+    def __init__(self, element_type=185, launch_options=None):
         """Launches an Ansys instance. See pyansys documentation for launch options such
         as job directory and executable path.
 
         Args:
             launch_options (dict, optional): dictionary of keyword arguments for pyansys.launch_mapdl()
         """
+        self.element_type = element_type
         self.launch_options = launch_options
 
     def __enter__(self):
@@ -39,7 +40,17 @@ class TestRunner:
             dimensions (Dims): tuple containing side length and element length
         """
         print("generate_base_mesh")
-        pass
+        half_side = dimensions.side_length / 2
+        self.ansys.run("/PREP7")
+        self.ansys.block(
+            -half_side, half_side, -half_side, half_side, -half_side, half_side,
+        )
+
+        self.ansys.et(1, self.element_type)
+        self.ansys.lesize("ALL", dimensions.element_length)
+        self.ansys.mshkey(1)
+        self.ansys.vmesh("ALL")
+        # print(self.ansys.elements)
 
     @logger_wraps()
     def define_materials(self, materials):
