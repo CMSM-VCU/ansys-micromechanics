@@ -3,6 +3,7 @@ from typing import List
 
 import numpy as np
 
+from utils import logger_wraps
 from TestRunner import TestRunner
 from tuples import Dims, Loads, Material
 
@@ -25,15 +26,16 @@ class TestCase:
     materials: List[Material]
     arrangement: np.ndarray
     loads: Loads
-    properties: Material = field(init=False, compare=False)
+    properties: Material = field(default=None, init=False, compare=False)
 
-    def run_tests(self):
+    @logger_wraps()
+    def run_tests(self, launch_options=None):
         """Run set of mechanical tests on cubic RVE. Normal and shear tests each in all
         three directions. Distill results into effective elastic moduli, shear moduli,
         and poisson's ratios.
         """
 
-        with TestRunner() as test_runner:
+        with TestRunner(launch_options=launch_options) as test_runner:
             print(test_runner)
             test_runner.generate_base_mesh(self.dimensions)
             test_runner.define_materials(self.materials)

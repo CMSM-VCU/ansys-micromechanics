@@ -1,5 +1,6 @@
 import pyansys
 
+from utils import logger_wraps
 from tuples import Material
 
 
@@ -29,6 +30,7 @@ class TestRunner:
         print("Exited successfully")
         # Add check to see if closed successfully?
 
+    @logger_wraps()
     def generate_base_mesh(self, dimensions):
         """Generate uniform cubic mesh according to overall side length and element edge
         length. Assumes a cube centered around (0,0,0).
@@ -39,35 +41,36 @@ class TestRunner:
         print("generate_base_mesh")
         pass
 
+    @logger_wraps()
     def define_materials(self, materials):
-        print("define_materials", materials)
         pass
 
+    @logger_wraps()
     def apply_periodic_conditions(self):
-        print("apply_periodic_conditions")
         pass
 
+    @logger_wraps()
     def generate_load_steps(self, loads):
-        print("generate_load_steps", loads)
         pass
 
+    @logger_wraps()
     def assign_element_materials(self, arrangement):
-        print("assign_element_materials", arrangement)
         pass
 
+    @logger_wraps()
     def solve_load_steps(self):
-        print("solve_load_steps")
         pass
 
+    @logger_wraps()
     def extract_raw_results(self):
-        print("extract_raw_results")
         pass
 
+    @logger_wraps()
     def calculate_properties(self):
         properties = Material(99, [1], [1], [1])
-        print("calculate_properties", properties)
         return properties
 
+    @logger_wraps()
     def load_parameters(self):
         try:
             self.ansys.load_parameters()
