@@ -1,7 +1,7 @@
 import sys
 
 import utils
-from InputHandler import InputHandler
+from RVEInputHandler import RVEInputHandler
 from utils import logger_wraps
 
 SCHEMA_PATH = "./input_schema/input.schema.json"
@@ -13,7 +13,7 @@ def main():
 
     cases = []
 
-    handler = InputHandler(schema_file_path=SCHEMA_PATH)
+    handler = RVEInputHandler(schema_file_path=SCHEMA_PATH)
 
     handler.load_input_files(input_file_paths=input_file_paths)
 
