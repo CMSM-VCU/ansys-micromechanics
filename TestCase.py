@@ -53,6 +53,7 @@ class TestCase:
             self.properties = test_runner.calculate_properties()
             print("Returned to end of with")
 
+    @logger_wraps()
     def check_parameters(self):
         passed_checks = True
         elements_per_side = self.dimensions.side_length / self.dimensions.element_length
