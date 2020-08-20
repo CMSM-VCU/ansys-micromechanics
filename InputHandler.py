@@ -1,45 +1,72 @@
+import json
+from typing import List
+from utils import logger_wraps
+
+import jsonschema
 import numpy as np
 
 from TestCase import TestCase
 from tuples import Dims, Loads, Material
 
 
-def get_input_file_paths():
-    """Obtain paths to input files from command line arguments. Assumes that each and
-    all arguments are an input file path. Paths must be absolute or relative to calling
-    directory. Non-existant files will throw a warning.
+class InputHandler:
+    schema = None
+    input_dicts = []
 
-    Returns:
-        input_paths (List[Str]): List of paths to each input file
-    """
-    input_paths = [None]
-    for path in input_paths:
-        check_file_exists(path)
-    return input_paths
+    @logger_wraps()
+    def __init__(self, schema_file_path=None):
+        if schema_file_path:
+            self.load_schema(schema_file_path)
+        else:
+            print("Creating input handler with no schema...")
+        pass
 
+    def load_schema(self, schema_file_path):
+        with open(schema_file_path) as schema_file:
+            self.schema = json.load(schema_file)
 
-def check_file_exists(file_path):
-    """Check whether the file of a given path exists. If not, throw a warning and return
-    False, otherwise return True.
+    def check_input_with_schema(self, input_dict, skip_fail=False):
+        if self.schema:
+            try:
+                jsonschema.validate(instance=input_dict, schema=self.schema)
+                return True
+            except jsonschema.exceptions.ValidationError as err:
+                if skip_fail:
+                    return False
+                else:
+                    raise err
+        else:
+            print("InputHandler: No schema loaded")
 
-    Arguments:
-        file_path (str) Absolute or relative path to a file
+    def load_input_files(self, input_file_paths: List, check_first=True):
+        for file_path in input_file_paths:
+            with open(file_path) as input_file:
+                input_dict = json.load(input_file)
+                if check_first and self.check_input_with_schema(input_dict):
+                    self.input_dicts.append(input_dict)
 
-    Returns:
-        (bool): Whether the file exists
+    def convert_input_dict_to_testcase(self, input_dict):
+        # throw warning if side length and element length are not divisible
 
-    Raises:
-        Warning: If the file does not exist
-    """
-    return True
+        dict_dims = input_dict["dimensions"]
+        dict_mats = input_dict["materials"]
+        dict_loads = input_dict["loading"]
 
+        dims = Dims(dict_dims["domainSideLength"], dict_dims["elementSpacing"],)
+        materials = [
+            Material(
+                mat["materialIndex"],
+                mat["elasticModuli"],
+                mat["shearModuli"],
+                mat["poissonsRatios"],
+            )
+            for mat in dict_mats
+        ]
+        loads = Loads(
+            dict_loads["kind"],
+            dict_loads["normalMagnitude"],
+            dict_loads["shearMagnitude"],
+        )
+        arrangement = np.array(input_dict["materialLocations"]["locationsWithId"])
 
-def parse_input_data(input_file):
-    # throw warning if side length and element length are not divisible
-
-    dims = Dims(1, 0.1)
-    materials = [Material(1, [1], [1], [1])]
-    arrangement = np.array([1])
-    loads = Loads("displacement", 1, 1)
-
-    return TestCase(dims, materials, arrangement, loads)
+        return TestCase(dims, materials, arrangement, loads)
