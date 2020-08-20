@@ -1,0 +1,156 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title": "RVE Tester Input",
+    "description": "Input deck defining an RVE test case",
+    "type": "object",
+    "properties": {
+        "caseId": {
+            "description": "The unique identifier for a test case",
+            "type": "integer",
+            "minimum": 1
+        },
+        "units": {
+            "description": "The set of units used for a test case (documentation only, no effect on simulation",
+            "type": "object",
+            "properties": {
+                "length": {
+                    "type": "string"
+                },
+                "mass": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                }
+            },
+            "required": ["length", "mass", "time"]
+        },
+        "dimensions": {
+            "description": "The key dimensions of the test case",
+            "type": "object",
+            "properties": {
+                "domainSideLength": {
+                    "type": "number",
+                    "description": "The side length of the cubic domain, centered on the origin"
+                },
+                "elementSpacing": {
+                    "type": "number",
+                    "description": "The element edge length in FEA cases, the grid spacing in PD cases"
+                }
+            },
+            "required": ["domainSideLength", "elementSpacing"]
+        },
+        "loading": {
+            "description": "The loading parameters for a test case",
+            "type": "object",
+            "properties": {
+                "kind": {
+                    "type": "string",
+                    "enum": ["displacement", "pressure"]
+                },
+                "normalMagnitude": {
+                    "type": "number",
+                    "description": "The magnitude of loading for all normal tests, units depending on kind"
+                },
+                "shearMagnitude": {
+                    "type": "number",
+                    "description": "The magnitude of loading for all shear tests, units depending on kind"
+                }
+            },
+            "required": ["kind", "normalMagnitude", "shearMagnitude"]
+        },
+        "materials": {
+            "description": "The list of materials and their properties",
+            "type": "array",
+            "items": { "$ref": "#/definitions/material" },
+            "minItems": 1
+        },
+        "materialLocations": {
+            "description": "The centroid locations of all non-default material elements or nodes",
+            "type": "object",
+            "properties": {
+                "locationsWithId": {
+                    "description": "The locations ordered as [xloc, yloc, zloc, materialIndex]",
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "integer"
+                            }
+                        ],
+                        "minItems": 4,
+                        "additionalItems": false
+                    },
+                    "minItems": 0
+                }
+            },
+            "required": ["locationsWithId"]
+        }
+    },
+    "definitions": {
+        "material": {
+            "type": "object",
+            "properties": {
+                "materialIndex": {
+                    "description": "The index number for a material",
+                    "type": "integer"
+                },
+                "elasticModuli": {
+                    "description": "The elastic moduli of a material in the three principal directions",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                },
+                "shearModuli": {
+                    "description": "The shear moduli of a material in the three principal planes: 1-2, 2-3, 3-1",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                },
+                "poissonsRatios": {
+                    "description": "The poisson's ratios of a material in the three principal planes: 1-2, 2-3, 3-1",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                },
+                "density": {
+                    "description": "The volumetric density of a material. Only used in PD cases (currently).",
+                    "type": "number"
+                }
+            },
+            "required": [
+                "materialIndex",
+                "elasticModuli",
+                "shearModuli",
+                "poissonsRatios"
+            ]
+        }
+    },
+    "required": [
+        "caseId",
+        "units",
+        "dimensions",
+        "loading",
+        "materials",
+        "materialLocations"
+    ]
+}
