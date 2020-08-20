@@ -57,11 +57,11 @@ class TestRunner:
         pass
 
     @logger_wraps()
-    def apply_periodic_conditions(self):
+    def apply_periodic_conditions(self, dimensions):
         pass
 
     @logger_wraps()
-    def generate_load_steps(self, loads):
+    def generate_load_steps(self, loads, dimensions):
         pass
 
     @logger_wraps()

@@ -33,14 +33,18 @@ class TestCase:
         """Run set of mechanical tests on cubic RVE. Normal and shear tests each in all
         three directions. Distill results into effective elastic moduli, shear moduli,
         and poisson's ratios.
+
+        Arguments:
+            launch_options (dict, optional): dictionary of keyword arguments for
+            TestRunner options
         """
 
         with TestRunner(launch_options=launch_options) as test_runner:
             print(test_runner)
             test_runner.generate_base_mesh(self.dimensions)
             test_runner.define_materials(self.materials)
-            test_runner.apply_periodic_conditions()
-            test_runner.generate_load_steps(self.loads)
+            test_runner.apply_periodic_conditions(self.dimensions)
+            test_runner.generate_load_steps(self.loads, self.dimensions)
             test_runner.assign_element_materials(self.arrangement)
             test_runner.solve_load_steps()
             test_runner.extract_raw_results()
