@@ -80,16 +80,21 @@
                         "type": "array",
                         "items": [
                             {
-                                "type": "number"
+                                "type": "number",
+                                "description": "x coordinate"
                             },
                             {
-                                "type": "number"
+                                "type": "number",
+                                "description": "y coordinate"
                             },
                             {
-                                "type": "number"
+                                "type": "number",
+                                "description": "z coordinate"
                             },
                             {
-                                "type": "integer"
+                                "type": "integer",
+                                "description": "Material index",
+                                "minimum": 1
                             }
                         ],
                         "minItems": 4,
@@ -107,7 +112,8 @@
             "properties": {
                 "materialIndex": {
                     "description": "The index number for a material",
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "elasticModuli": {
                     "description": "The elastic moduli of a material in the three principal directions",
@@ -116,7 +122,8 @@
                         "type": "number"
                     },
                     "minItems": 3,
-                    "maxItems": 3
+                    "maxItems": 3,
+                    "exclusiveMinimum": 0.0
                 },
                 "shearModuli": {
                     "description": "The shear moduli of a material in the three principal planes: 1-2, 2-3, 3-1",
@@ -125,7 +132,8 @@
                         "type": "number"
                     },
                     "minItems": 3,
-                    "maxItems": 3
+                    "maxItems": 3,
+                    "exclusiveMinimum": 0.0
                 },
                 "poissonsRatios": {
                     "description": "The poisson's ratios of a material in the three principal planes: 1-2, 2-3, 3-1",
@@ -134,11 +142,14 @@
                         "type": "number"
                     },
                     "minItems": 3,
-                    "maxItems": 3
+                    "maxItems": 3,
+                    "minimum": -1.0,
+                    "maximum": 0.5
                 },
                 "density": {
                     "description": "The volumetric density of a material. Only used in PD cases (currently).",
-                    "type": "number"
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
                 }
             },
             "required": [
