@@ -10,6 +10,7 @@ def main():
         cases.append(ih.parse_input_data(input_file))
 
     for case in cases:
+        case.check_parameters()
         case.run_tests()
 
         print(case.properties)
