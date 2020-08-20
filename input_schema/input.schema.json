@@ -9,6 +9,10 @@
             "type": "integer",
             "minimum": 1
         },
+        "caseDescription": {
+            "description": "The description of a test case",
+            "type": "string"
+        },
         "units": {
             "description": "The set of units used for a test case (documentation only, no effect on simulation",
             "type": "object",
@@ -147,6 +151,7 @@
     },
     "required": [
         "caseId",
+        "caseDescription",
         "units",
         "dimensions",
         "loading",
