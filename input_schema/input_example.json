@@ -1,0 +1,40 @@
+{
+    "caseId": 123456,
+    "caseDescription": "Example case",
+    "units": {
+        "length": "meter",
+        "mass": "kilogram",
+        "time": "second"
+    },
+    "dimensions": {
+        "domainSideLength": 1.0,
+        "elementSpacing": 0.1
+    },
+    "loading": {
+        "kind": "displacement",
+        "normalMagnitude": 0.1,
+        "shearMagnitude": 0.1
+    },
+    "materials": [
+        {
+            "materialIndex": 1,
+            "elasticModuli": [1e6, 1.2e6, 800000],
+            "shearModuli": [2.0e6, 1.5e6, 1.2e6],
+            "poissonsRatios": [0.3, 0.27, 0.27],
+            "density": 2000.0
+        },
+        {
+            "materialIndex": 2,
+            "elasticModuli": [0.8e6, 400000, 300000],
+            "shearModuli": [2.0e5, 1.5e5, 1.2e5],
+            "poissonsRatios": [0.32, 0.28, 0.21],
+            "density": 1500.0
+        }
+    ],
+    "materialLocations": {
+        "locationsWithId": [
+            [0.5, 0.5, 0.5, 2],
+            [2.5, -1.5, 4.5, 2]
+        ]
+    }
+}
