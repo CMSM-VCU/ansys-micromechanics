@@ -136,7 +136,9 @@ class TestRunner:
 
     @logger_wraps()
     def solve_load_steps(self):
-        pass
+        self.ansys.run("/SOLU")
+        # with self.ansys.non_interactive:
+        self.ansys.lssolve(1, 6)
 
     @logger_wraps()
     def extract_raw_results(self):
