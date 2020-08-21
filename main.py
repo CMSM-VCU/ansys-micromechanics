@@ -6,6 +6,8 @@ from utils import logger_wraps
 
 SCHEMA_PATH = "./input_schema/input.schema.json"
 
+LAUNCH_OPTIONS = {"override": True}
+
 
 @logger_wraps()
 def main():
@@ -22,7 +24,7 @@ def main():
 
     for case in cases:
         case.check_parameters()
-        case.run_tests()
+        case.run_tests(launch_options=LAUNCH_OPTIONS)
 
         print(case.properties)
 
