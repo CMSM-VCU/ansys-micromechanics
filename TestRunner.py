@@ -81,6 +81,30 @@ class TestRunner:
 
     @logger_wraps()
     def apply_periodic_conditions(self, dimensions):
+        self.ansys.run("/PREP7")
+
+        pair_sets = self.find_node_pairs(dimensions)
+
+        rn = self.retained_nodes
+        with self.ansys.non_interactive:
+            for pair in np.concatenate(pair_sets):
+                for ax, rnx in zip(["UX", "UY", "UZ"], rn[1:]):
+                    # com = [
+                    #     f"CE,NEXT,0,{pair[0]},{ax},1,{pair[1]},{ax},-1,{rnx},{ax},-1",
+                    #     "CE,HIGH,0,{rn[0]},{ax},1",
+                    # ]
+                    # print(com)
+                    # (self.ansys.run(chunk) for chunk in com)
+                    # fmt: off
+                    self.ansys.ce("NEXT",0,   # ansys.ce only has 3 terms implemented
+                        node1=pair[0], lab1=ax, c1=1,
+                        node2=pair[1], lab2=ax, c2=-1,
+                        node3=rnx, lab3=ax, c3=-1
+                    )
+                    self.ansys.ce("HIGH",0,
+                        node1=rn[0], lab1=ax, c1=1,
+                    )
+                    # fmt: on
         pass
 
     @logger_wraps()
