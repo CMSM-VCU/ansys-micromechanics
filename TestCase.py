@@ -46,7 +46,7 @@ class TestCase:
             test_runner.get_retained_nodes(self.dimensions)
             test_runner.define_materials(self.materials)
             test_runner.apply_periodic_conditions(self.dimensions)
-            test_runner.generate_load_steps(self.loads, self.dimensions)
+            test_runner.generate_load_steps(self.loads)
             test_runner.assign_element_materials(self.arrangement)
             test_runner.solve_load_steps()
             test_runner.extract_raw_results()

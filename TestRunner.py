@@ -3,6 +3,17 @@ import pyansys
 from utils import logger_wraps
 from tuples import Material
 
+AXES = ["X", "Y", "Z"]
+
+# Axes that will always be constrained for each retained node
+NORMAL_FIXED_AXES = [["UX", "UY", "UZ"], ["UY", "UZ"], ["UX", "UZ"], ["UX", "UY"]]
+SHEAR_FIXED_AXES = [
+    ["UX", "UY", "UZ"],
+    ["UX", "UY", "UZ"],
+    ["UX", "UY", "UZ"],
+    ["UX", "UY", "UZ"],
+]
+
 
 class TestRunner:
     def __init__(self, element_type=185, launch_options=None):
@@ -54,19 +65,74 @@ class TestRunner:
 
     @logger_wraps()
     def define_materials(self, materials):
-        pass
+        self.ansys.run("/PREP7")
+        e_str = ["EX", "EY", "EZ"]
+        g_str = ["GXY", "GYZ", "GXZ"]
+        pr_str = ["PRXY", "PRYZ", "PRXZ"]
+        for material in materials:
+            id = material.id
+            for i in range(3):
+                self.ansys.mp(e_str[i], id, material.elastic_moduli[i])
+                self.ansys.mp(g_str[i], id, material.shear_moduli[i])
+                self.ansys.mp(pr_str[i], id, material.poisson_ratios[i])
+        # How do I verify that materials were input correctly? How do I access the
+        # materials from self.ansys?
 
     @logger_wraps()
     def apply_periodic_conditions(self, dimensions):
         pass
 
     @logger_wraps()
-    def generate_load_steps(self, loads, dimensions):
-        pass
+    def generate_load_steps(self, loads):
+        if loads.kind != "displacement":
+            raise NotImplementedError
+
+        self.ansys.run("/SOLU")
+
+        for i in range(1, 4):  # Normal cases
+            self.ansys.lsclear("ALL")
+
+            for j, n in enumerate(self.retained_nodes):
+                # (self.ansys.d(n, axis) for axis in NORMAL_FIXED_AXES[j])
+                for axis in NORMAL_FIXED_AXES[j]:
+                    self.ansys.d(n, axis)
+
+            self.ansys.d(
+                self.retained_nodes[i], "U" + AXES[i - 1], loads.normal_magnitude
+            )
+
+            self.ansys.lswrite(i)
+
+        for i in range(1, 4):  # Shear cases
+            self.ansys.lsclear("ALL")
+
+            for j, n in enumerate(self.retained_nodes):
+                # (self.ansys.d(n, axis) for axis in SHEAR_FIXED_AXES[j])
+                for axis in SHEAR_FIXED_AXES[j]:
+                    self.ansys.d(n, axis)
+
+            self.ansys.d(
+                self.retained_nodes[i], "U" + AXES[i % 3], loads.shear_magnitude
+            )
+
+            self.ansys.lswrite(i + 3)
+
+        # How do I verify that materials were input correctly? How do I access the
+        # materials from self.ansys?
 
     @logger_wraps()
     def assign_element_materials(self, arrangement):
-        pass
+        # This implementation is probably super slow
+        # Individual emodif commands may be extra slow, so try adding to component
+        # per material number, then emodif on each component
+        self.ansys.run("/PREP7")
+        for element in arrangement:
+            self.ansys.esel("S", "CENT", "X", element[0])
+            self.ansys.esel("R", "CENT", "Y", element[1])
+            self.ansys.esel("R", "CENT", "Z", element[2])
+            self.ansys.emodif("ALL", "MAT", element[3])
+
+        self.ansys.allsel()
 
     @logger_wraps()
     def solve_load_steps(self):
@@ -102,6 +168,7 @@ class TestRunner:
         self.ansys.nsel("R", "LOC", "Z", dimensions.side_length / 2)
         self.retained_nodes.extend(self.ansys.nnum)
 
+        self.ansys.allsel()
         return self.retained_nodes  # for logging purposes
 
     @logger_wraps()
