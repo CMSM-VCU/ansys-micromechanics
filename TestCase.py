@@ -43,6 +43,7 @@ class TestCase:
         with TestRunner(launch_options=launch_options) as test_runner:
             print(test_runner)
             test_runner.generate_base_mesh(self.dimensions)
+            test_runner.get_retained_nodes(self.dimensions)
             test_runner.define_materials(self.materials)
             test_runner.apply_periodic_conditions(self.dimensions)
             test_runner.generate_load_steps(self.loads, self.dimensions)

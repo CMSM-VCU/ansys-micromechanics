@@ -82,6 +82,29 @@ class TestRunner:
         return properties
 
     @logger_wraps()
+    def get_retained_nodes(self, dimensions):
+        # Can this be cleaned up? Iterate over list of [1,-1,-1]-style multipliers?
+        self.retained_nodes = []
+        self.ansys.nsel("S", "LOC", "X", -dimensions.side_length / 2)
+        self.ansys.nsel("R", "LOC", "Y", -dimensions.side_length / 2)
+        self.ansys.nsel("R", "LOC", "Z", -dimensions.side_length / 2)
+        self.retained_nodes.extend(self.ansys.nnum)
+        self.ansys.nsel("S", "LOC", "X", dimensions.side_length / 2)
+        self.ansys.nsel("R", "LOC", "Y", -dimensions.side_length / 2)
+        self.ansys.nsel("R", "LOC", "Z", -dimensions.side_length / 2)
+        self.retained_nodes.extend(self.ansys.nnum)
+        self.ansys.nsel("S", "LOC", "X", -dimensions.side_length / 2)
+        self.ansys.nsel("R", "LOC", "Y", dimensions.side_length / 2)
+        self.ansys.nsel("R", "LOC", "Z", -dimensions.side_length / 2)
+        self.retained_nodes.extend(self.ansys.nnum)
+        self.ansys.nsel("S", "LOC", "X", -dimensions.side_length / 2)
+        self.ansys.nsel("R", "LOC", "Y", -dimensions.side_length / 2)
+        self.ansys.nsel("R", "LOC", "Z", dimensions.side_length / 2)
+        self.retained_nodes.extend(self.ansys.nnum)
+
+        return self.retained_nodes  # for logging purposes
+
+    @logger_wraps()
     def load_parameters(self):
         try:
             self.ansys.load_parameters()
