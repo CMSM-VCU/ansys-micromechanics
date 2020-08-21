@@ -1,3 +1,4 @@
+import numpy as np
 import pyansys
 
 from utils import logger_wraps
@@ -83,6 +84,34 @@ class TestRunner:
         pass
 
     @logger_wraps()
+    def find_node_pairs(self, dimensions):
+        pair_sets = []
+
+        for i, axis in enumerate(AXES):  # Select exterior nodes on each axis
+            plane_idx = list({0, 1, 2} - {i})  # Drop current axis from list of indices
+
+            self.ansys.nsel("S", "LOC", axis, dimensions.side_length / 2)
+            self.ansys.nsel("A", "LOC", axis, -dimensions.side_length / 2)
+
+            # Get coordinates and number in one row
+            face_nodes = np.hstack(
+                (
+                    self.ansys.nodes[:, plane_idx],
+                    np.reshape(self.ansys.nnum, (len(self.ansys.nnum), 1)),
+                )
+            )
+
+            # Sort coordinates so duplicates will be adjacent
+            face_nodes = face_nodes[np.lexsort((face_nodes[:, 1], face_nodes[:, 0]))]
+
+            # Extract every pair of node numbers
+            pair_sets.append(
+                np.hstack((face_nodes[::2, 2], face_nodes[1::2, 2])).astype(int)
+            )
+
+        return pair_sets
+
+    @logger_wraps()
     def generate_load_steps(self, loads):
         if loads.kind != "displacement":
             raise NotImplementedError
@@ -93,7 +122,7 @@ class TestRunner:
             self.ansys.lsclear("ALL")
 
             for j, n in enumerate(self.retained_nodes):
-                # (self.ansys.d(n, axis) for axis in NORMAL_FIXED_AXES[j])
+                # (self.ansys.d(n, axis) for axis in NORMAL_FIXED_AXES[j])  # Commands don't execute?
                 for axis in NORMAL_FIXED_AXES[j]:
                     self.ansys.d(n, axis)
 
