@@ -18,6 +18,7 @@
     "materials": [
         {
             "materialIndex": 1,
+            "materialName": "First material",
             "elasticModuli": [1e6, 1.2e6, 800000],
             "shearModuli": [2.0e6, 1.5e6, 1.2e6],
             "poissonsRatios": [0.3, 0.27, 0.27],
@@ -25,6 +26,7 @@
         },
         {
             "materialIndex": 2,
+            "materialName": "Second material",
             "elasticModuli": [0.8e6, 400000, 300000],
             "shearModuli": [2.0e5, 1.5e5, 1.2e5],
             "poissonsRatios": [0.32, 0.28, 0.21],
