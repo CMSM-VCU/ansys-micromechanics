@@ -27,8 +27,8 @@
         {
             "materialIndex": 2,
             "materialName": "Second material",
-            "elasticModuli": [0.8e6, 400000, 300000],
-            "shearModuli": [2.0e5, 1.5e5, 1.2e5],
+            "elasticModuli": [0.8e8, 40000, 300000],
+            "shearModuli": [2.0e7, 1.5e7, 1.2e7],
             "poissonsRatios": [0.32, 0.28, 0.21],
             "density": 1500.0
         }
