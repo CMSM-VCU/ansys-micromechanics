@@ -33,6 +33,10 @@ class TestRunner:
             self.ansys = pyansys.launch_mapdl(**self.launch_options)
         else:
             self.ansys = pyansys.launch_mapdl()
+
+        self.ansys.finish()
+        self.ansys.run("/CLEAR")
+
         return self
 
     def __exit__(self, type, value, traceback):
