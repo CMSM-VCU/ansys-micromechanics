@@ -93,6 +93,9 @@ class TestRunner:
         with self.ansys.non_interactive:
             for i, pair_set in enumerate(pair_sets):
                 for pair in pair_set:
+                    if rn[0] in pair:
+                        continue
+
                     for ax in ["UX", "UY", "UZ"]:
                         # com = [
                         #     f"CE,NEXT,0,{pair[0]},{ax},1,{pair[1]},{ax},-1,{rnx},{ax},-1",
