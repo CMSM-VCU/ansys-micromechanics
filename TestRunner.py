@@ -126,8 +126,8 @@ class TestRunner:
             # Get coordinates and number in one row
             face_nodes = np.hstack(
                 (
-                    self.ansys.nodes,
-                    np.reshape(self.ansys.nnum, (len(self.ansys.nnum), 1)),
+                    self.ansys.mesh.nodes,
+                    np.reshape(self.ansys.mesh.nnum, (len(self.ansys.mesh.nnum), 1)),
                 )
             )
 
@@ -223,19 +223,19 @@ class TestRunner:
         self.ansys.nsel("S", "LOC", "X", -dimensions.side_length / 2)
         self.ansys.nsel("R", "LOC", "Y", -dimensions.side_length / 2)
         self.ansys.nsel("R", "LOC", "Z", -dimensions.side_length / 2)
-        self.retained_nodes.extend(self.ansys.nnum)
+        self.retained_nodes.extend(self.ansys.mesh.nnum)
         self.ansys.nsel("S", "LOC", "X", dimensions.side_length / 2)
         self.ansys.nsel("R", "LOC", "Y", -dimensions.side_length / 2)
         self.ansys.nsel("R", "LOC", "Z", -dimensions.side_length / 2)
-        self.retained_nodes.extend(self.ansys.nnum)
+        self.retained_nodes.extend(self.ansys.mesh.nnum)
         self.ansys.nsel("S", "LOC", "X", -dimensions.side_length / 2)
         self.ansys.nsel("R", "LOC", "Y", dimensions.side_length / 2)
         self.ansys.nsel("R", "LOC", "Z", -dimensions.side_length / 2)
-        self.retained_nodes.extend(self.ansys.nnum)
+        self.retained_nodes.extend(self.ansys.mesh.nnum)
         self.ansys.nsel("S", "LOC", "X", -dimensions.side_length / 2)
         self.ansys.nsel("R", "LOC", "Y", -dimensions.side_length / 2)
         self.ansys.nsel("R", "LOC", "Z", dimensions.side_length / 2)
-        self.retained_nodes.extend(self.ansys.nnum)
+        self.retained_nodes.extend(self.ansys.mesh.nnum)
 
         self.ansys.allsel()
         return self.retained_nodes  # for logging purposes
