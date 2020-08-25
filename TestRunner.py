@@ -184,8 +184,8 @@ class TestRunner:
 
             self.ansys.lswrite(i + 3)
 
-        # How do I verify that materials were input correctly? How do I access the
-        # materials from self.ansys?
+        # How do I verify that load steps were input correctly? How do I access the
+        # load steps from self.ansys?
 
     @logger_wraps()
     def assign_element_materials(self, arrangement):
