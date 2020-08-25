@@ -204,8 +204,12 @@ class TestRunner:
     @logger_wraps()
     def solve_load_steps(self):
         self.ansys.run("/SOLU")
-        with self.ansys.non_interactive:
-            self.ansys.lssolve(1, 6)
+        # with self.ansys.non_interactive:
+        #     self.ansys.lssolve(1, 6)
+        for i in range(6):
+            self.ansys.lsclear("ALL")
+            self.ansys.lsread(i + 1)
+            self.ansys.solve()
 
     @logger_wraps()
     def extract_raw_results(self):
