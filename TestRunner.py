@@ -168,6 +168,7 @@ class TestRunner:
             self.ansys.d(
                 self.retained_nodes[i], "U" + AXES[i - 1], loads.normal_magnitude
             )
+            self.debug_stat()
 
             self.ansys.lswrite(i)
 
@@ -182,6 +183,7 @@ class TestRunner:
             self.ansys.d(
                 self.retained_nodes[i], "U" + AXES[i % 3], loads.shear_magnitude
             )
+            self.debug_stat()
 
             self.ansys.lswrite(i + 3)
 
@@ -207,9 +209,12 @@ class TestRunner:
         self.ansys.run("/SOLU")
         # with self.ansys.non_interactive:
         #     self.ansys.lssolve(1, 6)
+        self.debug_stat()
+
         for i in range(6):
             self.ansys.lsclear("ALL")
             self.ansys.lsread(i + 1)
+            self.debug_stat()
             self.ansys.solve()
 
     @logger_wraps()
@@ -252,3 +257,11 @@ class TestRunner:
             self.parameters = self.ansys.parameters
         except:
             raise Exception("Unable to load Ansys parameters")
+
+    def debug_stat(self):
+        self.ansys.lsoper()
+        self.ansys.stat()
+        self.ansys.fecons()
+        self.ansys.stat()
+        self.ansys.ceqn()
+        self.ansys.stat()
