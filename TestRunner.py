@@ -155,6 +155,7 @@ class TestRunner:
             raise NotImplementedError
 
         self.ansys.run("/SOLU")
+        self.ansys.lsdele("ALL")
 
         for i in range(1, 4):  # Normal cases
             self.ansys.lsclear("ALL")
