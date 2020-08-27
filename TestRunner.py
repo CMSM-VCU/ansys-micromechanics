@@ -86,27 +86,29 @@ class TestRunner:
         self.ansys.vmesh("ALL")
 
     def get_retained_nodes(self, dimensions):
-        # Can this be cleaned up? Iterate over list of [1,-1,-1]-style multipliers?
-        self.retained_nodes = []
-        self.ansys.nsel("S", "LOC", "X", -dimensions.side_length / 2)
-        self.ansys.nsel("R", "LOC", "Y", -dimensions.side_length / 2)
-        self.ansys.nsel("R", "LOC", "Z", -dimensions.side_length / 2)
-        self.retained_nodes.extend(self.ansys.mesh.nnum)
-        self.ansys.nsel("S", "LOC", "X", dimensions.side_length / 2)
-        self.ansys.nsel("R", "LOC", "Y", -dimensions.side_length / 2)
-        self.ansys.nsel("R", "LOC", "Z", -dimensions.side_length / 2)
-        self.retained_nodes.extend(self.ansys.mesh.nnum)
-        self.ansys.nsel("S", "LOC", "X", -dimensions.side_length / 2)
-        self.ansys.nsel("R", "LOC", "Y", dimensions.side_length / 2)
-        self.ansys.nsel("R", "LOC", "Z", -dimensions.side_length / 2)
-        self.retained_nodes.extend(self.ansys.mesh.nnum)
-        self.ansys.nsel("S", "LOC", "X", -dimensions.side_length / 2)
-        self.ansys.nsel("R", "LOC", "Y", -dimensions.side_length / 2)
-        self.ansys.nsel("R", "LOC", "Z", dimensions.side_length / 2)
-        self.retained_nodes.extend(self.ansys.mesh.nnum)
+        coord_signs = [[-1, -1, -1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]]
+        magnitude = dimensions.side_length / 2
 
-        self.ansys.allsel()
+        node_coords = [[sign * magnitude for sign in node] for node in coord_signs]
+
+        self.retained_nodes = []
+
+        for node in node_coords:
+            self.retained_nodes.append(self.get_node_num_at_loc(*node))
+
         return self.retained_nodes  # for logging purposes
+
+    def get_node_num_at_loc(self, x, y, z):
+        # WARNING: This uses the Ansys inline node() function, which returns whichever
+        # node is CLOSEST to the location.
+        inline = f"node({x},{y},{z})"
+        self.ansys.run("node_number_temp=" + inline)
+        return int(self.ansys.parameters["node_number_temp"])
+
+    def select_node_at_loc(self, x, y, z, kind="S"):
+        nnum = self.get_node_num_at_loc(x, y, z)
+        if kind:
+            self.ansys.nsel(kind, "NODE", "", nnum)
 
     def define_materials(self, materials):
         self.ansys.run("/PREP7")
