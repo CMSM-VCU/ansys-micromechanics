@@ -178,8 +178,8 @@ class TestRunner:
 
     def apply_loading_shear(self, axis, loads):
         for j, n in enumerate(self.retained_nodes):
-            for axis in SHEAR_FIXED_AXES[j]:
-                self.ansys.d(n, axis)
+            for axis_label in SHEAR_FIXED_AXES[j]:
+                self.ansys.d(n, axis_label)
 
         self.ansys.d(
             self.retained_nodes[axis], "U" + AXES[axis % 3], loads.shear_magnitude
@@ -187,8 +187,8 @@ class TestRunner:
 
     def apply_loading_normal(self, axis, loads):
         for j, n in enumerate(self.retained_nodes):
-            for axis in NORMAL_FIXED_AXES[j]:
-                self.ansys.d(n, axis)
+            for axis_label in NORMAL_FIXED_AXES[j]:
+                self.ansys.d(n, axis_label)
 
         self.ansys.d(
             self.retained_nodes[axis], "U" + AXES[axis - 1], loads.normal_magnitude
