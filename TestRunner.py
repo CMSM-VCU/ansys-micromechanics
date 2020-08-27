@@ -160,14 +160,7 @@ class TestRunner:
         for i in range(1, 4):  # Normal cases
             self.ansys.lsclear("ALL")
 
-            for j, n in enumerate(self.retained_nodes):
-                # (self.ansys.d(n, axis) for axis in NORMAL_FIXED_AXES[j])  # Commands don't execute?
-                for axis in NORMAL_FIXED_AXES[j]:
-                    self.ansys.d(n, axis)
-
-            self.ansys.d(
-                self.retained_nodes[i], "U" + AXES[i - 1], loads.normal_magnitude
-            )
+            self.apply_loading_normal(i, loads)
             self.debug_stat()
 
             self.ansys.lswrite(i)
@@ -175,17 +168,28 @@ class TestRunner:
         for i in range(1, 4):  # Shear cases
             self.ansys.lsclear("ALL")
 
-            for j, n in enumerate(self.retained_nodes):
-                # (self.ansys.d(n, axis) for axis in SHEAR_FIXED_AXES[j])
-                for axis in SHEAR_FIXED_AXES[j]:
-                    self.ansys.d(n, axis)
-
-            self.ansys.d(
-                self.retained_nodes[i], "U" + AXES[i % 3], loads.shear_magnitude
-            )
+            self.apply_loading_shear(i, loads)
             self.debug_stat()
 
             self.ansys.lswrite(i + 3)
+
+    def apply_loading_shear(self, axis, loads):
+        for j, n in enumerate(self.retained_nodes):
+            for axis in SHEAR_FIXED_AXES[j]:
+                self.ansys.d(n, axis)
+
+        self.ansys.d(
+            self.retained_nodes[axis], "U" + AXES[axis % 3], loads.shear_magnitude
+        )
+
+    def apply_loading_normal(self, axis, loads):
+        for j, n in enumerate(self.retained_nodes):
+            for axis in NORMAL_FIXED_AXES[j]:
+                self.ansys.d(n, axis)
+
+        self.ansys.d(
+            self.retained_nodes[axis], "U" + AXES[axis - 1], loads.normal_magnitude
+        )
 
         # How do I verify that load steps were input correctly? How do I access the
         # load steps from self.ansys?
