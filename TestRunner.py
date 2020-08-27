@@ -2,7 +2,7 @@ from typing import List, Any
 import numpy as np
 import pyansys
 
-from utils import logger_wraps
+from utils import logger_wraps, decorate_all_methods
 from tuples import Material
 
 AXES = ["X", "Y", "Z"]
@@ -17,6 +17,7 @@ SHEAR_FIXED_AXES = [
 ]
 
 
+@decorate_all_methods(logger_wraps)
 class TestRunner:
     ansys: Any  #: pyansys.mapdl_corba.MapdlCorba # don't know how to type hint this
     element_type: int
@@ -53,7 +54,6 @@ class TestRunner:
         print("Exited successfully")
         # Add check to see if closed successfully?
 
-    @logger_wraps()
     def generate_base_mesh(self, dimensions):
         """Generate uniform cubic mesh according to overall side length and element edge
         length. Assumes a cube centered around (0,0,0).
@@ -74,7 +74,6 @@ class TestRunner:
         self.ansys.vmesh("ALL")
         # print(self.ansys.elements)
 
-    @logger_wraps()
     def define_materials(self, materials):
         self.ansys.run("/PREP7")
         e_str = ["EX", "EY", "EZ"]
@@ -89,7 +88,6 @@ class TestRunner:
         # How do I verify that materials were input correctly? How do I access the
         # materials from self.ansys?
 
-    @logger_wraps()
     def apply_periodic_conditions(self, dimensions):
         self.ansys.run("/PREP7")
 
@@ -121,7 +119,6 @@ class TestRunner:
                         # fmt: on
         pass
 
-    @logger_wraps()
     def find_node_pairs(self, dimensions):
         pair_sets = []
 
@@ -155,7 +152,7 @@ class TestRunner:
 
         return pair_sets
 
-    @logger_wraps()
+    # @logger_wraps()
     def generate_load_steps(self, loads):
         if loads.kind != "displacement":
             raise NotImplementedError
@@ -200,7 +197,6 @@ class TestRunner:
         # How do I verify that load steps were input correctly? How do I access the
         # load steps from self.ansys?
 
-    @logger_wraps()
     def assign_element_materials(self, arrangement):
         # This implementation is probably super slow
         # Individual emodif commands may be extra slow, so try adding to component
@@ -214,7 +210,6 @@ class TestRunner:
 
         self.ansys.allsel()
 
-    @logger_wraps()
     def solve_load_steps(self):
         self.ansys.run("/SOLU")
         # with self.ansys.non_interactive:
@@ -227,16 +222,13 @@ class TestRunner:
             self.debug_stat()
             self.ansys.solve()
 
-    @logger_wraps()
     def extract_raw_results(self):
         pass
 
-    @logger_wraps()
     def calculate_properties(self):
         properties = Material(99, [1], [1], [1])
         return properties
 
-    @logger_wraps()
     def get_retained_nodes(self, dimensions):
         # Can this be cleaned up? Iterate over list of [1,-1,-1]-style multipliers?
         self.retained_nodes = []
@@ -260,7 +252,6 @@ class TestRunner:
         self.ansys.allsel()
         return self.retained_nodes  # for logging purposes
 
-    @logger_wraps()
     def load_parameters(self):
         try:
             self.ansys.load_parameters()

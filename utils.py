@@ -2,8 +2,12 @@ import functools
 from loguru import logger
 
 
-def logger_wraps(*, entry=True, exit=True, level="DEBUG"):
-    def wrapper(func):
+# def logger_wraps(*, entry=True, exit=True, level="DEBUG"):
+#     return logger_wrapper(func,)
+
+
+def logger_wraps(_func=None, *, entry=True, exit=True, level="DEBUG"):
+    def logger_wrapper(func):
         name = func.__name__
 
         @functools.wraps(func)
@@ -20,7 +24,22 @@ def logger_wraps(*, entry=True, exit=True, level="DEBUG"):
 
         return wrapped
 
-    return wrapper
+    if _func is None:
+        return logger_wrapper
+    else:
+        return logger_wrapper(_func)
+
+
+def decorate_all_methods(decorator, *args, **kwargs):
+    def decorate(class_):
+        for attr in class_.__dict__:
+            if callable(getattr(class_, attr)):
+                setattr(
+                    class_, attr, decorator(getattr(class_, attr), *args, **kwargs),
+                )
+        return class_
+
+    return decorate
 
 
 @logger_wraps()

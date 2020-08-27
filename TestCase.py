@@ -4,12 +4,13 @@ from warnings import warn
 
 import numpy as np
 
-from utils import logger_wraps
+from utils import logger_wraps, decorate_all_methods
 from TestRunner import TestRunner
 from tuples import Dims, Loads, Material
 
 
 @dataclass
+@decorate_all_methods(logger_wraps)
 class TestCase:
     """Contains the parameters and calculates the results for a single test case.
 
@@ -29,7 +30,6 @@ class TestCase:
     loads: Loads
     properties: Material = field(default=None, init=False, compare=False)
 
-    @logger_wraps()
     def run_tests(self, launch_options=None):
         """Run set of mechanical tests on cubic RVE. Normal and shear tests each in all
         three directions. Distill results into effective elastic moduli, shear moduli,
@@ -54,7 +54,6 @@ class TestCase:
             self.properties = test_runner.calculate_properties()
             print("Returned to end of with")
 
-    @logger_wraps()
     def check_parameters(self):
         passed_checks = True
         elements_per_side = self.dimensions.side_length / self.dimensions.element_length

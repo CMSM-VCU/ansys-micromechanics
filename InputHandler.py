@@ -4,14 +4,14 @@ from typing import List
 import jsonschema
 import numpy as np
 
-from utils import logger_wraps
+from utils import logger_wraps, decorate_all_methods
 
 
+@decorate_all_methods(logger_wraps)
 class InputHandler:
     schema = None
     input_dicts = []
 
-    @logger_wraps()
     def __init__(self, schema_file_path=None):
         if schema_file_path:
             self.load_schema(schema_file_path)
