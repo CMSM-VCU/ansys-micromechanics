@@ -42,14 +42,8 @@ class TestCase:
 
         with TestRunner(launch_options=launch_options) as test_runner:
             print(test_runner)
-            test_runner.generate_base_mesh(self.dimensions)
-            test_runner.get_retained_nodes(self.dimensions)
-            test_runner.define_materials(self.materials)
-            test_runner.apply_periodic_conditions(self.dimensions)
-            test_runner.generate_load_steps(self.loads)
-            test_runner.assign_element_materials(self.arrangement)
-            test_runner.solve_load_steps()
-            test_runner.extract_raw_results()
+            test_runner.prepare_mesh(self.dimensions, self.materials, self.arrangement)
+            test_runner.run_test_sequence(self.loads)
 
             self.properties = test_runner.calculate_properties()
             print("Returned to end of with")

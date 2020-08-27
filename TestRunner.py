@@ -54,6 +54,18 @@ class TestRunner:
         print("Exited successfully")
         # Add check to see if closed successfully?
 
+    def prepare_mesh(self, dimensions, materials, arrangement):
+        self.generate_base_mesh(dimensions)
+        self.get_retained_nodes(dimensions)
+        self.define_materials(materials)
+        self.apply_periodic_conditions(dimensions)
+        self.assign_element_materials(arrangement)
+
+    def run_test_sequence(self, loads):
+        self.generate_load_steps(loads)
+        self.solve_load_steps()
+        self.extract_raw_results()
+
     def generate_base_mesh(self, dimensions):
         """Generate uniform cubic mesh according to overall side length and element edge
         length. Assumes a cube centered around (0,0,0).
