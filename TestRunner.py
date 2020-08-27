@@ -62,9 +62,16 @@ class TestRunner:
         self.apply_periodic_conditions(dimensions)
 
     def run_test_sequence(self, loads):
-        self.generate_load_steps(loads)
-        self.solve_load_steps()
-        self.extract_raw_results()
+        for load_case in range(1, 7):
+            self.ansys.ddele("ALL")  # Will need to change for any other loading methods
+            if load_case < 4:
+                self.apply_loading_normal(load_case, loads)
+            elif load_case >= 4:
+                self.apply_loading_shear(load_case - 3, loads)
+
+            self.solve()
+            self.debug_stat()
+            self.extract_raw_results()
 
     def generate_base_mesh(self, dimensions):
         """Generate uniform cubic mesh according to overall side length and element edge
@@ -143,7 +150,8 @@ class TestRunner:
         pair_sets = self.find_node_pairs(dimensions)
 
         rn = self.retained_nodes
-        with self.ansys.non_interactive:
+        # with self.ansys.non_interactive:
+        with self.ansys.chain_commands:
             for i, pair_set in enumerate(pair_sets):
                 for pair in pair_set:
                     if rn[0] in pair:
@@ -201,29 +209,6 @@ class TestRunner:
 
         return pair_sets
 
-    def generate_load_steps(self, loads):
-        if loads.kind != "displacement":
-            raise NotImplementedError
-
-        self.ansys.run("/SOLU")
-        self.ansys.lsdele("ALL")
-
-        for i in range(1, 4):  # Normal cases
-            self.ansys.lsclear("ALL")
-
-            self.apply_loading_normal(i, loads)
-            self.debug_stat()
-
-            self.ansys.lswrite(i)
-
-        for i in range(1, 4):  # Shear cases
-            self.ansys.lsclear("ALL")
-
-            self.apply_loading_shear(i, loads)
-            self.debug_stat()
-
-            self.ansys.lswrite(i + 3)
-
     def apply_loading_normal(self, axis, loads):
         for j, n in enumerate(self.retained_nodes):
             for axis_label in NORMAL_FIXED_AXES[j]:
@@ -245,17 +230,10 @@ class TestRunner:
         # How do I verify that load steps were input correctly? How do I access the
         # load steps from self.ansys?
 
-    def solve_load_steps(self):
+    def solve(self):
         self.ansys.run("/SOLU")
-        # with self.ansys.non_interactive:
-        #     self.ansys.lssolve(1, 6)
-        self.debug_stat()
-
-        for i in range(6):
-            self.ansys.lsclear("ALL")
-            self.ansys.lsread(i + 1)
-            self.debug_stat()
-            self.ansys.solve()
+        self.ansys.allsel()
+        self.ansys.solve()
 
     def extract_raw_results(self):
         pass
