@@ -58,8 +58,8 @@ class TestRunner:
         self.generate_base_mesh(dimensions)
         self.get_retained_nodes(dimensions)
         self.define_materials(materials)
-        self.apply_periodic_conditions(dimensions)
         self.assign_element_materials(arrangement)
+        self.apply_periodic_conditions(dimensions)
 
     def run_test_sequence(self, loads):
         self.generate_load_steps(loads)
@@ -85,6 +85,29 @@ class TestRunner:
         self.ansys.mshkey(1)
         self.ansys.vmesh("ALL")
 
+    def get_retained_nodes(self, dimensions):
+        # Can this be cleaned up? Iterate over list of [1,-1,-1]-style multipliers?
+        self.retained_nodes = []
+        self.ansys.nsel("S", "LOC", "X", -dimensions.side_length / 2)
+        self.ansys.nsel("R", "LOC", "Y", -dimensions.side_length / 2)
+        self.ansys.nsel("R", "LOC", "Z", -dimensions.side_length / 2)
+        self.retained_nodes.extend(self.ansys.mesh.nnum)
+        self.ansys.nsel("S", "LOC", "X", dimensions.side_length / 2)
+        self.ansys.nsel("R", "LOC", "Y", -dimensions.side_length / 2)
+        self.ansys.nsel("R", "LOC", "Z", -dimensions.side_length / 2)
+        self.retained_nodes.extend(self.ansys.mesh.nnum)
+        self.ansys.nsel("S", "LOC", "X", -dimensions.side_length / 2)
+        self.ansys.nsel("R", "LOC", "Y", dimensions.side_length / 2)
+        self.ansys.nsel("R", "LOC", "Z", -dimensions.side_length / 2)
+        self.retained_nodes.extend(self.ansys.mesh.nnum)
+        self.ansys.nsel("S", "LOC", "X", -dimensions.side_length / 2)
+        self.ansys.nsel("R", "LOC", "Y", -dimensions.side_length / 2)
+        self.ansys.nsel("R", "LOC", "Z", dimensions.side_length / 2)
+        self.retained_nodes.extend(self.ansys.mesh.nnum)
+
+        self.ansys.allsel()
+        return self.retained_nodes  # for logging purposes
+
     def define_materials(self, materials):
         self.ansys.run("/PREP7")
         e_str = ["EX", "EY", "EZ"]
@@ -98,6 +121,19 @@ class TestRunner:
                 self.ansys.mp(pr_str[i], id, material.poisson_ratios[i])
         # How do I verify that materials were input correctly? How do I access the
         # materials from self.ansys?
+
+    def assign_element_materials(self, arrangement):
+        # This implementation is probably super slow
+        # Individual emodif commands may be extra slow, so try adding to component
+        # per material number, then emodif on each component
+        self.ansys.run("/PREP7")
+        for element in arrangement:
+            self.ansys.esel("S", "CENT", "X", element[0])
+            self.ansys.esel("R", "CENT", "Y", element[1])
+            self.ansys.esel("R", "CENT", "Z", element[2])
+            self.ansys.emodif("ALL", "MAT", element[3])
+
+        self.ansys.allsel()
 
     def apply_periodic_conditions(self, dimensions):
         self.ansys.run("/PREP7")
@@ -186,15 +222,6 @@ class TestRunner:
 
             self.ansys.lswrite(i + 3)
 
-    def apply_loading_shear(self, axis, loads):
-        for j, n in enumerate(self.retained_nodes):
-            for axis_label in SHEAR_FIXED_AXES[j]:
-                self.ansys.d(n, axis_label)
-
-        self.ansys.d(
-            self.retained_nodes[axis], "U" + AXES[axis % 3], loads.shear_magnitude
-        )
-
     def apply_loading_normal(self, axis, loads):
         for j, n in enumerate(self.retained_nodes):
             for axis_label in NORMAL_FIXED_AXES[j]:
@@ -204,21 +231,17 @@ class TestRunner:
             self.retained_nodes[axis], "U" + AXES[axis - 1], loads.normal_magnitude
         )
 
+    def apply_loading_shear(self, axis, loads):
+        for j, n in enumerate(self.retained_nodes):
+            for axis_label in SHEAR_FIXED_AXES[j]:
+                self.ansys.d(n, axis_label)
+
+        self.ansys.d(
+            self.retained_nodes[axis], "U" + AXES[axis % 3], loads.shear_magnitude
+        )
+
         # How do I verify that load steps were input correctly? How do I access the
         # load steps from self.ansys?
-
-    def assign_element_materials(self, arrangement):
-        # This implementation is probably super slow
-        # Individual emodif commands may be extra slow, so try adding to component
-        # per material number, then emodif on each component
-        self.ansys.run("/PREP7")
-        for element in arrangement:
-            self.ansys.esel("S", "CENT", "X", element[0])
-            self.ansys.esel("R", "CENT", "Y", element[1])
-            self.ansys.esel("R", "CENT", "Z", element[2])
-            self.ansys.emodif("ALL", "MAT", element[3])
-
-        self.ansys.allsel()
 
     def solve_load_steps(self):
         self.ansys.run("/SOLU")
@@ -238,29 +261,6 @@ class TestRunner:
     def calculate_properties(self):
         properties = Material(99, [1], [1], [1])
         return properties
-
-    def get_retained_nodes(self, dimensions):
-        # Can this be cleaned up? Iterate over list of [1,-1,-1]-style multipliers?
-        self.retained_nodes = []
-        self.ansys.nsel("S", "LOC", "X", -dimensions.side_length / 2)
-        self.ansys.nsel("R", "LOC", "Y", -dimensions.side_length / 2)
-        self.ansys.nsel("R", "LOC", "Z", -dimensions.side_length / 2)
-        self.retained_nodes.extend(self.ansys.mesh.nnum)
-        self.ansys.nsel("S", "LOC", "X", dimensions.side_length / 2)
-        self.ansys.nsel("R", "LOC", "Y", -dimensions.side_length / 2)
-        self.ansys.nsel("R", "LOC", "Z", -dimensions.side_length / 2)
-        self.retained_nodes.extend(self.ansys.mesh.nnum)
-        self.ansys.nsel("S", "LOC", "X", -dimensions.side_length / 2)
-        self.ansys.nsel("R", "LOC", "Y", dimensions.side_length / 2)
-        self.ansys.nsel("R", "LOC", "Z", -dimensions.side_length / 2)
-        self.retained_nodes.extend(self.ansys.mesh.nnum)
-        self.ansys.nsel("S", "LOC", "X", -dimensions.side_length / 2)
-        self.ansys.nsel("R", "LOC", "Y", -dimensions.side_length / 2)
-        self.ansys.nsel("R", "LOC", "Z", dimensions.side_length / 2)
-        self.retained_nodes.extend(self.ansys.mesh.nnum)
-
-        self.ansys.allsel()
-        return self.retained_nodes  # for logging purposes
 
     def load_parameters(self):
         try:
