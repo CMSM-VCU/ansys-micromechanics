@@ -11,6 +11,7 @@ LAUNCH_OPTIONS = {
     "override": True,
     "run_location": os.getcwd() + "\dump",
     "jobname": "rve_debug",
+    "log_apdl": "w",
 }
 
 
