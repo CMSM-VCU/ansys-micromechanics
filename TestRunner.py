@@ -1,3 +1,4 @@
+from typing import List, Any
 import numpy as np
 import pyansys
 
@@ -17,6 +18,11 @@ SHEAR_FIXED_AXES = [
 
 
 class TestRunner:
+    ansys: Any  #: pyansys.mapdl_corba.MapdlCorba # don't know how to type hint this
+    element_type: int
+    launch_options: dict
+    retained_nodes: List
+
     def __init__(self, element_type=185, launch_options=None):
         """Launches an Ansys instance. See pyansys documentation for launch options such
         as job directory and executable path.
