@@ -72,7 +72,6 @@ class TestRunner:
         self.ansys.lesize("ALL", dimensions.element_length)
         self.ansys.mshkey(1)
         self.ansys.vmesh("ALL")
-        # print(self.ansys.elements)
 
     def define_materials(self, materials):
         self.ansys.run("/PREP7")
@@ -152,7 +151,6 @@ class TestRunner:
 
         return pair_sets
 
-    # @logger_wraps()
     def generate_load_steps(self, loads):
         if loads.kind != "displacement":
             raise NotImplementedError
