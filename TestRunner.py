@@ -160,8 +160,8 @@ class TestRunner:
         else:
             context = self.ansys.non_interactive
 
-        with context:
-            for i, pair_set in enumerate(pair_sets):
+        for i, pair_set in enumerate(pair_sets):
+            with context:
                 for pair in pair_set:
                     if rn[0] in pair:
                         continue
