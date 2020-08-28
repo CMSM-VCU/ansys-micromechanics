@@ -109,8 +109,12 @@ class TestRunner:
         # WARNING: This uses the Ansys inline node() function, which returns whichever
         # node is CLOSEST to the location.
         inline = f"node({x},{y},{z})"
-        self.ansys.run("node_number_temp=" + inline)
-        return int(self.ansys.parameters["node_number_temp"])
+        self.ansys.run("NODE_NUMBER_TEMP=" + inline)
+        if pyansys.__version__[:4] == "0.43":
+            return int(self.ansys.parameters["node_number_temp"])
+        else:
+            self.load_parameters()
+            return int(self.parameters["NODE_NUMBER_TEMP"])
 
     def select_node_at_loc(self, x, y, z, kind="S"):
         nnum = self.get_node_num_at_loc(x, y, z)
@@ -150,8 +154,13 @@ class TestRunner:
         pair_sets = self.find_node_pairs(dimensions)
 
         rn = self.retained_nodes
-        # with self.ansys.non_interactive:
-        with self.ansys.chain_commands:
+
+        if pyansys.__version__[:4] == "0.43":
+            context = self.ansys.chain_commands
+        else:
+            context = self.ansys.non_interactive
+
+        with context:
             for i, pair_set in enumerate(pair_sets):
                 for pair in pair_set:
                     if rn[0] in pair:
@@ -183,13 +192,15 @@ class TestRunner:
             self.ansys.nsel("S", "LOC", axis, dimensions.side_length / 2)
             self.ansys.nsel("A", "LOC", axis, -dimensions.side_length / 2)
 
+            if pyansys.__version__[:4] == "0.43":
+                nodes = self.ansys.mesh.nodes
+                nnum = self.ansys.mesh.nnum
+            else:
+                nodes = self.ansys.nodes
+                nnum = self.ansys.nnum
+
             # Get coordinates and number in one row
-            face_nodes = np.hstack(
-                (
-                    self.ansys.mesh.nodes,
-                    np.reshape(self.ansys.mesh.nnum, (len(self.ansys.mesh.nnum), 1)),
-                )
-            )
+            face_nodes = np.hstack((nodes, np.reshape(nnum, (len(nnum), 1)),))
 
             # Sort coordinates so duplicates will be adjacent
             face_nodes = face_nodes[
