@@ -16,6 +16,8 @@ SHEAR_FIXED_AXES = [
     ["UX", "UY", "UZ"],
 ]
 
+DECIMAL_PLACES = 5
+
 
 @decorate_all_methods(logger_wraps)
 class TestRunner:
@@ -190,32 +192,46 @@ class TestRunner:
 
         for i, axis in enumerate(AXES):  # Select exterior nodes on each axis
             self.ansys.nsel("S", "LOC", axis, dimensions.side_length / 2)
-            self.ansys.nsel("A", "LOC", axis, -dimensions.side_length / 2)
 
             if pyansys.__version__[:4] == "0.43":
-                nodes = self.ansys.mesh.nodes
-                nnum = self.ansys.mesh.nnum
+                nodes_pos = np.around(self.ansys.mesh.nodes, DECIMAL_PLACES)
+                nnum_pos = self.ansys.mesh.nnum
             else:
-                nodes = self.ansys.nodes
-                nnum = self.ansys.nnum
+                nodes_pos = np.around(self.ansys.nodes, DECIMAL_PLACES)
+                nnum_pos = self.ansys.nnum
+
+            self.ansys.nsel("S", "LOC", axis, -dimensions.side_length / 2)
+
+            if pyansys.__version__[:4] == "0.43":
+                nodes_neg = np.around(self.ansys.mesh.nodes, DECIMAL_PLACES)
+                nnum_neg = self.ansys.mesh.nnum
+            else:
+                nodes_neg = np.around(self.ansys.nodes, DECIMAL_PLACES)
+                nnum_neg = self.ansys.nnum
+
+            # Delete coordinate along current axis
+            nodes_pos = np.delete(nodes_pos, i, 1)
+            nodes_neg = np.delete(nodes_neg, i, 1)
 
             # Get coordinates and number in one row
-            face_nodes = np.hstack((nodes, np.reshape(nnum, (len(nnum), 1)),))
+            face_nodes_pos = np.hstack(
+                (nodes_pos, np.reshape(nnum_pos, (len(nnum_pos), 1)),)
+            )
+            face_nodes_neg = np.hstack(
+                (nodes_neg, np.reshape(nnum_neg, (len(nnum_neg), 1)),)
+            )
 
-            # Sort coordinates so duplicates will be adjacent
-            face_nodes = face_nodes[
-                np.lexsort(
-                    (
-                        -face_nodes[:, i],
-                        face_nodes[:, (i + 1) % 3],
-                        face_nodes[:, (i + 2) % 3],
-                    )
-                )
+            # Sort coordinates so counterparts will be at same index
+            face_nodes_pos = face_nodes_pos[
+                np.lexsort((face_nodes_pos[:, 0], face_nodes_pos[:, 1],))
+            ]
+            face_nodes_neg = face_nodes_neg[
+                np.lexsort((face_nodes_neg[:, 0], face_nodes_neg[:, 1],))
             ]
 
             # Extract every pair of node numbers
             pair_sets.append(
-                np.stack((face_nodes[::2, -1], face_nodes[1::2, -1])).astype(int).T
+                np.stack((face_nodes_pos[:, -1], face_nodes_neg[:, -1])).astype(int).T
             )
 
         self.ansys.allsel()
