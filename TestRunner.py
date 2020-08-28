@@ -218,6 +218,8 @@ class TestRunner:
                 np.stack((face_nodes[::2, -1], face_nodes[1::2, -1])).astype(int).T
             )
 
+        self.ansys.allsel()
+
         return pair_sets
 
     def apply_loading_normal(self, axis, loads):
