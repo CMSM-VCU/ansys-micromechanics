@@ -8,7 +8,7 @@
     },
     "dimensions": {
         "domainSideLength": 1.0,
-        "elementSpacing": 0.1
+        "elementSpacing": 0.025
     },
     "loading": {
         "kind": "displacement",
