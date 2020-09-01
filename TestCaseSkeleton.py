@@ -19,6 +19,8 @@ class TestCaseSkeleton:
 
     """
 
+    results: dict
+
     def attach_to_testrunner(self, TestRunnerClass, options=None):
         self.testrunner = TestRunnerClass(testcase=self)
 
