@@ -29,21 +29,6 @@
             },
             "required": ["length", "mass", "time"]
         },
-        "dimensions": {
-            "description": "The key dimensions of the test case",
-            "type": "object",
-            "properties": {
-                "domainSideLength": {
-                    "type": "number",
-                    "description": "The side length of the cubic domain, centered on the origin"
-                },
-                "elementSpacing": {
-                    "type": "number",
-                    "description": "The element edge length in FEA cases, the grid spacing in PD cases"
-                }
-            },
-            "required": ["domainSideLength", "elementSpacing"]
-        },
         "loading": {
             "description": "The loading parameters for a test case",
             "type": "object",
@@ -125,50 +110,79 @@
             },
             "minItems": 1
         },
-        "materialLocations": {
-            "description": "The centroid locations of all non-default material elements or nodes",
-            "type": "object",
-            "properties": {
-                "locationsWithId": {
-                    "description": "The locations ordered as [xloc, yloc, zloc, materialIndex]",
-                    "type": "array",
-                    "items": {
-                        "type": "array",
-                        "items": [
-                            {
-                                "type": "number",
-                                "description": "x coordinate"
+        "mesh": {
+            "description": "The data defining the RVE mesh",
+            "oneOf": [
+                {
+                    "description": "The centroid locations of all non-default material elements or nodes",
+                    "type": "object",
+                    "properties": {
+                        "domainSideLength": {
+                            "type": "number",
+                            "description": "The side length of the cubic domain, centered on the origin"
+                        },
+                        "elementSpacing": {
+                            "type": "number",
+                            "description": "The element edge length in FEA cases, the grid spacing in PD cases",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "locationsWithId": {
+                            "description": "The locations ordered as [xloc, yloc, zloc, materialIndex]",
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": [
+                                    {
+                                        "type": "number",
+                                        "description": "x coordinate"
+                                    },
+                                    {
+                                        "type": "number",
+                                        "description": "y coordinate"
+                                    },
+                                    {
+                                        "type": "number",
+                                        "description": "z coordinate"
+                                    },
+                                    {
+                                        "type": "integer",
+                                        "description": "Material index",
+                                        "minimum": 1
+                                    }
+                                ],
+                                "minItems": 4,
+                                "additionalItems": false
                             },
-                            {
-                                "type": "number",
-                                "description": "y coordinate"
-                            },
-                            {
-                                "type": "number",
-                                "description": "z coordinate"
-                            },
-                            {
-                                "type": "integer",
-                                "description": "Material index",
-                                "minimum": 1
-                            }
-                        ],
-                        "minItems": 4,
-                        "additionalItems": false
+                            "minItems": 0
+                        }
                     },
-                    "minItems": 0
+                    "required": [
+                        "domainSideLength",
+                        "elementSpacing",
+                        "locationsWithId"
+                    ]
+                },
+                {
+                    "description": "The files containing a pre-generated mesh in Ansys format (incompatible with PD cases)",
+                    "type": "object",
+                    "properties": {
+                        "elementType": {
+                            "type": "string",
+                            "description": "The element type used in the mesh"
+                        },
+                        "nodeFilePath": {
+                            "type": "string",
+                            "description": "The path to the file containing node data (relative to this input file)"
+                        },
+                        "elementFilePath": {
+                            "type": "string",
+                            "description": "The path to the file containing element data (relative to this input file)"
+                        }
+                    },
+                    "required": ["elementType", "nodeFilePath", "elementFilePath"]
                 }
-            },
-            "required": ["locationsWithId"]
+            ]
         }
     },
-    "required": [
-        "caseId",
-        "caseDescription",
-        "units",
-        "dimensions",
-        "loading",
-        "materials",
-        "materialLocations"
-    ]
+    "required": ["caseId", "caseDescription", "units", "loading", "materials", "mesh"]
 }
