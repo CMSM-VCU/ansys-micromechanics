@@ -44,9 +44,14 @@ class TestCaseSkeleton:
 
     def check_parameters(self):
         passed_checks = True
-        elements_per_side = self.dimensions.side_length / self.dimensions.element_length
-        if elements_per_side % round(elements_per_side) > 1e-3:
-            warn("Domain side length is not evenly divisible by element edge length")
-            passed_checks = False
+        try:
+            elements_per_side = self.mesh.domainSideLength / self.mesh.elementSpacing
+            if elements_per_side % round(elements_per_side) > 1e-3:
+                warn(
+                    "Domain side length is not evenly divisible by element edge length"
+                )
+                passed_checks = False
+        except NameError:
+            pass
 
         return passed_checks
