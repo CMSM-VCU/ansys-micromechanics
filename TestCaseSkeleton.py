@@ -1,17 +1,12 @@
-from dataclasses import dataclass, field
-from typing import List
+from dataclasses import dataclass
 from warnings import warn
 
-import numpy as np
-
-from utils import logger_wraps, decorate_all_methods
 from TestRunner import TestRunner
-from tuples import Dims, Loads, Material
+from utils import decorate_all_methods, logger_wraps
 
 
-@dataclass
 @decorate_all_methods(logger_wraps)
-class TestCase:
+class TestCaseSkeleton:
     """Contains the parameters and calculates the results for a single test case.
 
     Attributes:
@@ -24,11 +19,8 @@ class TestCase:
 
     """
 
-    dimensions: Dims
-    materials: List[Material]
-    arrangement: np.ndarray
-    loads: Loads
-    properties: Material = field(default=None, init=False, compare=False)
+    def attach_to_testrunner(self, TestRunnerClass, options=None):
+        self.testrunner = TestRunnerClass(testcase=self)
 
     def run_tests(self, launch_options=None):
         """Run set of mechanical tests on cubic RVE. Normal and shear tests each in all
