@@ -42,3 +42,11 @@ class InputHandler:
                 input_dict = json.load(input_file)
                 if check_first and self.check_input_with_schema(input_dict):
                     self.input_dicts.append(input_dict)
+
+    def get_required_properties(self):
+        # TODO: Make this recursive to get required properties of properties
+        # How to do required properties of optional properties though?
+        if self.schema:
+            return self.schema["required"]
+        else:
+            print("InputHandler: No schema loaded")
