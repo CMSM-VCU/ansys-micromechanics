@@ -57,6 +57,14 @@ class TestRunner:
         self.ansys.nread(self.test_case.mesh.nodeFileAbsolutePath)
         self.ansys.eread(self.test_case.mesh.elementFileAbsolutePath)
 
+    @property
+    def mesh_extents(self):
+        self.ansys.allsel()
+        mins = self.ansys.mesh.nodes.min(axis=0).tolist()
+        maxs = self.ansys.mesh.nodes.max(axis=0).tolist()
+
+        return tuple(zip(mins, maxs))
+
     def run_test_sequence(self):
         for load_case in range(1, 7):
             self.ansys.ddele("ALL")  # Will need to change for any other loading methods
