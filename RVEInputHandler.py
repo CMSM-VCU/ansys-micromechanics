@@ -1,33 +1,14 @@
-import numpy as np
-
 from InputHandler import InputHandler
-from TestCase import TestCase
-from tuples import Dims, Loads, Material
+from RecursiveClassFactory import RecursiveClassFactory
+from TestCaseSkeleton import TestCaseSkeleton
+from utils import decorate_all_methods, logger_wraps
 
 
+@decorate_all_methods(logger_wraps)
 class RVEInputHandler(InputHandler):
-    def convert_input_dict_to_testcase(self, input_dict):
-        # throw warning if side length and element length are not divisible
-
-        dict_dims = input_dict["dimensions"]
-        dict_mats = input_dict["materials"]
-        dict_loads = input_dict["loading"]
-
-        dims = Dims(dict_dims["domainSideLength"], dict_dims["elementSpacing"],)
-        materials = [
-            Material(
-                mat["materialIndex"],
-                mat["elasticModuli"],
-                mat["shearModuli"],
-                mat["poissonsRatios"],
-            )
-            for mat in dict_mats
-        ]
-        loads = Loads(
-            dict_loads["kind"],
-            dict_loads["normalMagnitude"],
-            dict_loads["shearMagnitude"],
+    def create_testcase_class(self):
+        return RecursiveClassFactory.create_class(
+            "RVETestCase",
+            required_args=self.get_required_properties(),
+            BaseClass=TestCaseSkeleton,
         )
-        arrangement = np.array(input_dict["materialLocations"]["locationsWithId"])
-
-        return TestCase(dims, materials, arrangement, loads)
