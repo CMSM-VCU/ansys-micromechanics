@@ -32,6 +32,7 @@
     "mesh": {
         "domainSideLength": 1.0,
         "elementSpacing": 0.025,
-        "locationsWithId": []
+        "locationsWithId": [],
+        "elementType": "SOLID185"
     }
 }
