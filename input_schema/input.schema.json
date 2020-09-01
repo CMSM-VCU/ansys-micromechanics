@@ -154,6 +154,11 @@
                                 "additionalItems": false
                             },
                             "minItems": 0
+                        },
+                        "elementType": {
+                            "type": "string",
+                            "description": "The element type to use in the mesh",
+                            "default": "SOLID185"
                         }
                     },
                     "required": [
