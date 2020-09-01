@@ -1,7 +1,5 @@
-from dataclasses import dataclass
 from warnings import warn
 
-from TestRunner import TestRunner
 from utils import decorate_all_methods, logger_wraps
 
 
@@ -22,9 +20,9 @@ class TestCaseSkeleton:
     results: dict
 
     def attach_to_testrunner(self, TestRunnerClass, options=None):
-        self.testrunner = TestRunnerClass(testcase=self)
+        self.testrunner = TestRunnerClass(test_case=self, options=options)
 
-    def run_tests(self, launch_options=None):
+    def run_tests(self):
         """Run set of mechanical tests on cubic RVE. Normal and shear tests each in all
         three directions. Distill results into effective elastic moduli, shear moduli,
         and poisson's ratios.
@@ -33,14 +31,8 @@ class TestCaseSkeleton:
             launch_options (dict, optional): dictionary of keyword arguments for
             TestRunner options
         """
-
-        with TestRunner(launch_options=launch_options) as test_runner:
-            print(test_runner)
-            test_runner.prepare_mesh(self.dimensions, self.materials, self.arrangement)
-            test_runner.run_test_sequence(self.loads)
-
-            self.properties = test_runner.calculate_properties()
-            print("Returned to end of with")
+        self.testrunner.run()
+        print(f"Finished with {self.results}")
 
     def check_parameters(self):
         passed_checks = True
