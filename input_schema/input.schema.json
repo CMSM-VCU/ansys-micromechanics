@@ -175,11 +175,11 @@
                             "type": "string",
                             "description": "The element type used in the mesh"
                         },
-                        "nodeFilePath": {
+                        "nodeFileRelativePath": {
                             "type": "string",
                             "description": "The path to the file containing node data (relative to this input file)"
                         },
-                        "elementFilePath": {
+                        "elementFileRelativePath": {
                             "type": "string",
                             "description": "The path to the file containing element data (relative to this input file)"
                         }

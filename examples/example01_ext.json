@@ -31,7 +31,7 @@
     ],
     "mesh": {
         "elementType": "SOLID185",
-        "nodeFilePath": "./example01.node",
-        "elementFilePath": "./example01.elem"
+        "nodeFileRelativePath": "./example01.node",
+        "elementFileRelativePath": "./example01.elem"
     }
 }
