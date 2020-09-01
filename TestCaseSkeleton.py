@@ -43,7 +43,7 @@ class TestCaseSkeleton:
                     "Domain side length is not evenly divisible by element edge length"
                 )
                 passed_checks = False
-        except NameError:
+        except AttributeError:
             pass
 
         return passed_checks
