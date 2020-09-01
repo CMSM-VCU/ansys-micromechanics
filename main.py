@@ -3,6 +3,7 @@ import sys
 
 import utils
 from RVEInputHandler import RVEInputHandler
+from TestRunner import TestRunner
 from utils import logger_wraps
 
 SCHEMA_PATH = "./input_schema/input.schema.json"
@@ -23,14 +24,17 @@ def main():
 
     handler = RVEInputHandler(schema_file_path=SCHEMA_PATH)
 
+    RVETestCase = handler.create_testcase_class()
+
     handler.load_input_files(input_file_paths=input_file_paths)
 
     for input_dict in handler.input_dicts:
-        cases.append(handler.convert_input_dict_to_testcase(input_dict=input_dict))
+        cases.append(RVETestCase(**input_dict))
 
     for case in cases:
         case.check_parameters()
-        case.run_tests(launch_options=LAUNCH_OPTIONS)
+        case.attach_to_testrunner(TestRunnerClass=TestRunner, options=LAUNCH_OPTIONS)
+        case.run_tests()
 
         print(case.properties)
 
