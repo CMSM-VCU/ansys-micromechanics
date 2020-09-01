@@ -6,10 +6,6 @@
         "mass": "kilogram",
         "time": "second"
     },
-    "dimensions": {
-        "domainSideLength": 1.0,
-        "elementSpacing": 0.025
-    },
     "loading": {
         "kind": "displacement",
         "normalMagnitude": 0.1,
@@ -33,7 +29,9 @@
             "density": 1500.0
         }
     ],
-    "materialLocations": {
+    "mesh": {
+        "domainSideLength": 1.0,
+        "elementSpacing": 0.025,
         "locationsWithId": []
     }
 }
