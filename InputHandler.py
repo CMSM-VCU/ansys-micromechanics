@@ -1,4 +1,5 @@
 import json
+import pathlib
 from typing import List
 
 import jsonschema
@@ -40,6 +41,7 @@ class InputHandler:
         for file_path in input_file_paths:
             with open(file_path) as input_file:
                 input_dict = json.load(input_file)
+                input_dict["path"] = pathlib.Path(file_path).resolve(strict=True)
                 if check_first and self.check_input_with_schema(input_dict):
                     self.input_dicts.append(input_dict)
 
