@@ -19,6 +19,9 @@ class TestCaseSkeleton:
 
     results: dict
 
+    def __init__(self):
+        self.decorate_attributes()
+
     def attach_to_testrunner(self, TestRunnerClass, options=None):
         self.testrunner = TestRunnerClass(test_case=self, options=options)
 
@@ -56,3 +59,12 @@ class TestCaseSkeleton:
             return "external"
         else:
             raise Exception("Unable to determine mesh type")
+
+    def decorate_attributes(self):
+        self.mesh.nodeFileAbsolutePath = str(
+            self.path.parent / self.mesh.nodeFileRelativePath
+        )
+
+        self.mesh.elementFileAbsolutePath = str(
+            self.path.parent / self.mesh.elementFileRelativePath
+        )
