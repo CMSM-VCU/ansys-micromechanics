@@ -47,3 +47,12 @@ class TestCaseSkeleton:
             pass
 
         return passed_checks
+
+    @property
+    def mesh_type(self):
+        if getattr(self.mesh, "locationsWithId", None):
+            return "centroid"
+        elif getattr(self.mesh, "nodeFilePath", None):
+            return "external"
+        else:
+            raise Exception("Unable to determine mesh type")
