@@ -41,11 +41,21 @@ class TestRunner:
             self.run_test_sequence()
 
     def prepare_mesh(self):
-        self.generate_base_mesh()
-        self.get_retained_nodes()
+        if self.test_case.mesh_type == "centroid":
+            self.generate_base_mesh()
+            self.assign_element_materials()
+        elif self.test_case.mesh_type == "external":
+            self.load_external_mesh()
+
         self.define_materials()
-        self.assign_element_materials()
+        self.get_retained_nodes()
         self.apply_periodic_conditions()
+
+    def load_external_mesh(self):
+        self.ansys.run("/prep7")
+        self.ansys.et(1, self.test_case.mesh.elementType)
+        self.ansys.nread(self.test_case.mesh.nodeFileAbsolutePath)
+        self.ansys.eread(self.test_case.mesh.elementFileAbsolutePath)
 
     def run_test_sequence(self):
         for load_case in range(1, 7):
