@@ -61,10 +61,11 @@ class TestCaseSkeleton:
             raise Exception("Unable to determine mesh type")
 
     def decorate_attributes(self):
-        self.mesh.nodeFileAbsolutePath = str(
-            self.path.parent / self.mesh.nodeFileRelativePath
-        )
+        if self.mesh_type == "external":
+            self.mesh.nodeFileAbsolutePath = str(
+                self.path.parent / self.mesh.nodeFileRelativePath
+            )
 
-        self.mesh.elementFileAbsolutePath = str(
-            self.path.parent / self.mesh.elementFileRelativePath
-        )
+            self.mesh.elementFileAbsolutePath = str(
+                self.path.parent / self.mesh.elementFileRelativePath
+            )
