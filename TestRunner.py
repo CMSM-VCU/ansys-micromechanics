@@ -97,8 +97,9 @@ class TestRunner:
             [(0, 0), (1, 0), (2, 1)],
         ]
 
+        self.ansys.allsel()
         node_coords = [
-            [self.mesh_extents[index] for index in node] for node in coord_indices
+            [self.mesh_extents()[index] for index in node] for node in coord_indices
         ]
 
         self.retained_nodes = []
@@ -192,7 +193,7 @@ class TestRunner:
         pair_sets = []
 
         for i, axis in enumerate(AXES):  # Select exterior nodes on each axis
-            self.ansys.nsel("S", "LOC", axis, self.mesh_extents[i, 1])
+            self.ansys.nsel("S", "LOC", axis, self.mesh_extents(allsel=True)[i, 1])
 
             if self.ansys.pyansys_version[:4] == "0.43":
                 nodes_pos = np.around(self.ansys.mesh.nodes, DECIMAL_PLACES)
@@ -201,7 +202,7 @@ class TestRunner:
                 nodes_pos = np.around(self.ansys.nodes, DECIMAL_PLACES)
                 nnum_pos = self.ansys.nnum
 
-            self.ansys.nsel("S", "LOC", axis, self.mesh_extents[i, 0])
+            self.ansys.nsel("S", "LOC", axis, self.mesh_extents(allsel=True)[i, 0])
 
             if self.ansys.pyansys_version[:4] == "0.43":
                 nodes_neg = np.around(self.ansys.mesh.nodes, DECIMAL_PLACES)
@@ -283,9 +284,9 @@ class TestRunner:
         except:
             raise Exception("Unable to load Ansys parameters")
 
-    @property
-    def mesh_extents(self):
-        self.ansys.allsel()
+    def mesh_extents(self, allsel=False):
+        if allsel:
+            self.ansys.allsel()
         mins = self.ansys.mesh.nodes.min(axis=0)
         maxs = self.ansys.mesh.nodes.max(axis=0)
 
