@@ -51,20 +51,6 @@ class TestRunner:
         self.get_retained_nodes()
         self.apply_periodic_conditions()
 
-    def load_external_mesh(self):
-        self.ansys.run("/prep7")
-        self.ansys.et(1, self.test_case.mesh.elementType)
-        self.ansys.nread(self.test_case.mesh.nodeFileAbsolutePath)
-        self.ansys.eread(self.test_case.mesh.elementFileAbsolutePath)
-
-    @property
-    def mesh_extents(self):
-        self.ansys.allsel()
-        mins = self.ansys.mesh.nodes.min(axis=0).tolist()
-        maxs = self.ansys.mesh.nodes.max(axis=0).tolist()
-
-        return tuple(zip(mins, maxs))
-
     def run_test_sequence(self):
         for load_case in range(1, 7):
             self.ansys.ddele("ALL")  # Will need to change for any other loading methods
@@ -77,6 +63,12 @@ class TestRunner:
             self.debug_stat()
             self.extract_raw_results()
             self.calculate_properties()
+
+    def load_external_mesh(self):
+        self.ansys.run("/prep7")
+        self.ansys.et(1, self.test_case.mesh.elementType)
+        self.ansys.nread(self.test_case.mesh.nodeFileAbsolutePath)
+        self.ansys.eread(self.test_case.mesh.elementFileAbsolutePath)
 
     def generate_base_mesh(self):
         """Generate uniform cubic mesh according to overall side length and element edge
@@ -284,6 +276,15 @@ class TestRunner:
             self.parameters = self.ansys.parameters
         except:
             raise Exception("Unable to load Ansys parameters")
+
+    @property
+    def mesh_extents(self):
+        self.ansys.allsel()
+        mins = self.ansys.mesh.nodes.min(axis=0)
+        maxs = self.ansys.mesh.nodes.max(axis=0)
+
+        return np.column_stack((mins, maxs))
+        # return tuple(zip(mins, maxs))
 
     def debug_stat(self):
         self.ansys.lsoper()
