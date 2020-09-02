@@ -13,6 +13,7 @@ class AnsysContainer:
             self.ansys = pyansys.launch_mapdl()
 
         setattr(self.ansys, "pyansys_version", pyansys.__version__)
+        print(self.ansys)
         return self.ansys
 
     def __exit__(self, type, value, traceback):
