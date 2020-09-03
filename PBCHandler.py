@@ -2,11 +2,13 @@ import numpy as np
 from numpy.core import test
 
 from utils import round_to_sigfigs
+from utils import decorate_all_methods, logger_wraps
 
 AXES = ["X", "Y", "Z"]
 SIG_FIGS = 10
 
 
+@decorate_all_methods(logger_wraps)
 class PBCHandler:
     def __init__(self, testrunner):
         self.ansys = testrunner.ansys
@@ -18,7 +20,7 @@ class PBCHandler:
 
         pair_sets = self.find_node_pairs()
 
-        rn = self.retained_nnum
+        rn = self.retained_nodes
 
         if self.ansys.pyansys_version[:4] == "0.43":
             context = self.ansys.chain_commands
@@ -51,20 +53,22 @@ class PBCHandler:
             self.ansys.nsel("S", "LOC", axis, self.mesh_extents(allsel=True)[i, 1])
 
             if self.ansys.pyansys_version[:4] == "0.43":
-                nodes_pos = self.round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
+                nodes_pos = round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
                 nnum_pos = self.ansys.mesh.nnum
             else:
-                nodes_pos = self.round_to_sigfigs(self.ansys.nodes, SIG_FIGS)
+                nodes_pos = round_to_sigfigs(self.ansys.nodes, SIG_FIGS)
                 nnum_pos = self.ansys.nnum
 
             self.ansys.nsel("S", "LOC", axis, self.mesh_extents(allsel=True)[i, 0])
 
             if self.ansys.pyansys_version[:4] == "0.43":
-                nodes_neg = self.round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
+                nodes_neg = round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
                 nnum_neg = self.ansys.mesh.nnum
             else:
-                nodes_neg = self.round_to_sigfigs(self.ansys.nodes, SIG_FIGS)
+                nodes_neg = round_to_sigfigs(self.ansys.nodes, SIG_FIGS)
                 nnum_neg = self.ansys.nnum
+
+            print(nodes_pos.shape, nodes_neg.shape)
 
             # Delete coordinate along current axis
             nodes_pos = np.delete(nodes_pos, i, 1)
