@@ -117,11 +117,7 @@ class TestRunner:
         # node is CLOSEST to the location.
         inline = f"node({x},{y},{z})"
         self.ansys.run("NODE_NUMBER_TEMP=" + inline)
-        if self.ansys.pyansys_version[:4] == "0.43":
-            return int(self.ansys.parameters["node_number_temp"])
-        else:
-            self.load_parameters()
-            return int(self.parameters["NODE_NUMBER_TEMP"])
+        return int(self.ansys.parameters["node_number_temp"])
 
     def select_node_at_loc(self, x, y, z, kind="S"):
         nnum = self.get_node_num_at_loc(x, y, z)
