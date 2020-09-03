@@ -16,7 +16,7 @@ SHEAR_FIXED_AXES = [
     ["UX", "UY", "UZ"],
 ]
 
-DECIMAL_PLACES = 5
+SIG_FIGS = 10
 
 
 @decorate_all_methods(logger_wraps)
@@ -196,19 +196,19 @@ class TestRunner:
             self.ansys.nsel("S", "LOC", axis, self.mesh_extents(allsel=True)[i, 1])
 
             if self.ansys.pyansys_version[:4] == "0.43":
-                nodes_pos = np.around(self.ansys.mesh.nodes, DECIMAL_PLACES)
+                nodes_pos = self.round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
                 nnum_pos = self.ansys.mesh.nnum
             else:
-                nodes_pos = np.around(self.ansys.nodes, DECIMAL_PLACES)
+                nodes_pos = self.round_to_sigfigs(self.ansys.nodes, SIG_FIGS)
                 nnum_pos = self.ansys.nnum
 
             self.ansys.nsel("S", "LOC", axis, self.mesh_extents(allsel=True)[i, 0])
 
             if self.ansys.pyansys_version[:4] == "0.43":
-                nodes_neg = np.around(self.ansys.mesh.nodes, DECIMAL_PLACES)
+                nodes_neg = self.round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
                 nnum_neg = self.ansys.mesh.nnum
             else:
-                nodes_neg = np.around(self.ansys.nodes, DECIMAL_PLACES)
+                nodes_neg = self.round_to_sigfigs(self.ansys.nodes, SIG_FIGS)
                 nnum_neg = self.ansys.nnum
 
             # Delete coordinate along current axis
@@ -239,6 +239,15 @@ class TestRunner:
         self.ansys.allsel()
 
         return pair_sets
+
+    def round_to_sigfigs(self, array, num):
+        # From stackoverflow.com/a/59888924
+        array = np.asarray(array)
+        arr_positive = np.where(
+            np.isfinite(array) & (array != 0), np.abs(array), 10 ** (num - 1)
+        )
+        mags = 10 ** (num - 1 - np.floor(np.log10(arr_positive)))
+        return np.round(array * mags) / mags
 
     def apply_loading_normal(self, axis):
         for j, n in enumerate(self.retained_nodes):
