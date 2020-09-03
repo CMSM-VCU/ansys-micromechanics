@@ -1,6 +1,7 @@
 import functools
-from loguru import logger
 
+import numpy as np
+from loguru import logger
 
 # def logger_wraps(*, entry=True, exit=True, level="DEBUG"):
 #     return logger_wrapper(func,)
@@ -57,3 +58,13 @@ def check_file_exists(file_path):
         Warning: If the file does not exist
     """
     return True
+
+
+def round_to_sigfigs(array, num):
+    # From stackoverflow.com/a/59888924
+    array = np.asarray(array)
+    arr_positive = np.where(
+        np.isfinite(array) & (array != 0), np.abs(array), 10 ** (num - 1)
+    )
+    mags = 10 ** (num - 1 - np.floor(np.log10(arr_positive)))
+    return np.round(array * mags) / mags

@@ -3,6 +3,7 @@ from typing import Any, List
 import numpy as np
 
 from AnsysContainer import AnsysContainer
+from PBCHandler import PBCHandler
 from utils import decorate_all_methods, logger_wraps
 
 AXES = ["X", "Y", "Z"]
@@ -15,8 +16,6 @@ SHEAR_FIXED_AXES = [
     ["UX", "UY", "UZ"],
     ["UX", "UY", "UZ"],
 ]
-
-SIG_FIGS = 10
 
 
 @decorate_all_methods(logger_wraps)
@@ -49,7 +48,8 @@ class TestRunner:
 
         self.define_materials()
         self.get_retained_nodes()
-        self.apply_periodic_conditions()
+        self.pbc_handler = PBCHandler(self)
+        self.pbc_handler.apply_periodic_conditions()
 
     def run_test_sequence(self):
         for load_case in range(1, 7):
@@ -154,103 +154,6 @@ class TestRunner:
             self.ansys.emodif("ALL", "MAT", element[3])
 
         self.ansys.allsel()
-
-    def apply_periodic_conditions(self):
-        self.ansys.run("/PREP7")
-
-        pair_sets = self.find_node_pairs()
-
-        rn = self.retained_nodes
-
-        if self.ansys.pyansys_version[:4] == "0.43":
-            context = self.ansys.chain_commands
-        else:
-            context = self.ansys.non_interactive
-
-        for i, pair_set in enumerate(pair_sets):
-            with context:
-                for pair in pair_set:
-                    if rn[0] in pair:
-                        continue
-
-                    for ax in ["UX", "UY", "UZ"]:
-                        # com = [
-                        #     f"CE,NEXT,0,{pair[0]},{ax},1,{pair[1]},{ax},-1,{rnx},{ax},-1",
-                        #     "CE,HIGH,0,{rn[0]},{ax},1",
-                        # ]
-                        # print(com)
-                        # (self.ansys.run(chunk) for chunk in com)
-                        # fmt: off
-                        self.ansys.ce("NEXT",0,   # ansys.ce only has 3 terms implemented
-                            node1=pair[0], lab1=ax, c1=1,
-                            node2=pair[1], lab2=ax, c2=-1,
-                            node3=rn[i+1], lab3=ax, c3=-1
-                        )
-                        self.ansys.ce("HIGH",0,
-                            node1=rn[0], lab1=ax, c1=1,
-                        )
-                        # fmt: on
-        pass
-
-    def find_node_pairs(self):
-        pair_sets = []
-
-        for i, axis in enumerate(AXES):  # Select exterior nodes on each axis
-            self.ansys.nsel("S", "LOC", axis, self.mesh_extents(allsel=True)[i, 1])
-
-            if self.ansys.pyansys_version[:4] == "0.43":
-                nodes_pos = self.round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
-                nnum_pos = self.ansys.mesh.nnum
-            else:
-                nodes_pos = self.round_to_sigfigs(self.ansys.nodes, SIG_FIGS)
-                nnum_pos = self.ansys.nnum
-
-            self.ansys.nsel("S", "LOC", axis, self.mesh_extents(allsel=True)[i, 0])
-
-            if self.ansys.pyansys_version[:4] == "0.43":
-                nodes_neg = self.round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
-                nnum_neg = self.ansys.mesh.nnum
-            else:
-                nodes_neg = self.round_to_sigfigs(self.ansys.nodes, SIG_FIGS)
-                nnum_neg = self.ansys.nnum
-
-            # Delete coordinate along current axis
-            nodes_pos = np.delete(nodes_pos, i, 1)
-            nodes_neg = np.delete(nodes_neg, i, 1)
-
-            # Get coordinates and number in one row
-            face_nodes_pos = np.hstack(
-                (nodes_pos, np.reshape(nnum_pos, (len(nnum_pos), 1)),)
-            )
-            face_nodes_neg = np.hstack(
-                (nodes_neg, np.reshape(nnum_neg, (len(nnum_neg), 1)),)
-            )
-
-            # Sort coordinates so counterparts will be at same index
-            face_nodes_pos = face_nodes_pos[
-                np.lexsort((face_nodes_pos[:, 0], face_nodes_pos[:, 1],))
-            ]
-            face_nodes_neg = face_nodes_neg[
-                np.lexsort((face_nodes_neg[:, 0], face_nodes_neg[:, 1],))
-            ]
-
-            # Extract every pair of node numbers
-            pair_sets.append(
-                np.stack((face_nodes_pos[:, -1], face_nodes_neg[:, -1])).astype(int).T
-            )
-
-        self.ansys.allsel()
-
-        return pair_sets
-
-    def round_to_sigfigs(self, array, num):
-        # From stackoverflow.com/a/59888924
-        array = np.asarray(array)
-        arr_positive = np.where(
-            np.isfinite(array) & (array != 0), np.abs(array), 10 ** (num - 1)
-        )
-        mags = 10 ** (num - 1 - np.floor(np.log10(arr_positive)))
-        return np.round(array * mags) / mags
 
     def apply_loading_normal(self, axis):
         for j, n in enumerate(self.retained_nodes):
