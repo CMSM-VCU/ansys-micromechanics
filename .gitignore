@@ -134,3 +134,5 @@ dump*
 input_schema/input.schema.html
 input_schema/schema_doc.css
 input_schema/schema_doc.min.js
+images*
+debug*
