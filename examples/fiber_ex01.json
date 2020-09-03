@@ -31,7 +31,7 @@
     ],
     "mesh": {
         "elementType": "SOLID186",
-        "nodeFileRelativePath": "./fiber_ex01.node",
-        "elementFileRelativePath": "./fiber_ex01.elem"
+        "nodeFileRelativePath": "./fiber_ex04.node",
+        "elementFileRelativePath": "./fiber_ex04.elem"
     }
 }
