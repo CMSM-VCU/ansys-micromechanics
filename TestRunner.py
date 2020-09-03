@@ -70,6 +70,9 @@ class TestRunner:
         self.ansys.nread(self.test_case.mesh.nodeFileAbsolutePath)
         self.ansys.eread(self.test_case.mesh.elementFileAbsolutePath)
 
+        assert self.ansys.mesh.n_node > 0
+        assert self.ansys.mesh.n_elem > 0
+
     def generate_base_mesh(self):
         """Generate uniform cubic mesh according to overall side length and element edge
         length. Assumes a cube centered around (0,0,0).
