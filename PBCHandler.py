@@ -45,12 +45,12 @@ class PBCHandler:
         pair_sets = []
 
         for i, axis in enumerate(AXES):  # Select exterior nodes on each axis
-            self.ansys.nsel("S", "LOC", axis, self.mesh_extents(allsel=True)[i, 1])
+            self.ansys.nsel("S", "LOC", axis, self.mesh_extents()[i, 1])
 
             nodes_pos = round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
             nnum_pos = self.ansys.mesh.nnum
 
-            self.ansys.nsel("S", "LOC", axis, self.mesh_extents(allsel=True)[i, 0])
+            self.ansys.nsel("S", "LOC", axis, self.mesh_extents()[i, 0])
 
             nodes_neg = round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
             nnum_neg = self.ansys.mesh.nnum

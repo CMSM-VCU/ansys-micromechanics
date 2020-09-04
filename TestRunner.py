@@ -100,10 +100,8 @@ class TestRunner:
             [(0, 0), (1, 0), (2, 1)],
         ]
 
-        self.ansys.allsel()
-        node_coords = [
-            [self.mesh_extents()[index] for index in node] for node in coord_indices
-        ]
+        extents = self.mesh_extents()
+        node_coords = [[extents[index] for index in node] for node in coord_indices]
 
         self.retained_nodes = []
 
@@ -195,14 +193,13 @@ class TestRunner:
         except:
             raise Exception("Unable to load Ansys parameters")
 
-    def mesh_extents(self, allsel=False):
-        if allsel:
-            self.ansys.allsel()
+    def mesh_extents(self, current=False):
+        if not current:
+            return np.reshape(self.ansys.mesh.grid.bounds, (-1, 2))
+        else:
         mins = self.ansys.mesh.nodes.min(axis=0)
         maxs = self.ansys.mesh.nodes.max(axis=0)
-
         return np.column_stack((mins, maxs))
-        # return tuple(zip(mins, maxs))
 
     def debug_stat(self):
         self.ansys.lsoper()
