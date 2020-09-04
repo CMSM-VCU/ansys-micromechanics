@@ -33,6 +33,16 @@ class TestRunner:
         """
         self.test_case = test_case
         self.launch_options = options
+        try:
+            self.jobname = options["jobname"]
+        except:
+            print("No jobname found. Defaulting to `file`")
+            self.jobname = "file"
+        try:
+            self.jobdir = options["run_location"] + "\\"
+        except:
+            print("No jobdir found. Defaulting to `.\`")
+            self.jobdir = ".\\"
 
     def run(self):
         with AnsysContainer(self.launch_options) as self.ansys:
