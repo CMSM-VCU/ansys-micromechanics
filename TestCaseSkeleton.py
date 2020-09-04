@@ -17,8 +17,6 @@ class TestCaseSkeleton:
 
     """
 
-    results: dict
-
     def __init__(self):
         self.decorate_attributes()
 
@@ -53,9 +51,9 @@ class TestCaseSkeleton:
 
     @property
     def mesh_type(self):
-        if getattr(self.mesh, "locationsWithId", None):
+        if getattr(self.mesh, "locationsWithId", None) is not None:
             return "centroid"
-        elif getattr(self.mesh, "nodeFileRelativePath", None):
+        elif getattr(self.mesh, "nodeFileRelativePath", None) is not None:
             return "external"
         else:
             raise Exception("Unable to determine mesh type")
