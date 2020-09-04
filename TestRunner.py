@@ -1,6 +1,9 @@
+from itertools import permutations, product
+from functools import reduce
 from typing import Any, List
 
 import numpy as np
+import pyansys
 
 from AnsysContainer import AnsysContainer
 from PBCHandler import PBCHandler
@@ -22,7 +25,8 @@ SHEAR_FIXED_AXES = [
 class TestRunner:
     ansys: Any  #: pyansys.mapdl_corba.MapdlCorba # don't know how to type hint this
     launch_options: dict
-    retained_nodes: List
+    retained_nodes: List[int]
+    retained_results: List[dict]
 
     def __init__(self, test_case, options=None):
         """Launches an Ansys instance. See pyansys documentation for launch options such
@@ -32,6 +36,7 @@ class TestRunner:
             launch_options (dict, optional): dictionary of keyword arguments for pyansys.launch_mapdl()
         """
         self.test_case = test_case
+        self.test_case.results = []
         self.launch_options = options
         try:
             self.jobname = options["jobname"]
@@ -55,7 +60,7 @@ class TestRunner:
             self.assign_element_materials()
         elif self.test_case.mesh_type == "external":
             self.load_external_mesh()
-
+        self.debug_stat()
         self.define_materials()
         self.get_retained_nodes()
         self.pbc_handler = PBCHandler(self)
@@ -191,10 +196,60 @@ class TestRunner:
             self.ansys.solve()
 
     def extract_raw_results(self):
+        result = pyansys.read_binary(self.jobdir + self.jobname + ".rst")
+        coord = result.mesh.nodes
+        nnum, disp = result.nodal_displacement(0)
+        _, force = result.nodal_static_forces(0)
+
+        self.retained_results = []
+        for n in self.retained_nodes:
+            n_results = {}
+            n_idx = np.argwhere(nnum == n)[0, 0]
+            n_results["coord"] = coord[n_idx]
+            n_results["disp"] = disp[n_idx]
+            n_results["force"] = force[n_idx]
+            self.retained_results.append(n_results)
+
         pass
 
     def calculate_properties(self):
-        self.test_case.results = {"dummy": 999}
+        ret_res = self.retained_results
+
+        vol = self.ansys.mesh.grid.volume
+        macro_stress = (
+            reduce(
+                lambda x, y: x + y,
+                [np.outer(ret_res[i]["coord"], ret_res[i]["force"]) for i in range(4)],
+            )
+            / vol
+        )
+
+        rel_coord = [ret_res[i]["coord"] - ret_res[0]["coord"] for i in range(4)]
+        macro_strain = 0.5 * reduce(
+            lambda x, y: x + y,
+            [
+                np.outer(ret_res[j]["disp"], rel_coord[i])
+                / np.linalg.norm(rel_coord[i]) ** 2
+                + np.transpose(
+                    np.outer(ret_res[j]["disp"], rel_coord[i])
+                    / np.linalg.norm(rel_coord[i]) ** 2
+                )
+                for i, j in product(range(1, 4), repeat=2)
+            ],
+        )
+
+        properties = {}
+        properties["elasticModuli"] = [
+            macro_stress[i, i] / macro_strain[i, i] for i in range(3)
+        ]
+        properties["poissonsRatios"] = [
+            macro_strain[i, i] / macro_strain[j, j] for i, j in permutations(range(3))
+        ]
+        properties["shearModuli"] = [
+            macro_stress[i, j] / macro_strain[i, j] for i, j in permutations(range(3))
+        ]
+
+        self.test_case.results.append(properties)
 
     def load_parameters(self):
         try:
@@ -207,9 +262,9 @@ class TestRunner:
         if not current:
             return np.reshape(self.ansys.mesh.grid.bounds, (-1, 2))
         else:
-        mins = self.ansys.mesh.nodes.min(axis=0)
-        maxs = self.ansys.mesh.nodes.max(axis=0)
-        return np.column_stack((mins, maxs))
+            mins = self.ansys.mesh.nodes.min(axis=0)
+            maxs = self.ansys.mesh.nodes.max(axis=0)
+            return np.column_stack((mins, maxs))
 
     def debug_stat(self):
         self.ansys.lsoper()
