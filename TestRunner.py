@@ -217,7 +217,7 @@ class TestRunner:
 
         pass
 
-    def calculate_properties(self):
+    def calculate_macro_tensors(self):
         ret_res = self.retained_results
 
         vol = self.ansys.mesh.grid.volume
@@ -239,6 +239,11 @@ class TestRunner:
         )
         macro_strain = 0.5 * (macro_strain_true + np.transpose(macro_strain_true))
 
+
+        return macro_stress, macro_strain, macro_strain_true
+
+    def calculate_properties(self):
+        macro_stress, macro_strain, _ = self.calculate_macro_tensors()
 
         properties = {}
         properties["elasticModuli"] = [
