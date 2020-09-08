@@ -1,5 +1,6 @@
 from itertools import permutations, product
 from functools import reduce
+import time
 from typing import Any, List
 
 import numpy as np
@@ -206,8 +207,7 @@ class TestRunner:
         self.ansys.run("/POST1")
         result = self.ansys.result
         coord = result.mesh.nodes
-        nnum, disp = result.nodal_displacement(0)
-        _, force = result.nodal_static_forces(0)
+        nnum, disp = result.nodal_displacement(result.nsets - 1)
 
         self.retained_results = []
         for n in self.retained_nodes:
@@ -215,7 +215,39 @@ class TestRunner:
             n_idx = np.argwhere(nnum == n)[0, 0]
             n_results["coord"] = coord[n_idx]
             n_results["disp"] = disp[n_idx]
-            n_results["force"] = force[n_idx]
+
+            force_n = []
+            for i in range(3):
+                appended = False
+                while not appended:
+                    force_n.append(
+                        self.ansys.get(
+                            par="rforce",
+                            entity="NODE",
+                            entnum=n,
+                            item1="RF",
+                            it1num=f"F{AXES[i]}",
+                        )
+                    )
+
+                    if type(force_n[-1]) == float and force_n[-1] != "":
+                        appended = True
+                        continue
+                    else:
+                        try:
+                            time.sleep(1)
+                            force_n[-1] = self.ansys.parameters["rforce"]
+                            if type(force_n[-1]) == float and force_n[-1] != "":
+                                appended = True
+                                continue
+                        except:
+                            print(f"Retrieval failed. Trying again: {n}, {i}")
+                            force_n.pop()
+
+                # force_n.append(self.ansys.parameters[f"RFORCE{i+1}"])
+            assert len(force_n) == 3
+            n_results["force"] = np.array(force_n)
+
             self.retained_results.append(n_results)
 
         pass
