@@ -248,10 +248,12 @@ class TestRunner:
             macro_stress[i, i] / macro_strain[i, i] for i in range(3)
         ]
         properties["poissonsRatios"] = [
-            macro_strain[i, i] / macro_strain[j, j] for i, j in permutations(range(3))
+            -1.0 * macro_strain[i, i] / macro_strain[j, j]
+            for i, j in permutations(range(3), r=2)
         ]
         properties["shearModuli"] = [
-            macro_stress[i, j] / macro_strain[i, j] for i, j in permutations(range(3))
+            macro_stress[i, j] / macro_strain[i, j]
+            for i, j in permutations(range(3), r=2)
         ]
 
         self.test_case.results.append(properties)
