@@ -36,7 +36,8 @@ class TestRunner:
             launch_options (dict, optional): dictionary of keyword arguments for pyansys.launch_mapdl()
         """
         self.test_case = test_case
-        self.test_case.results = []
+        self.test_case.results = {}
+        self.test_case.debug_results = {}
         self.launch_options = options
         try:
             self.jobname = options["jobname"]
@@ -239,6 +240,12 @@ class TestRunner:
         )
         macro_strain = 0.5 * (macro_strain_true + np.transpose(macro_strain_true))
 
+        debug_results = {}
+        debug_results["retained_results"] = self.retained_results
+        debug_results["macro_stress"] = macro_stress
+        debug_results["macro_strain_true"] = macro_strain_true
+        debug_results["macro_strain"] = macro_strain
+        self.test_case.debug_results[self.load_case] = debug_results
 
         return macro_stress, macro_strain, macro_strain_true
 
@@ -258,7 +265,7 @@ class TestRunner:
             for i, j in permutations(range(3), r=2)
         ]
 
-        self.test_case.results.append(properties)
+        self.test_case.results[self.load_case] = properties
 
     def load_parameters(self):
         try:
