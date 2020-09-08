@@ -51,6 +51,8 @@ class TestRunner:
 
     def run(self):
         with AnsysContainer(self.launch_options) as self.ansys:
+            self.ansys.finish()
+            self.ansys.run("/CLEAR")
             self.prepare_mesh()
             self.run_test_sequence()
 
