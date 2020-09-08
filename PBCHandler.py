@@ -86,9 +86,11 @@ class PBCHandler:
         return pair_sets
 
     def verify_equality(self, arr1, arr2):
-        print(np.max(np.abs(arr1 - arr2)))
         if np.array_equal(arr1, arr2):
             return True
+
+        # Identify bad elements for debugging
+        print(np.max(np.abs(arr1 - arr2)))
         bad_idx = np.argwhere(np.not_equal(arr1, arr2))
         bad_arr1 = arr1[bad_idx[:, 0]]
         bad_arr2 = arr2[bad_idx[:, 0]]
@@ -96,5 +98,6 @@ class PBCHandler:
         culprits = diff.argsort(axis=0)[-1]
         x_bad = (bad_arr1[culprits[0]], bad_arr2[culprits[0]])
         y_bad = (bad_arr1[culprits[1]], bad_arr2[culprits[1]])
+        print(x_bad, y_bad)
 
         pass
