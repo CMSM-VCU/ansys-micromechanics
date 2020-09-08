@@ -230,18 +230,15 @@ class TestRunner:
         )
 
         rel_coord = [ret_res[i]["coord"] - ret_res[0]["coord"] for i in range(4)]
-        macro_strain = 0.5 * reduce(
+        macro_strain_true = reduce(  # I know it's not "true" strain. Can't remember what this should be called
             lambda x, y: x + y,
             [
-                np.outer(ret_res[j]["disp"], rel_coord[i])
-                / np.linalg.norm(rel_coord[i]) ** 2
-                + np.transpose(
-                    np.outer(ret_res[j]["disp"], rel_coord[i])
-                    / np.linalg.norm(rel_coord[i]) ** 2
-                )
-                for i, j in product(range(1, 4), repeat=2)
+                nonfinite_to_zero(np.outer(ret_res[n]["disp"], 1.0 / rel_coord[n]))
+                for n in range(1, 4)
             ],
         )
+        macro_strain = 0.5 * (macro_strain_true + np.transpose(macro_strain_true))
+
 
         properties = {}
         properties["elasticModuli"] = [
