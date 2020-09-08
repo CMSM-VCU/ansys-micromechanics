@@ -201,7 +201,7 @@ class TestRunner:
             self.ansys.solve()
 
     def extract_raw_results(self):
-        result = pyansys.read_binary(self.jobdir + self.jobname + ".rst")
+        result = self.ansys.result
         coord = result.mesh.nodes
         nnum, disp = result.nodal_displacement(0)
         _, force = result.nodal_static_forces(0)
