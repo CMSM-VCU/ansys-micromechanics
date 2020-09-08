@@ -71,6 +71,7 @@ class TestRunner:
 
     def run_test_sequence(self):
         for load_case in range(1, 7):
+            self.load_case = load_case
 
             self.ansys.run("/SOLU")
             self.ansys.allsel()
