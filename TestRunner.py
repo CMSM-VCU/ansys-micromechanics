@@ -70,6 +70,9 @@ class TestRunner:
 
     def run_test_sequence(self):
         for load_case in range(1, 7):
+
+            self.ansys.run("/SOLU")
+            self.ansys.allsel()
             self.ansys.ddele("ALL")  # Will need to change for any other loading methods
             if load_case < 4:
                 self.apply_loading_normal(load_case)
