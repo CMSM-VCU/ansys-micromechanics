@@ -24,7 +24,8 @@ class PBCHandler:
         rn = self.retained_nodes
 
         for i, pair_set in enumerate(pair_sets):
-            with self.ansys.chain_commands:
+            # with self.ansys.chain_commands:
+            with self.ansys.non_interactive:
                 for pair in pair_set:
                     if rn[0] in pair:
                         continue
