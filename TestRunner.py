@@ -203,6 +203,7 @@ class TestRunner:
             self.ansys.solve()
 
     def extract_raw_results(self):
+        self.ansys.run("/POST1")
         result = self.ansys.result
         coord = result.mesh.nodes
         nnum, disp = result.nodal_displacement(0)
