@@ -7,7 +7,7 @@ import pyansys
 
 from AnsysContainer import AnsysContainer
 from PBCHandler import PBCHandler
-from utils import decorate_all_methods, logger_wraps
+from utils import decorate_all_methods, logger_wraps, nonfinite_to_zero
 
 AXES = ["X", "Y", "Z"]
 
