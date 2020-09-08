@@ -68,3 +68,7 @@ def round_to_sigfigs(array, num):
     )
     mags = 10 ** (num - 1 - np.floor(np.log10(arr_positive)))
     return np.round(array * mags) / mags
+
+
+def nonfinite_to_zero(array):
+    return np.where(np.isfinite(array), array, 0.0)
