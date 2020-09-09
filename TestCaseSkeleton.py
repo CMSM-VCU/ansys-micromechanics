@@ -1,6 +1,13 @@
+import json
 from warnings import warn
 
+import numpy as np
+import pandas as pd
+
 from utils import decorate_all_methods, logger_wraps
+
+PLANES_NORMAL = ("11", "22", "33")
+PLANES_SHEAR = ("12", "13", "21", "23", "31", "32")
 
 
 @decorate_all_methods(logger_wraps)
@@ -34,6 +41,7 @@ class TestCaseSkeleton:
         """
         self.testrunner.run()
         print(f"Finished with {self.results}")
+        self.debug_write_results()
 
     def check_parameters(self):
         passed_checks = True
@@ -48,6 +56,49 @@ class TestCaseSkeleton:
             pass
 
         return passed_checks
+
+    def debug_write_results(self):
+        # results = {key: vars(self)[key] for key in ["results"]}
+        # for _, result_set in results.items():
+        #     for _, load_case in result_set.items():
+        #         for _, dataset in load_case.items():
+        #             if isinstance(dataset, np.ndarray):
+        #                 dataset = dataset.tolist()
+
+        # with open("debug/testOutput2.json", mode="w") as f:
+        #     json.dump(results, f)
+        # pass
+
+        # Yes, this is really ugly
+        e_df = pd.DataFrame.from_dict(
+            {i: self.results[i]["elasticModuli"] for i in self.results.keys()}
+        )
+        e_df = e_df.replace([np.inf, -np.inf, np.nan], 0.0)
+        e_df[abs(e_df.max().max() / e_df) > 1e6] = 0.0
+        e_df.insert(0, "plane", pd.Series(PLANES_NORMAL, index=e_df.index))
+        e_df.insert(0, "var", pd.Series(["E"] * len(e_df[1]), index=e_df.index))
+
+        nu_df = pd.DataFrame.from_dict(
+            {i: self.results[i]["poissonsRatios"] for i in self.results.keys()}
+        )
+        nu_df = nu_df.replace([np.inf, -np.inf, np.nan], 0.0)
+        nu_df = nu_df.apply(
+            lambda x: [y if (y <= 1.0 and y >= 0.0) else 0.0 for y in x]
+        )
+        nu_df.insert(0, "plane", pd.Series(PLANES_SHEAR, index=nu_df.index))
+        nu_df.insert(0, "var", pd.Series(["nu"] * len(nu_df[1]), index=nu_df.index))
+
+        g_df = pd.DataFrame.from_dict(
+            {i: self.results[i]["shearModuli"] for i in self.results.keys()}
+        )
+        g_df = g_df.replace([np.inf, -np.inf, np.nan], 0.0)
+        g_df.insert(0, "plane", pd.Series(PLANES_SHEAR, index=g_df.index))
+        g_df.insert(0, "var", pd.Series(["G"] * len(g_df[1]), index=g_df.index))
+
+        results_df = pd.concat([e_df, nu_df, g_df], ignore_index=True)
+
+        print(results_df)
+        pass
 
     @property
     def mesh_type(self):
