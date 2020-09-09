@@ -1,10 +1,10 @@
 from itertools import permutations, product
 from functools import reduce
+from pathlib import Path
 import time
 from typing import Any, List
 
 import numpy as np
-import pyansys
 
 from AnsysContainer import AnsysContainer
 from PBCHandler import PBCHandler
@@ -20,6 +20,7 @@ SHEAR_FIXED_AXES = [
     ["UX", "UY", "UZ"],
     ["UX", "UY", "UZ"],
 ]
+RESULTS_WAIT_MAX = 10
 
 
 @decorate_all_methods(logger_wraps)
@@ -53,6 +54,7 @@ class TestRunner:
 
     def run(self):
         with AnsysContainer(self.launch_options) as self.ansys:
+            self.rst_path = Path(self.ansys._result_file)
             self.ansys.finish()
             self.ansys.run("/CLEAR")
             self.prepare_mesh()
@@ -72,6 +74,7 @@ class TestRunner:
 
     def run_test_sequence(self):
         for load_case in range(1, 7):
+            self.clear_results()
             self.load_case = load_case
 
             self.ansys.run("/SOLU")
@@ -86,6 +89,22 @@ class TestRunner:
             self.debug_stat()
             self.extract_raw_results()
             self.calculate_properties()
+            pass
+
+    def clear_results(self):
+        self.ansys.finish()
+
+        try:
+            self.rst_path.unlink(missing_ok=True)
+        except Exception as err:
+            raise err
+
+        try:
+            assert not self.rst_path.exists()
+        except:
+            time.sleep(1)
+            assert not self.rst_path.exists()
+        pass
 
     def load_external_mesh(self):
         self.ansys.run("/prep7")
@@ -205,7 +224,27 @@ class TestRunner:
 
     def extract_raw_results(self):
         self.ansys.run("/POST1")
-        result = self.ansys.result
+
+        waited = 0
+        while waited < RESULTS_WAIT_MAX:
+            try:
+                assert self.rst_path.exists()
+                print(f"{waited=}")
+                break
+            except:
+                time.sleep(1)
+                waited += 1
+        else:
+            raise Exception(f"Results file not found: {self.rst_path.exists()=}")
+
+        assert self.rst_path.stat().st_size > 0
+
+        try:
+            result = self.ansys.result
+        except:
+            self.rst_path.touch()
+            result = self.ansys.result
+
         coord = result.mesh.nodes
         nnum, disp = result.nodal_displacement(result.nsets - 1)
 
