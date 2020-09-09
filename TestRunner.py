@@ -223,8 +223,7 @@ class TestRunner:
             self.ansys.solve()
 
     def extract_raw_results(self):
-        self.ansys.run("/POST1")
-
+        self.ansys.finish()
         waited = 0
         while waited < RESULTS_WAIT_MAX:
             try:
@@ -234,6 +233,7 @@ class TestRunner:
                 break
             except:
                 time.sleep(1)
+                self.ansys.finish()
                 waited += 1
         else:
             raise Exception(f"Results file not found: {self.rst_path.exists()=}")
@@ -247,6 +247,7 @@ class TestRunner:
         coord = result.mesh.nodes
         nnum, disp = result.nodal_displacement(result.nsets - 1)
 
+        self.ansys.run("/POST1")
         self.retained_results = []
         for n in self.retained_nodes:
             n_results = {}
