@@ -229,6 +229,7 @@ class TestRunner:
         while waited < RESULTS_WAIT_MAX:
             try:
                 assert self.rst_path.exists()
+                assert self.rst_path.stat().st_size > 0
                 print(f"{waited=}")
                 break
             except:
@@ -236,8 +237,6 @@ class TestRunner:
                 waited += 1
         else:
             raise Exception(f"Results file not found: {self.rst_path.exists()=}")
-
-        assert self.rst_path.stat().st_size > 0
 
         try:
             result = self.ansys.result
