@@ -322,18 +322,18 @@ class TestRunner:
         return macro_stress, macro_strain, macro_strain_true
 
     def calculate_properties(self):
-        macro_stress, macro_strain, _ = self.calculate_macro_tensors()
+        macro_stress, macro_strain, macro_strain_true = self.calculate_macro_tensors()
 
         properties = {}
         properties["elasticModuli"] = [
             macro_stress[i, i] / macro_strain[i, i] for i in range(3)
         ]
         properties["poissonsRatios"] = [
-            -1.0 * macro_strain[i, i] / macro_strain[j, j]
+            -1.0 * macro_strain[j, j] / macro_strain[i, i]
             for i, j in permutations(range(3), r=2)
         ]
         properties["shearModuli"] = [
-            macro_stress[i, j] / macro_strain[i, j]
+            macro_stress[j, i] / macro_strain_true[j, i]
             for i, j in permutations(range(3), r=2)
         ]
 
