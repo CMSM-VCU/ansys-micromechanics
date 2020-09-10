@@ -57,7 +57,11 @@ class PBCHandler:
             nodes_neg = round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
             nnum_neg = np.reshape(self.ansys.mesh.nnum, (-1, 1))
 
-            assert nodes_pos.shape == nodes_neg.shape
+            try:
+                assert nodes_pos.shape == nodes_neg.shape
+            except:
+                print(f"{nodes_pos.shape=}, {nodes_neg.shape=}")
+                pass
 
             # Delete coordinates column for current axis
             nodes_pos = np.delete(nodes_pos, axis_ind, axis=1)
