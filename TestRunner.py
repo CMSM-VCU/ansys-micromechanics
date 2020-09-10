@@ -229,14 +229,15 @@ class TestRunner:
             try:
                 assert self.rst_path.exists()
                 assert self.rst_path.stat().st_size > 0
-                print(f"{waited=}")
+                print(f"\nHit: {waited=}")
                 break
             except:
                 time.sleep(1)
                 self.ansys.finish()
                 waited += 1
+                print("miss... ", end="")
         else:
-            raise Exception(f"Results file not found: {self.rst_path.exists()=}")
+            raise Exception(f"\nResults file not found: {self.rst_path.exists()=}")
 
         try:
             result = self.ansys.result
