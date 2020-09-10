@@ -217,10 +217,10 @@ class TestRunner:
         # load steps from self.ansys?
 
     def solve(self):
-        with self.ansys.non_interactive:
-            self.ansys.run("/SOLU")
-            self.ansys.allsel()
-            self.ansys.solve()
+        # with self.ansys.non_interactive:
+        self.ansys.run("/SOLU")
+        self.ansys.allsel()
+        self.ansys.solve()
 
     def extract_raw_results(self):
         self.ansys.finish()
