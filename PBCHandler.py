@@ -15,7 +15,7 @@ class PBCHandler:
     def __init__(self, testrunner):
         self.ansys = testrunner.ansys
         self.retained_nodes = testrunner.retained_nodes
-        self.mesh_extents = testrunner.mesh_extents
+        self.mesh_extents = testrunner.mesh_extents()
 
     def apply_periodic_conditions(self):
         self.ansys.run("/PREP7")
@@ -47,15 +47,17 @@ class PBCHandler:
     def find_node_pairs(self):
         pair_sets = []
 
+        tolerances = (np.diff(self.mesh_extents) * TOLERANCE_MULT).flatten()
+
         for axis_ind, axis in enumerate(AXES):  # Select exterior nodes on each axis
-            self.ansys.seltol(abs(self.mesh_extents()[axis_ind, 1] * TOLERANCE_MULT))
-            self.ansys.nsel("S", "LOC", axis, self.mesh_extents()[axis_ind, 1])
+            self.ansys.seltol(tolerances[axis_ind])
+
+            self.ansys.nsel("S", "LOC", axis, self.mesh_extents[axis_ind, 1])
 
             nodes_pos = round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
             nnum_pos = np.reshape(self.ansys.mesh.nnum, (-1, 1))
 
-            self.ansys.seltol(abs(self.mesh_extents()[axis_ind, 0] * TOLERANCE_MULT))
-            self.ansys.nsel("S", "LOC", axis, self.mesh_extents()[axis_ind, 0])
+            self.ansys.nsel("S", "LOC", axis, self.mesh_extents[axis_ind, 0])
 
             nodes_neg = round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
             nnum_neg = np.reshape(self.ansys.mesh.nnum, (-1, 1))
