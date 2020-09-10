@@ -18,7 +18,7 @@
             "elasticModuli": [1.31e6, 1.31e6, 1.31e6],
             "shearModuli": [5.5e5, 5.5e5, 5.5e5],
             "poissonsRatios": [0.43, 0.43, 0.43],
-            "density": 2000.0
+            "density": 903e-15
         },
         {
             "materialIndex": 2,
@@ -26,12 +26,12 @@
             "elasticModuli": [7.3e7, 7.3e7, 7.3e7],
             "shearModuli": [3.23e7, 3.23e7, 3.23e7],
             "poissonsRatios": [0.2, 0.2, 0.2],
-            "density": 1.0
+            "density": 1450e-15
         }
     ],
     "mesh": {
         "elementType": "SOLID186",
-        "nodeFileRelativePath": "./fiber_ex04.node",
-        "elementFileRelativePath": "./fiber_ex04.elem"
+        "nodeFileRelativePath": "./meshes/fiber_ex01.node",
+        "elementFileRelativePath": "./meshes/fiber_ex01.elem"
     }
 }
