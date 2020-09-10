@@ -7,6 +7,7 @@ from utils import decorate_all_methods, logger_wraps
 AXES = ["X", "Y", "Z"]
 SIG_FIGS = 8
 EPSILON = np.finfo(float).eps * 1e3  # Should be ~1e-13
+TOLERANCE_MULT = 1e-6
 
 
 @decorate_all_methods(logger_wraps)
@@ -47,11 +48,13 @@ class PBCHandler:
         pair_sets = []
 
         for axis_ind, axis in enumerate(AXES):  # Select exterior nodes on each axis
+            self.ansys.seltol(abs(self.mesh_extents()[axis_ind, 1] * TOLERANCE_MULT))
             self.ansys.nsel("S", "LOC", axis, self.mesh_extents()[axis_ind, 1])
 
             nodes_pos = round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
             nnum_pos = np.reshape(self.ansys.mesh.nnum, (-1, 1))
 
+            self.ansys.seltol(abs(self.mesh_extents()[axis_ind, 0] * TOLERANCE_MULT))
             self.ansys.nsel("S", "LOC", axis, self.mesh_extents()[axis_ind, 0])
 
             nodes_neg = round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
@@ -86,6 +89,7 @@ class PBCHandler:
                 np.stack((face_nodes_pos[:, -1], face_nodes_neg[:, -1])).astype(int).T
             )
 
+        self.ansys.seltol()
         self.ansys.allsel()
 
         return pair_sets
