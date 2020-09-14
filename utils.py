@@ -72,3 +72,7 @@ def round_to_sigfigs(array, num):
 
 def nonfinite_to_zero(array):
     return np.where(np.isfinite(array), array, 0.0)
+
+
+def all_same(items):
+    return all(x == items[0] for x in items)
