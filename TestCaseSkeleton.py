@@ -4,7 +4,7 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 
-from utils import decorate_all_methods, logger_wraps
+from utils import decorate_all_methods, logger_wraps, all_same
 
 PLANES_NORMAL = ("11", "22", "33")
 PLANES_SHEAR = ("12", "13", "21", "23", "31", "32")
@@ -54,6 +54,27 @@ class TestCaseSkeleton:
                 passed_checks = False
         except AttributeError as err:
             print(err)
+
+        # Check if "fake" isotropic materials obey Hooke's Law
+        for mat in self.materials:
+            if mat.materialType == "orthotropic":
+                prop_sets = [
+                    mat.elasticModuli,
+                    mat.shearModuli,
+                    mat.poissonsRatios,
+                ]
+                if all([all_same(prop) for prop in prop_sets]):
+                    shear_input = mat.shearModuli[0]
+                    shear_theory = mat.elasticModuli[0] / (
+                        2 * (1 + mat.poissonsRatios[0])
+                    )
+                    try:
+                        assert shear_input == shear_theory
+                    except:
+                        raise ValueError(
+                            f"Material {mat.materialIndex} is isotropic but does not "
+                            + "obey Hooke's Law: {shear_input=}, {shear_theory=}"
+                        )
 
         return passed_checks
 
