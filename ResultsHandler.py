@@ -136,10 +136,11 @@ class ResultsHandler:
 
     def calculate_macro_stress(self, retained_coords, retained_forces):
         vol = self.ansys.mesh.grid.volume
+        rel_coord = [retained_coords[i] - retained_coords[0] for i in range(4)]
         return (
             reduce(
                 lambda x, y: x + y,
-                [np.outer(retained_coords[i], retained_forces[i]) for i in range(4)],
+                [np.outer(rel_coord[i], retained_forces[i]) for i in range(4)],
             )
             / vol
         )
