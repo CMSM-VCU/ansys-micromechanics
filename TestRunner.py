@@ -156,10 +156,14 @@ class TestRunner:
         pr_str = ["PRXY", "PRYZ", "PRXZ"]
         for material in self.test_case.materials:
             id = material.materialIndex
-            for i in range(3):
-                self.ansys.mp(e_str[i], id, material.elasticModuli[i])
-                self.ansys.mp(g_str[i], id, material.shearModuli[i])
-                self.ansys.mp(pr_str[i], id, material.poissonsRatios[i])
+            if material.materialType == "isotropic":
+                self.ansys.mp("EX", id, material.elasticModuli[0])
+                self.ansys.mp("PRXY", id, material.poissonsRatios[0])
+            elif material.materialType == "orthotropic":
+                for i in range(3):
+                    self.ansys.mp(e_str[i], id, material.elasticModuli[i])
+                    self.ansys.mp(g_str[i], id, material.shearModuli[i])
+                    self.ansys.mp(pr_str[i], id, material.poissonsRatios[i])
         # How do I verify that materials were input correctly? How do I access the
         # materials from self.ansys?
 

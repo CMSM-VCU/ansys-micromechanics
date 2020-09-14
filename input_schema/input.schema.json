@@ -63,14 +63,17 @@
                         "description": "The name of a material (documentation only, no effect on simulation",
                         "type": "string"
                     },
+                    "materialType": {
+                        "description": "The directionality of a material",
+                        "type": "string",
+                        "enum": ["isotropic", "orthotropic", "anisotropic"]
+                    },
                     "elasticModuli": {
                         "description": "The elastic moduli of a material in the three principal directions",
                         "type": "array",
                         "items": {
                             "type": "number"
                         },
-                        "minItems": 3,
-                        "maxItems": 3,
                         "exclusiveMinimum": 0.0
                     },
                     "shearModuli": {
@@ -79,8 +82,6 @@
                         "items": {
                             "type": "number"
                         },
-                        "minItems": 3,
-                        "maxItems": 3,
                         "exclusiveMinimum": 0.0
                     },
                     "poissonsRatios": {
@@ -89,8 +90,6 @@
                         "items": {
                             "type": "number"
                         },
-                        "minItems": 3,
-                        "maxItems": 3,
                         "minimum": -1.0,
                         "maximum": 0.5
                     },
@@ -100,12 +99,53 @@
                         "exclusiveMinimum": 0.0
                     }
                 },
-                "required": [
-                    "materialIndex",
-                    "materialName",
-                    "elasticModuli",
-                    "shearModuli",
-                    "poissonsRatios"
+                "oneOf": [
+                    {
+                        "properties": {
+                            "materialType": { "enum": ["isotropic"] },
+                            "elasticModuli": {
+                                "minItems": 1,
+                                "maxItems": 1
+                            },
+                            "poissonsRatios": {
+                                "minItems": 1,
+                                "maxItems": 1
+                            },
+                            "shearModuli": false
+                        },
+                        "required": [
+                            "materialIndex",
+                            "materialName",
+                            "materialType",
+                            "elasticModuli",
+                            "poissonsRatios"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "materialType": { "enum": ["orthotropic"] },
+                            "elasticModuli": {
+                                "minItems": 3,
+                                "maxItems": 3
+                            },
+                            "shearModuli": {
+                                "minItems": 3,
+                                "maxItems": 3
+                            },
+                            "poissonsRatios": {
+                                "minItems": 3,
+                                "maxItems": 3
+                            }
+                        },
+                        "required": [
+                            "materialIndex",
+                            "materialName",
+                            "materialType",
+                            "elasticModuli",
+                            "shearModuli",
+                            "poissonsRatios"
+                        ]
+                    }
                 ]
             },
             "minItems": 1
