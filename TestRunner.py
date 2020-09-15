@@ -4,20 +4,12 @@ from typing import Any, List
 import numpy as np
 
 from AnsysContainer import AnsysContainer
+from LoadingHandler import LoadingHandler
 from PBCHandler import PBCHandler
 from ResultsHandler import ResultsHandler
 from utils import decorate_all_methods, logger_wraps
 
 AXES = ["X", "Y", "Z"]
-
-# Axes that will always be constrained for each retained node
-NORMAL_FIXED_AXES = [["UX", "UY", "UZ"], ["UY", "UZ"], ["UX", "UZ"], ["UX", "UY"]]
-SHEAR_FIXED_AXES = [
-    ["UX", "UY", "UZ"],
-    ["UX", "UY", "UZ"],
-    ["UX", "UY", "UZ"],
-    ["UX", "UY", "UZ"],
-]
 
 
 @decorate_all_methods(logger_wraps)
@@ -71,6 +63,7 @@ class TestRunner:
 
     def run_test_sequence(self):
         self.results_handler = ResultsHandler(self)
+        self.loading_handler = LoadingHandler(self)
         for load_case in range(1, 7):
             self.results_handler.clear_results()
             self.load_case = load_case
@@ -79,9 +72,9 @@ class TestRunner:
             self.ansys.allsel()
             self.ansys.ddele("ALL")  # Will need to change for any other loading methods
             if load_case < 4:
-                self.apply_loading_normal(load_case)
+                self.loading_handler.apply_loading_normal(load_case)
             elif load_case >= 4:
-                self.apply_loading_shear(load_case - 3)
+                self.loading_handler.apply_loading_shear(load_case - 3)
 
             self.solve()
             self.debug_stat()
@@ -179,31 +172,6 @@ class TestRunner:
             self.ansys.emodif("ALL", "MAT", element[3])
 
         self.ansys.allsel()
-
-    def apply_loading_normal(self, axis):
-        for j, n in enumerate(self.retained_nodes):
-            for axis_label in NORMAL_FIXED_AXES[j]:
-                self.ansys.d(n, axis_label)
-
-        self.ansys.d(
-            self.retained_nodes[axis],
-            "U" + AXES[axis - 1],
-            self.test_case.loading.normalMagnitude,
-        )
-
-    def apply_loading_shear(self, axis):
-        for j, n in enumerate(self.retained_nodes):
-            for axis_label in SHEAR_FIXED_AXES[j]:
-                self.ansys.d(n, axis_label)
-
-        self.ansys.d(
-            self.retained_nodes[axis],
-            "U" + AXES[axis % 3],
-            self.test_case.loading.shearMagnitude,
-        )
-
-        # How do I verify that load steps were input correctly? How do I access the
-        # load steps from self.ansys?
 
     def solve(self):
         # with self.ansys.non_interactive:
