@@ -21,8 +21,12 @@ GEOMETRY = {
     "element_size": 20,
 }
 
-np.random.seed(0)
+X0 = 0.0
+X1 = GEOMETRY["side_length"]
+Y0 = 0.0
+Y1 = GEOMETRY["side_length"]
 
+np.random.seed(0)
 
 
 @logger_wraps()
@@ -33,7 +37,7 @@ def main(side_length, fiber_diameter, num_fibers, element_size):
         ansys.run("/clear")
         ansys.run("/prep7")
 
-        ansys.blc4(-side_length / 2.0, -side_length / 2.0, side_length, side_length)
+        ansys.blc4(0, 0, side_length, side_length)
 
         with ansys.non_interactive:
             for cent in fibers_copy:
@@ -42,8 +46,8 @@ def main(side_length, fiber_diameter, num_fibers, element_size):
         ansys.aovlap("all")
 
         with ansys.non_interactive:
-            ansys.lsel("S", "LOC", "X", -side_length / 2, side_length / 2)
-            ansys.lsel("R", "LOC", "Y", -side_length / 2, side_length / 2)
+            ansys.lsel("S", "LOC", "X", X0, X1)
+            ansys.lsel("R", "LOC", "Y", Y0, Y1)
             ansys.lsel("INVE")
             ansys.asll()
         ansys.adele("ALL", "", "", 1)
@@ -54,10 +58,10 @@ def main(side_length, fiber_diameter, num_fibers, element_size):
             ansys.et(1, 186)
             ansys.et(2, 183, 1)
 
-            ansys.lsel("S", "LOC", "X", side_length / 2)
-            ansys.lsel("A", "LOC", "X", -side_length / 2)
-            ansys.lsel("A", "LOC", "Y", side_length / 2)
-            ansys.lsel("A", "LOC", "Y", -side_length / 2)
+            ansys.lsel("S", "LOC", "X", X1)
+            ansys.lsel("A", "LOC", "X", X0)
+            ansys.lsel("A", "LOC", "Y", Y1)
+            ansys.lsel("A", "LOC", "Y", Y0)
             ansys.lesize("ALL", side_length / element_size)
             ansys.esize(side_length / element_size)
             ansys.smrtsize(4)
@@ -115,7 +119,7 @@ def generate_fiber_centroids(side_length, fiber_diameter, num_fibers, **kwargs):
     tries = 0
     while fibers_down < num_fibers:
         tries += 1
-        fiber_try = (np.random.rand(1, 2) * side_length) - side_length / 2.0
+        fiber_try = (np.random.rand(1, 2) * side_length) + X0
         if fibers_down == 0:
             fibers = np.array(fiber_try).reshape((1, 2))
             fibers_down += 1
@@ -133,7 +137,7 @@ def generate_fiber_centroids(side_length, fiber_diameter, num_fibers, **kwargs):
             if np.any(dist_sq <= (fiber_diameter) ** 2 * 1.05):
                 continue
 
-            edge_dist = np.abs(np.abs(fiber_try) - side_length / 2)
+            edge_dist = np.abs(np.abs(fiber_try - (X1 - X0) / 2) - side_length / 2)
             if np.any(
                 np.logical_and(
                     edge_dist <= (fiber_diameter / 2) * 1.15,
