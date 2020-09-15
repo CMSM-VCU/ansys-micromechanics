@@ -21,6 +21,16 @@ GEOMETRY = {
     "element_size": 20,
 }
 
+FIBERS_OVERRIDE = np.array(
+    # [[GEOMETRY["side_length"] / 2, GEOMETRY["side_length"] / 2]]
+    [
+        [0, 0],
+        [GEOMETRY["side_length"], 0],
+        [GEOMETRY["side_length"], GEOMETRY["side_length"]],
+        [0, GEOMETRY["side_length"]],
+    ]
+)
+
 X0 = 0.0
 X1 = GEOMETRY["side_length"]
 Y0 = 0.0
@@ -31,7 +41,11 @@ np.random.seed(0)
 
 @logger_wraps()
 def main(side_length, fiber_diameter, num_fibers, element_size):
-    fibers, fibers_copy = generate_fiber_centroids(**GEOMETRY)
+    if FIBERS_OVERRIDE is None:
+        fibers, fibers_copy = generate_fiber_centroids(**GEOMETRY)
+    else:
+        fibers_copy = FIBERS_OVERRIDE
+
     with AnsysContainer(LAUNCH_OPTIONS) as ansys:
         ansys.finish()
         ansys.run("/clear")
