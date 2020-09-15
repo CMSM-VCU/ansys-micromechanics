@@ -35,7 +35,17 @@
             "properties": {
                 "kind": {
                     "type": "string",
-                    "enum": ["displacement", "pressure"]
+                    "enum": ["displacement", "tensor"]
+                },
+                "directions": {
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                        "type": "string",
+                        "pattern": "^-?[123][123]$",
+                        "examples": ["11", "12", "-23", "31"]
+                    }
                 },
                 "normalMagnitude": {
                     "type": "number",
@@ -44,9 +54,55 @@
                 "shearMagnitude": {
                     "type": "number",
                     "description": "The magnitude of loading for all shear tests, units depending on kind"
+                },
+                "tensors": {
+                    "type": "array",
+                    "description": "The strain tensors to be applied to the RVE in sequence",
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                        "type": "array",
+                        "minItems": 3,
+                        "maxItems": 3,
+                        "items": {
+                            "type": "array",
+                            "minItems": 3,
+                            "maxItems": 3,
+                            "items": {
+                                "type": "number"
+                            }
+                        }
+                    }
+                },
+                "magnitudeMultiplier": {
+                    "type": "number",
+                    "description": "The scalar by which to multiply the strain tensors",
+                    "default": 1
+                },
+                "labels": {
+                    "type": "array",
+                    "description": "Optional labels corresponding with each load case. Must be same number of labels as load cases",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
                 }
             },
-            "required": ["kind", "normalMagnitude", "shearMagnitude"]
+            "oneOf": [
+                {
+                    "properties": { "kind": { "enum": ["displacement"] } },
+                    "required": [
+                        "kind",
+                        "directions",
+                        "normalMagnitude",
+                        "shearMagnitude"
+                    ]
+                },
+                {
+                    "properties": { "kind": { "enum": ["tensor"] } },
+                    "required": ["kind", "tensors", "magnitudeMultiplier"]
+                }
+            ]
         },
         "materials": {
             "description": "The list of materials and their properties",
