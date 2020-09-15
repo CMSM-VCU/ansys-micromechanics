@@ -20,4 +20,9 @@ class RecursiveClassFactory:
 
             BaseClass.__init__(self)
 
-        return type(name, (BaseClass,), {"__init__": __init__})
+        def __repr__(self):
+            return "\n".join(
+                [f"{key}: {var.__repr__()}" for key, var in vars(self).items()]
+            )
+
+        return type(name, (BaseClass,), {"__init__": __init__, "__repr__": __repr__})

@@ -14,3 +14,12 @@ class RecursiveNamespace:
                 setattr(self, key, list(map(self.map_entry, val)))
             else:  # this is the only addition
                 setattr(self, key, val)
+
+    def __repr__(self):
+        return (
+            "\n\t"
+            + "\n\t".join(
+                [f"{key}: {var.__repr__()}" for key, var in vars(self).items()]
+            )
+            + "\n"
+        )
