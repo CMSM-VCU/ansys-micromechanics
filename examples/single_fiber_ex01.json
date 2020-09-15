@@ -1,0 +1,37 @@
+{
+    "caseId": 111111,
+    "caseDescription": "Single fiber verification case",
+    "units": {
+        "length": "micrometer",
+        "mass": "gram",
+        "time": "second"
+    },
+    "loading": {
+        "kind": "displacement",
+        "normalMagnitude": 0.025,
+        "shearMagnitude": 0.025
+    },
+    "materials": [
+        {
+            "materialIndex": 1,
+            "materialName": "Polypropylene",
+            "materialType": "isotropic",
+            "elasticModuli": [1.31e6],
+            "poissonsRatios": [0.43],
+            "density": 903e-15
+        },
+        {
+            "materialIndex": 2,
+            "materialName": "Glass fiber",
+            "materialType": "isotropic",
+            "elasticModuli": [7.3e7],
+            "poissonsRatios": [0.2],
+            "density": 1450e-15
+        }
+    ],
+    "mesh": {
+        "elementType": "SOLID186",
+        "nodeFileRelativePath": "./meshes/fiber_corners_ex01.node",
+        "elementFileRelativePath": "./meshes/fiber_corners_ex01.elem"
+    }
+}
