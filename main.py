@@ -13,6 +13,7 @@ LAUNCH_OPTIONS = {
     "run_location": os.getcwd() + "\dump",
     "jobname": "rve_debug",
     "log_apdl": "w",
+    "nproc": 12,
 }
 
 
