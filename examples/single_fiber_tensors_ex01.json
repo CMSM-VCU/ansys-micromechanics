@@ -1,13 +1,13 @@
 {
     "caseId": 111111,
-    "caseDescription": "Single fiber verification case",
+    "caseDescription": "Single fiber verification case, using strain tensors",
     "units": {
         "length": "micrometer",
         "mass": "gram",
         "time": "second"
     },
     "loading": {
-        "kind": "displacement",
+        "kind": "tensor",
         "labels": [
             "x normal",
             "y normal",
@@ -16,9 +16,39 @@
             "yz shear",
             "zx shear"
         ],
-        "directions": ["11", "22", "33", "12", "23", "31"],
-        "normalMagnitude": 0.025,
-        "shearMagnitude": 0.025
+        "magnitudeMultiplier": 0.001,
+        "tensors": [
+            [
+                [1, 0, 0],
+                [0, 0, 0],
+                [0, 0, 0]
+            ],
+            [
+                [0, 0, 0],
+                [0, 1, 0],
+                [0, 0, 0]
+            ],
+            [
+                [0, 0, 0],
+                [0, 0, 0],
+                [0, 0, 1]
+            ],
+            [
+                [0, 1, 0],
+                [0, 0, 0],
+                [0, 0, 0]
+            ],
+            [
+                [0, 0, 0],
+                [0, 0, 1],
+                [0, 0, 0]
+            ],
+            [
+                [0, 0, 0],
+                [0, 0, 0],
+                [1, 0, 0]
+            ]
+        ]
     },
     "materials": [
         {
