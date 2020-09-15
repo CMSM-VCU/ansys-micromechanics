@@ -110,6 +110,10 @@ def main(side_length, fiber_diameter, num_fibers, element_size):
         # ansys.nsel("INVE")
         # ansys.ndele("ALL")    # Can't delete the former midside nodes?
 
+        # Align composite 1-2-3 axes with global x-y-z axes
+        ansys.wprota(thxy=90, thyz=90)
+        ansys.vtran(kcnto=4, nv1="ALL", noelem=0, imove=1)
+
         ansys.open_gui()
 
         save_path = str(Path.cwd() / "examples/fiber_ex03")
