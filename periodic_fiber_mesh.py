@@ -5,6 +5,7 @@ import time
 import numpy as np
 
 from AnsysContainer import AnsysContainer
+from utils import logger_wraps
 
 LAUNCH_OPTIONS = {
     "override": True,
@@ -23,6 +24,8 @@ GEOMETRY = {
 np.random.seed(0)
 
 
+
+@logger_wraps()
 def main(side_length, fiber_diameter, num_fibers, element_size):
     fibers, fibers_copy = generate_fiber_centroids(**GEOMETRY)
     with AnsysContainer(LAUNCH_OPTIONS) as ansys:
