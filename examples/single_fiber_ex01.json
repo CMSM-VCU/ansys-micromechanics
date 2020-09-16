@@ -18,7 +18,15 @@
         ],
         "directions": ["11", "22", "33", "12", "23", "31"],
         "normalMagnitude": 0.025,
-        "shearMagnitude": 0.025
+        "shearMagnitude": 0.025,
+        "expectedProperties": [
+            ["E11", "v12", "v13"],
+            ["E22", "v23", "v21"],
+            ["E33", "v31", "v32"],
+            ["G12"],
+            ["G23"],
+            ["G31"]
+        ]
     },
     "materials": [
         {
