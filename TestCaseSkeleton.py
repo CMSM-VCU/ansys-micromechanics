@@ -81,6 +81,8 @@ class TestCaseSkeleton:
                 f"Number of labels must equal number of load cases. "
                 + f"{len(self.loading.labels)} labels given for {self.num_load_cases} load cases."
             )
+        else:
+            self.loading.labels = None  # Prevent future AttributeErrors
 
         # Check for impossible expected properties
         # fmt: off

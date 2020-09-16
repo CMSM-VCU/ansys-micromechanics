@@ -1,3 +1,4 @@
+import pandas as pd
 from RecursiveNamespace import RecursiveNamespace
 import time
 from functools import reduce
@@ -180,7 +181,7 @@ class ResultsHandler:
 
         self.results[load_case] = properties
 
-    def compile_results(self, expected_property_sets, num_load_cases):
+    def compile_results(self, expected_property_sets, num_load_cases, labels=None):
         assert num_load_cases == len(self.results), (
             f"Expected {num_load_cases} results sets "
             + f"but have {len(self.results)}."
@@ -195,18 +196,22 @@ class ResultsHandler:
         )
         index_map.update(dict(zip(["11", "22", "33"], range(3))))
 
-        reportedProperties = {}
+        df_index = list(np.unique(np.hstack(expected_property_sets)))
+        if labels:
+            df_index = ["Label"] + df_index
+        reportedProperties = pd.DataFrame(index=df_index, columns=self.results.keys())
+        if labels:
+            reportedProperties.loc["Label"] = labels
 
         for prop_set, (load_case, results_set) in zip(
             expected_property_sets, self.results.items()
         ):
-            set_ = {}
             for prop in prop_set:
                 key = prop[0]
                 idx = prop[1:]
-                set_[prop] = results_set[key_map[key]][index_map[idx]]
-
-            reportedProperties[load_case] = set_
+                reportedProperties.loc[prop, load_case] = results_set[key_map[key]][
+                    index_map[idx]
+                ]
 
         results = RecursiveNamespace(
             **{"reportedProperties": None, "full_results": None, "debug_results": None}

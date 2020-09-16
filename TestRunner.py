@@ -81,8 +81,13 @@ class TestRunner:
             self.results_handler.extract_raw_results()
             self.results_handler.calculate_properties(load_case)
             pass
-        self.test_case.results = self.results_handler.results
-        self.test_case.debug_results = self.results_handler.debug_results
+
+        self.test_case.results = self.results_handler.compile_results(
+            list(self.test_case.loading.expectedProperties),
+            self.test_case.num_load_cases,
+            self.test_case.loading.labels,
+        )  # expectedProperties passed in list() to pass copy, allowing mutation in function
+        pass
 
     def load_external_mesh(self):
         self.ansys.run("/prep7")
