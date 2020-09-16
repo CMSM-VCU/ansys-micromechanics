@@ -64,7 +64,7 @@ class TestRunner:
     def run_test_sequence(self):
         self.results_handler = ResultsHandler(self)
         self.loading_handler = LoadingHandler(self)
-        for load_case in range(1, 7):
+        for load_case in np.arange(self.test_case.num_load_cases) + 1:
             self.results_handler.clear_results()
             self.load_case = load_case
 
