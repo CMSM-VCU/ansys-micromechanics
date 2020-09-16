@@ -92,7 +92,11 @@ class TestCaseSkeleton:
         # fmt: on
         expected_unique = np.unique(np.hstack(self.loading.expectedProperties))
         assert not (
-            bad_props := [prop for prop in expected_unique if prop in forbidden_props]
+            bad_props := [
+                prop
+                for prop in self.unique_expected_properties[0]
+                if prop in forbidden_props
+            ]
         ), f"Expected properties contains impossible property(s): {bad_props}"
 
         # Check for duplicate expected properties in same load case
@@ -123,6 +127,10 @@ class TestCaseSkeleton:
             return len(self.loading.directions)
         elif self.loading.kind == "tensor":
             return len(self.loading.tensors)
+
+    @property
+    def unique_expected_properties(self):
+        return np.unique(np.hstack(self.loading.expectedProperties), return_counts=True)
 
     def decorate_attributes(self):
         if self.mesh_type == "external":
