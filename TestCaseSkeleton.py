@@ -40,6 +40,19 @@ class TestCaseSkeleton:
         """
         self.testrunner.run()
         print(f"Finished with {self.results.reportedProperties}")
+        self.compress_results()
+
+    def compress_results(self):
+        assert self.results, "Results do not exist yet."
+
+        if np.all(self.unique_expected_properties[1] == 1):
+            collapsed_column = self.results.reportedProperties.bfill(axis=1).iloc[:, 0]
+            collapsed_column.loc["Label"] = "Full"
+            self.results.reportedProperties.insert(0, 0, collapsed_column)
+            return True
+        else:
+            print("Results cannot be compressed.")
+            return False
 
     def check_parameters(self):
         passed_checks = True
