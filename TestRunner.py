@@ -54,7 +54,7 @@ class TestRunner:
             self.generate_base_mesh()
             self.assign_element_materials()
         elif self.test_case.mesh_type == "external":
-            self.load_external_mesh()
+            self.load_external_mesh(**self.test_case.mesh)
         self.debug_stat()
         self.define_materials()
         self.get_retained_nodes()
@@ -81,16 +81,33 @@ class TestRunner:
             self.test_case.num_load_cases,
             self.test_case.loading.labels,
         )  # expectedProperties passed in list() to pass copy, allowing mutation in function
-        pass
 
-    def load_external_mesh(self):
+    def load_external_mesh(
+        self,
+        elementType: str,
+        nodeFileAbsolutePath: str,
+        elementFileAbsolutePath: str,
+        **kwargs,
+    ):
+        """Generate a mesh from a pair of preexisting node and element files, in Ansys
+        NWRITE/NREAD and EWRITE/EREAD format.
+
+        Args:
+            elementType (str): Ansys element type used in this mesh
+            nodeFileAbsolutePath (str): absolute path to file containing node data
+            elementFileAbsolutePath (str): absolute path to file containing element data
+
+        Returns:
+            tuple(int, int): tuple containing number of nodes and elements in loaded mesh
+        """
         self.ansys.run("/prep7")
-        self.ansys.et(1, self.test_case.mesh.elementType)
-        self.ansys.nread(self.test_case.mesh.nodeFileAbsolutePath)
-        self.ansys.eread(self.test_case.mesh.elementFileAbsolutePath)
+        self.ansys.et(1, elementType)
+        self.ansys.nread(nodeFileAbsolutePath)
+        self.ansys.eread(elementFileAbsolutePath)
 
         assert self.ansys.mesh.n_node > 0
         assert self.ansys.mesh.n_elem > 0
+        return (self.ansys.mesh.n_node, self.ansys.mesh.n_elem)
 
     def generate_base_mesh(self):
         """Generate uniform cubic mesh according to overall side length and element edge
