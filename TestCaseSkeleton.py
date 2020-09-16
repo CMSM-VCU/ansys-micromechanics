@@ -76,6 +76,12 @@ class TestCaseSkeleton:
                             + "obey Hooke's Law: {shear_input=}, {shear_theory=}"
                         )
 
+        if getattr(self.loading, "labels", None) is not None:
+            assert len(self.loading.labels) == self.num_load_cases, (
+                f"Number of labels must equal number of load cases. "
+                + f"{len(self.loading.labels)} labels given for {self.num_load_cases} load cases."
+            )
+
         return passed_checks
 
     def debug_write_results(self):
