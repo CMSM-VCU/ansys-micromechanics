@@ -105,8 +105,8 @@ class TestRunner:
         self.ansys.nread(nodeFileAbsolutePath)
         self.ansys.eread(elementFileAbsolutePath)
 
-        assert self.ansys.mesh.n_node > 0
-        assert self.ansys.mesh.n_elem > 0
+        assert self.ansys.mesh.n_node > 0, "No nodes loaded."
+        assert self.ansys.mesh.n_elem > 0, "No elements loaded."
         return (self.ansys.mesh.n_node, self.ansys.mesh.n_elem)
 
     def get_retained_nodes(self):
