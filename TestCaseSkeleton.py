@@ -45,15 +45,13 @@ class TestCaseSkeleton:
 
     def check_parameters(self):
         passed_checks = True
-        try:
+        if self.mesh_type == "centroid":
             elements_per_side = self.mesh.domainSideLength / self.mesh.elementSpacing
             if elements_per_side % round(elements_per_side) > 1e-3:
                 warn(
                     "Domain side length is not evenly divisible by element edge length"
                 )
                 passed_checks = False
-        except AttributeError as err:
-            print(err)
 
         # Check if "fake" isotropic materials obey Hooke's Law
         for mat in self.materials:
