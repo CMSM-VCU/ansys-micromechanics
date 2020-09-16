@@ -69,6 +69,11 @@ class LoadingHandler:
 
         tensor = list(base)
         tensor[i][j] = sign * mag
+
+        if i == j:
+            tensor[(i + 1) % 3][(i + 1) % 3] = None
+            tensor[(i + 2) % 3][(i + 2) % 3] = None
+
         return tensor
 
     def apply_loading_normal(self, axis):
