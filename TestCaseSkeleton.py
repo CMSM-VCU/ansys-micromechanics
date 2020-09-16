@@ -45,6 +45,7 @@ class TestCaseSkeleton:
 
     def check_parameters(self):
         passed_checks = True
+        # Check if mapped mesh dimensions are well-behaved
         if self.mesh_type == "centroid":
             elements_per_side = self.mesh.domainSideLength / self.mesh.elementSpacing
             if elements_per_side % round(elements_per_side) > 1e-3:
@@ -74,10 +75,31 @@ class TestCaseSkeleton:
                             + "obey Hooke's Law: {shear_input=}, {shear_theory=}"
                         )
 
+        # Check if a label has been provided for each load case, if any
         if getattr(self.loading, "labels", None) is not None:
             assert len(self.loading.labels) == self.num_load_cases, (
                 f"Number of labels must equal number of load cases. "
                 + f"{len(self.loading.labels)} labels given for {self.num_load_cases} load cases."
+            )
+
+        # Check for impossible expected properties
+        # fmt: off
+        forbidden_props = (
+            "E12", "E13", "E21", "E23", "E31", "E32",
+            "G11", "G22", "G33",
+            "v11", "v22", "v33"
+        )
+        # fmt: on
+        expected_unique = np.unique(np.hstack(self.loading.expectedProperties))
+        assert not (
+            bad_props := [prop for prop in expected_unique if prop in forbidden_props]
+        ), f"Expected properties contains impossible property(s): {bad_props}"
+
+        # Check for duplicate expected properties in same load case
+        for i, prop_set in enumerate(self.loading.expectedProperties):
+            assert len(prop_set) == len(set(prop_set)), (
+                f"Expected properties contains duplicates "
+                + f"in single load case: {i+1}: {prop_set}"
             )
 
         return passed_checks
