@@ -93,27 +93,5 @@ class LoadingHandler:
 
         self.ansys.d(self.retained_nodes[0], "ALL", 0)
 
-    def apply_loading_normal(self, axis):
-        for j, n in enumerate(self.retained_nodes):
-            for axis_label in NORMAL_FIXED_AXES[j]:
-                self.ansys.d(n, axis_label)
-
-        self.ansys.d(
-            self.retained_nodes[axis],
-            "U" + AXES[axis - 1],
-            self.loading.normalMagnitude,
-        )
-
-    def apply_loading_shear(self, axis):
-        for j, n in enumerate(self.retained_nodes):
-            for axis_label in SHEAR_FIXED_AXES[j]:
-                self.ansys.d(n, axis_label)
-
-        self.ansys.d(
-            self.retained_nodes[axis],
-            "U" + AXES[axis % 3],
-            self.loading.shearMagnitude,
-        )
-
         # How do I verify that load steps were input correctly? How do I access the
         # load steps from self.ansys?
