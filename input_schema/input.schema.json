@@ -86,21 +86,31 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "expectedProperties": {
+                    "type": "array",
+                    "description": "The list of effective properties to be reported for each test. Either one list for all tests or one list for each test (n_lists == 1 or n_lists == n_tests)",
+                    "minItems": 1,
+                    "items": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                            "type": "string",
+                            "pattern": "^[EGv][123][123]$",
+                            "examples": ["E11", "G12", "v31"]
+                        }
+                    }
                 }
             },
+            "required": ["kind", "expectedProperties"],
             "oneOf": [
                 {
                     "properties": { "kind": { "enum": ["displacement"] } },
-                    "required": [
-                        "kind",
-                        "directions",
-                        "normalMagnitude",
-                        "shearMagnitude"
-                    ]
+                    "required": ["directions", "normalMagnitude", "shearMagnitude"]
                 },
                 {
                     "properties": { "kind": { "enum": ["tensor"] } },
-                    "required": ["kind", "tensors", "magnitudeMultiplier"]
+                    "required": ["tensors", "magnitudeMultiplier"]
                 }
             ]
         },
