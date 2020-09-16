@@ -213,7 +213,15 @@ class TestRunner:
         self.ansys.allsel()
         self.ansys.solve()
 
-    def mesh_extents(self, current=False):
+    def mesh_extents(self, current: bool = False) -> np.ndarray:
+        """Calculate +/- xyz extents of mesh.
+
+        Args:
+            current (bool, optional): calculate extents of currently selected mesh. Defaults to False.
+
+        Returns:
+            np.ndarray: extents formatted as [[-x,+x], [-y,+y], [-z,+z]]
+        """
         if not current:
             return np.reshape(self.ansys.mesh.grid.bounds, (-1, 2))
         else:
