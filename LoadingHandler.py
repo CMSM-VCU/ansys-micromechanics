@@ -34,9 +34,14 @@ class LoadingHandler:
                 )
             )
         elif self.loading.kind == "tensor":
-            self.tensors = (
-                np.array(self.loading.tensors) * self.loading.magnitudeMultiplier
-            ).tolist()
+            mag = self.loading.magnitudeMultiplier
+            self.tensors = tuple(
+                [
+                    [elem * mag if elem is not None else None for elem in row]
+                    for row in tensor
+                ]
+                for tensor in self.loading.tensors
+            )
         print(self.tensors)
         pass
 
