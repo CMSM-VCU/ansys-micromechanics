@@ -1,3 +1,4 @@
+from RecursiveNamespace import RecursiveNamespace
 import time
 from functools import reduce
 from itertools import permutations, product
@@ -178,4 +179,41 @@ class ResultsHandler:
         ]
 
         self.results[load_case] = properties
+
+    def compile_results(self, expected_property_sets, num_load_cases):
+        assert num_load_cases == len(self.results), (
+            f"Expected {num_load_cases} results sets "
+            + f"but have {len(self.results)}."
+        )
+
+        if len(expected_property_sets) == 1 and num_load_cases > 1:
+            expected_property_sets = expected_property_sets * num_load_cases
+
+        key_map = {"E": "elasticModuli", "G": "shearModuli", "v": "poissonsRatios"}
+        index_map = dict(
+            zip(["".join(pair) for pair in permutations("123", r=2)], range(6))
+        )
+        index_map.update(dict(zip(["11", "22", "33"], range(3))))
+
+        reportedProperties = {}
+
+        for prop_set, (load_case, results_set) in zip(
+            expected_property_sets, self.results.items()
+        ):
+            set_ = {}
+            for prop in prop_set:
+                key = prop[0]
+                idx = prop[1:]
+                set_[prop] = results_set[key_map[key]][index_map[idx]]
+
+            reportedProperties[load_case] = set_
+
+        results = RecursiveNamespace(
+            **{"reportedProperties": None, "full_results": None, "debug_results": None}
+        )
+        results.reportedProperties = reportedProperties
+        results.full_results = self.results
+        results.debug_results = self.debug_results
+
+        return results
 
