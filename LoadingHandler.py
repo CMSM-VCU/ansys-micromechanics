@@ -2,6 +2,7 @@ import numpy as np
 from utils import decorate_all_methods, logger_wraps
 
 AXES = ["X", "Y", "Z"]
+DISP_AXES = ["UX", "UY", "UZ"]
 
 # Axes that will always be constrained for each retained node
 NORMAL_FIXED_AXES = [["UX", "UY", "UZ"], ["UY", "UZ"], ["UX", "UZ"], ["UX", "UY"]]
@@ -75,6 +76,17 @@ class LoadingHandler:
             tensor[(i + 2) % 3][(i + 2) % 3] = None
 
         return tensor
+
+    def apply_strain_tensor(self, idx):
+        tensor = self.tensors[idx]
+        for i, row in enumerate(tensor):
+            for j, (axis, strain) in enumerate(zip(DISP_AXES, row)):
+                if strain is None:
+                    continue
+
+                self.ansys.d(self.retained_nodes[i + 1], axis, strain * self.lengths[i])
+
+        self.ansys.d(self.retained_nodes[0], "ALL", 0)
 
     def apply_loading_normal(self, axis):
         for j, n in enumerate(self.retained_nodes):
