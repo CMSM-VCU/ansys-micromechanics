@@ -17,17 +17,20 @@ class LoadingHandler:
     def __init__(self, testrunner):
         self.ansys = testrunner.ansys
         self.retained_nodes = testrunner.retained_nodes
+        self.lengths = np.diff(testrunner.mesh_extents(), axis=1).T[0]
 
         self.loading = testrunner.test_case.loading
-        self.prepare_loading(testrunner.mesh_extents())
+        self.prepare_loading()
 
-    def prepare_loading(self, extents):
+    def prepare_loading(self):
         if self.loading.kind == "displacement":
-            self.tensors = self.convert_directions_to_strain_tensors(
-                self.loading.directions,
-                self.loading.normalMagnitude,
-                self.loading.shearMagnitude,
-                extents,
+            self.tensors = tuple(
+                self.convert_directions_to_strain_tensors(
+                    self.loading.directions,
+                    self.loading.normalMagnitude,
+                    self.loading.shearMagnitude,
+                    self.lengths,
+                )
             )
         elif self.loading.kind == "tensor":
             self.tensors = (
@@ -38,17 +41,17 @@ class LoadingHandler:
 
     @staticmethod
     def convert_directions_to_strain_tensors(
-        directions, normal_mag, shear_mag, extents
+        directions, normal_mag, shear_mag, lengths
     ):
         return [
             LoadingHandler.convert_direction_to_strain_tensor(
-                direction, normal_mag, shear_mag, extents
+                direction, normal_mag, shear_mag, lengths
             )
             for direction in directions
         ]
 
     @staticmethod
-    def convert_direction_to_strain_tensor(direction, normal_mag, shear_mag, extents):
+    def convert_direction_to_strain_tensor(direction, normal_mag, shear_mag, lengths):
         base = ([0, 0, 0], [0, 0, 0], [0, 0, 0])
         if len(direction) == 3:
             sign = -1
@@ -62,7 +65,7 @@ class LoadingHandler:
         else:
             mag = shear_mag
 
-        mag = mag / (extents[i, 1] - extents[i, 0])
+        mag = mag / lengths[i]
 
         tensor = list(base)
         tensor[i][j] = sign * mag
