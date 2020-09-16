@@ -180,12 +180,25 @@ class TestRunner:
         self.ansys.nsel(kind, "NODE", "", nnum)
         return nnum
 
-    def define_materials(self):
-        self.ansys.run("/PREP7")
+    def define_materials(self, materials):
+        """Define the material properties in Ansys. Linear isotropic and linear
+        orthotropic are currently supported.
+
+        Args:
+            materials (list[RecursiveNamespace]): list containing objects holding material data
+                Attributes:
+                    materialIndex (int): material ID number, minimum of 1
+                    materialType (str): material isotropy, "isotropic" or "orthotropic"
+                    elasticModuli (list[float]): elastic moduli of material, minimum of 1
+                    elasticModuli (list[float]): shear moduli of material, minimum of 1
+                    elasticModuli (list[float]): Poisson's ratios of material, minimum of 1
+        """
         e_str = ["EX", "EY", "EZ"]
         g_str = ["GXY", "GYZ", "GXZ"]
         pr_str = ["PRXY", "PRYZ", "PRXZ"]
-        for material in self.test_case.materials:
+
+        self.ansys.run("/PREP7")
+        for material in materials:
             id = material.materialIndex
             if material.materialType == "isotropic":
                 self.ansys.mp("EX", id, material.elasticModuli[0])
@@ -197,19 +210,7 @@ class TestRunner:
                     self.ansys.mp(pr_str[i], id, material.poissonsRatios[i])
         # How do I verify that materials were input correctly? How do I access the
         # materials from self.ansys?
-
-    def assign_element_materials(self):
-        # This implementation is probably super slow
-        # Individual emodif commands may be extra slow, so try adding to component
-        # per material number, then emodif on each component
-        self.ansys.run("/PREP7")
-        for element in self.test_case.mesh.locationsWithId:
-            self.ansys.esel("S", "CENT", "X", element[0])
-            self.ansys.esel("R", "CENT", "Y", element[1])
-            self.ansys.esel("R", "CENT", "Z", element[2])
-            self.ansys.emodif("ALL", "MAT", element[3])
-
-        self.ansys.allsel()
+        return
 
     def solve(self):
         # with self.ansys.non_interactive:
