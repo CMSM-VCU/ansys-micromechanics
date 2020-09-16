@@ -20,11 +20,11 @@ class TestRunner:
     retained_results: List[dict]
 
     def __init__(self, test_case, options=None):
-        """Launches an Ansys instance. See pyansys documentation for launch options such
-        as job directory and executable path.
+        """See pyansys documentation for launch options such as job directory and executable path.
 
         Args:
-            launch_options (dict, optional): dictionary of keyword arguments for pyansys.launch_mapdl()
+            test_case (TestCase): TestCase object to which this TestRunner belongs
+            options (dict, optional): dictionary of keyword arguments for pyansys.launch_mapdl()
         """
         self.test_case = test_case
         self.test_case.results = {}
@@ -42,6 +42,8 @@ class TestRunner:
             self.jobdir = ".\\"
 
     def run(self):
+        """Execute the full test process. Launches and closes an Ansys instance.
+        """
         with AnsysContainer(self.launch_options) as self.ansys:
             self.rst_path = Path(self.ansys._result_file)
             self.ansys.finish()
@@ -50,18 +52,23 @@ class TestRunner:
             self.run_test_sequence()
 
     def prepare_mesh(self):
+        """Execute the meshing and problem setup. These are the parts that do not change
+        with load cases.
+        """
         if self.test_case.mesh_type == "centroid":
-            self.generate_base_mesh()
+            self.generate_base_mesh(**self.test_case.mesh)
             self.assign_element_materials()
         elif self.test_case.mesh_type == "external":
             self.load_external_mesh(**self.test_case.mesh)
         self.debug_stat()
-        self.define_materials()
+        self.define_materials(self.test_case.materials)
         self.get_retained_nodes()
         self.pbc_handler = PBCHandler(self)
         self.pbc_handler.apply_periodic_conditions()
 
     def run_test_sequence(self):
+        """Execute the load cases and process results.
+        """
         self.results_handler = ResultsHandler(self)
         self.loading_handler = LoadingHandler(self)
         for load_case in np.arange(self.test_case.num_load_cases) + 1:
@@ -72,9 +79,9 @@ class TestRunner:
 
             self.solve()
             self.debug_stat()
+
             self.results_handler.extract_raw_results()
             self.results_handler.calculate_properties(load_case)
-            pass
 
         self.test_case.results = self.results_handler.compile_results(
             list(self.test_case.loading.expectedProperties),
@@ -199,6 +206,8 @@ class TestRunner:
         return
 
     def solve(self):
+        """Calculate the solution for the current load case.
+        """
         # with self.ansys.non_interactive:
         self.ansys.run("/SOLU")
         self.ansys.allsel()
