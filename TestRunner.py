@@ -217,3 +217,46 @@ class TestRunner:
         self.ansys.stat()
         self.ansys.ceqn()
         self.ansys.stat()
+
+    def generate_base_mesh(
+        self, elementType: str, domainSideLength: float, elementSpacing: float, **kwargs
+    ):
+        """DEPRECATED: Generate uniform cubic mesh according to overall side length and
+        element edge length. Assumes a cube centered around (0,0,0).
+
+        Args:
+            elementType (str): Ansys element type used to create this mesh
+            domainSideLength (float): side length of cubic domain
+            elementSpacing (float): target element edge length
+
+        Returns:
+            tuple(int, int): tuple containing number of nodes and elements in generated mesh
+        """
+        half_side = domainSideLength / 2
+        self.ansys.run("/PREP7")
+        self.ansys.block(
+            -half_side, half_side, -half_side, half_side, -half_side, half_side,
+        )
+
+        self.ansys.et(1, elementType)
+        self.ansys.lesize("ALL", elementSpacing)
+        self.ansys.mshkey(1)
+        self.ansys.vmesh("ALL")
+
+        assert self.ansys.mesh.n_node > 0, "No nodes generated."
+        assert self.ansys.mesh.n_elem > 0, "No elements generated."
+        return (self.ansys.mesh.n_node, self.ansys.mesh.n_elem)
+
+    def assign_element_materials(self):
+        """DEPRECATED: Assign material numbers to elements located by their centroids.
+
+        This implementation is probably super slow
+        Individual emodif commands may be extra slow, so try adding to component
+        per material number, then emodif on each component
+        """
+        self.ansys.run("/PREP7")
+        for element in self.test_case.mesh.locationsWithId:
+            self.ansys.esel("S", "CENT", "X", element[0])
+            self.ansys.esel("R", "CENT", "Y", element[1])
+            self.ansys.esel("R", "CENT", "Z", element[2])
+            self.ansys.emodif("ALL", "MAT", element[3])
