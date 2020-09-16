@@ -130,6 +130,17 @@ class TestCaseSkeleton:
         else:
             raise Exception("Unable to determine mesh type")
 
+    @property
+    def loading_type(self):
+        return self.loading.kind
+
+    @property
+    def num_load_cases(self):
+        if self.loading.kind == "displacement":
+            return len(self.loading.directions)
+        elif self.loading.kind == "tensor":
+            return len(self.loading.tensors)
+
     def decorate_attributes(self):
         if self.mesh_type == "external":
             self.mesh.nodeFileAbsolutePath = str(
