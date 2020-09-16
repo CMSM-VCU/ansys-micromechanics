@@ -146,17 +146,39 @@ class TestRunner:
 
         return self.retained_nodes  # for logging purposes
 
-    def get_node_num_at_loc(self, x, y, z):
-        # WARNING: This uses the Ansys inline node() function, which returns whichever
-        # node is CLOSEST to the location.
+    def get_node_num_at_loc(self, x: float, y: float, z: float) -> int:
+        """Get the number of the node at, or closest to, the specifed xyz location.
+
+        WARNING: This uses the Ansys inline node() function, which returns whichever
+        node is CLOSEST to the location.
+
+        Args:
+            x (float): target x coordinate
+            y (float): target y coordinate
+            z (float): target z coordinate
+
+        Returns:
+            int: number of closest node
+        """
         inline = f"node({x},{y},{z})"
         self.ansys.run("NODE_NUMBER_TEMP=" + inline)
         return int(self.ansys.parameters["node_number_temp"])
 
-    def select_node_at_loc(self, x, y, z, kind="S"):
+    def select_node_at_loc(self, x: float, y: float, z: float, kind: str = "S") -> int:
+        """Select the node at, or closest to, the specified xyz location.
+
+        Args:
+            x (float): target x coordinate
+            y (float): target y coordinate
+            z (float): target z coordinate
+            kind (str, optional): type of selection to be used. Defaults to "S".
+
+        Returns:
+            int: number of selected node
+        """
         nnum = self.get_node_num_at_loc(x, y, z)
-        if kind:
-            self.ansys.nsel(kind, "NODE", "", nnum)
+        self.ansys.nsel(kind, "NODE", "", nnum)
+        return nnum
 
     def define_materials(self):
         self.ansys.run("/PREP7")
