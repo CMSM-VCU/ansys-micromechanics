@@ -71,10 +71,7 @@ class TestRunner:
             self.ansys.run("/SOLU")
             self.ansys.allsel()
             self.ansys.ddele("ALL")  # Will need to change for any other loading methods
-            if load_case < 4:
-                self.loading_handler.apply_loading_normal(load_case)
-            elif load_case >= 4:
-                self.loading_handler.apply_loading_shear(load_case - 3)
+            self.loading_handler.apply_strain_tensor(load_case - 1)
 
             self.solve()
             self.debug_stat()
