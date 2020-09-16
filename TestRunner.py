@@ -109,26 +109,12 @@ class TestRunner:
         assert self.ansys.mesh.n_elem > 0
         return (self.ansys.mesh.n_node, self.ansys.mesh.n_elem)
 
-    def generate_base_mesh(self):
-        """Generate uniform cubic mesh according to overall side length and element edge
-        length. Assumes a cube centered around (0,0,0).
-
-        Args:
-            dimensions (Dims): tuple containing side length and element length
-        """
-        print("generate_base_mesh")
-        half_side = self.test_case.mesh.domainSideLength / 2
-        self.ansys.run("/PREP7")
-        self.ansys.block(
-            -half_side, half_side, -half_side, half_side, -half_side, half_side,
-        )
-
-        self.ansys.et(1, self.test_case.mesh.elementType)
-        self.ansys.lesize("ALL", self.test_case.mesh.elementSpacing)
-        self.ansys.mshkey(1)
-        self.ansys.vmesh("ALL")
-
     def get_retained_nodes(self):
+        """Get the numbers of the retained nodes in the current mesh.
+
+        Returns:
+            list[int]: list of retained node numbers, in order of [N0, N1, N2, N3]
+        """
         coord_indices = [
             [(0, 0), (1, 0), (2, 0)],
             [(0, 1), (1, 0), (2, 0)],
