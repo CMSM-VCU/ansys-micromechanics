@@ -195,13 +195,6 @@ class TestRunner:
         self.ansys.allsel()
         self.ansys.solve()
 
-    def load_parameters(self):
-        try:
-            self.ansys.load_parameters()
-            self.parameters = self.ansys.parameters
-        except:
-            raise Exception("Unable to load Ansys parameters")
-
     def mesh_extents(self, current=False):
         if not current:
             return np.reshape(self.ansys.mesh.grid.bounds, (-1, 2))
