@@ -68,9 +68,6 @@ class TestRunner:
             self.results_handler.clear_results()
             self.load_case = load_case
 
-            self.ansys.run("/SOLU")
-            self.ansys.allsel()
-            self.ansys.ddele("ALL")  # Will need to change for any other loading methods
             self.loading_handler.apply_strain_tensor(load_case - 1)
 
             self.solve()

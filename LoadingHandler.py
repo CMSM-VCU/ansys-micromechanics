@@ -83,6 +83,10 @@ class LoadingHandler:
         return tensor
 
     def apply_strain_tensor(self, idx):
+        self.ansys.run("/SOLU")
+        self.ansys.allsel()
+        self.ansys.ddele("ALL")
+
         tensor = self.tensors[idx]
         for i, row in enumerate(tensor):
             for j, (axis, strain) in enumerate(zip(DISP_AXES, row)):
