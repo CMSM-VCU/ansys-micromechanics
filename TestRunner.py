@@ -75,7 +75,9 @@ class TestRunner:
             self.results_handler.clear_results()
             self.load_case = load_case
 
-            self.loading_handler.apply_strain_tensor(load_case - 1)
+            self.loading_handler.apply_strain_tensor(
+                self.loading_handler.tensors[load_case - 1]
+            )
 
             self.solve()
             self.debug_stat()
