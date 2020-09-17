@@ -174,14 +174,14 @@ def definitely_find_file(
         return found
 
 
-def round_to_sigfigs(array: np.typing.ArrayLike, num: int) -> np.ndarray:
+def round_to_sigfigs(array: Sequence, num: int) -> np.ndarray:
     """Round an array-like (something that can be converted to np array) to the
     specified number of significant figures.
 
     From stackoverflow.com/a/59888924
 
     Args:
-        array (np.typing.ArrayLike): Array to be rounded.
+        array (Sequence): Array to be rounded.
         num (int): Number of significant figures.
 
     Returns:
