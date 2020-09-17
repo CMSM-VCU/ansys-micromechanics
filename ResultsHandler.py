@@ -170,18 +170,49 @@ class ResultsHandler:
 
         return macro_stress, macro_strain, macro_strain_true
 
-    def calculate_macro_stress(self, retained_coords, retained_forces):
-        vol = self.ansys.mesh.grid.volume
+    @staticmethod
+    def calculate_macro_stress(
+        retained_coords: Sequence[np.ndarray],
+        retained_forces: Sequence[np.ndarray],
+        volume: float,
+    ) -> np.ndarray:
+        """Calculate the macroscopic stress tensor using retained node results.
+
+        Args:
+            retained_coords (Sequence[np.ndarray]): Coordinate vectors of retained
+                nodes.
+            retained_forces (Sequence[np.ndarray]): Reaction force vectors of retained
+                nodes.
+            volume (float): Volume of RVE
+
+        Returns:
+            np.ndarray: Macroscopic stress tensor, shape=(3,3)
+        """
         rel_coord = [retained_coords[i] - retained_coords[0] for i in range(4)]
         return (
             reduce(
                 lambda x, y: x + y,
                 [np.outer(rel_coord[i], retained_forces[i]) for i in range(4)],
             )
-            / vol
+            / volume
         )
 
-    def calculate_macro_strain_true(self, retained_coords, retained_disps):
+    @staticmethod
+    def calculate_displacement_gradient(
+        retained_coords: Sequence[np.ndarray], retained_disps: Sequence[np.ndarray],
+    ) -> np.ndarray:
+        """Calculate the macroscopic displacement gradient tensor using retained node
+        results.
+
+        Args:
+            retained_coords (Sequence[np.ndarray]): Coordinate vectors of retained
+                nodes.
+            retained_disps (Sequence[np.ndarray]): Displacement vectors of retained
+                nodes.
+
+        Returns:
+            np.ndarray: Macroscopic displacement gradient tensor, shape=(3,3)
+        """
         rel_coord = [retained_coords[i] - retained_coords[0] for i in range(4)]
         return reduce(  # I know it's not "true" strain. Can't remember what this should be called
             lambda x, y: x + y,
@@ -191,9 +222,26 @@ class ResultsHandler:
             ],
         )
 
-    def calculate_macro_strain(self, retained_coords, retained_disps):
-        m_s_true = self.calculate_macro_strain_true(retained_coords, retained_disps)
-        return 0.5 * (m_s_true + np.transpose(m_s_true))
+    @staticmethod
+    def calculate_macro_strain(
+        retained_coords: Sequence[np.ndarray], retained_disps: Sequence[np.ndarray],
+    ) -> np.ndarray:
+        """Calculate the macroscopic strain tensor using retained node results. Uses
+        macroscopic displacement gradient.
+
+        Args:
+            retained_coords (Sequence[np.ndarray]): Coordinate vectors of retained
+                nodes.
+            retained_disps (Sequence[np.ndarray]): Displacement vectors of retained
+                nodes.
+
+        Returns:
+            np.ndarray: Macroscopic strain tensor, shape=(3,3)
+        """
+        disp_grad = ResultsHandler.calculate_displacement_gradient(
+            retained_coords, retained_disps
+        )
+        return 0.5 * (disp_grad + np.transpose(disp_grad))
 
     def calculate_properties(self, load_case):
         macro_stress, macro_strain, macro_strain_true = self.calculate_macro_tensors(
