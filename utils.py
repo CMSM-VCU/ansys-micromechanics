@@ -124,6 +124,63 @@ def definitely_delete_file(
         return deleted
 
 
+def definitely_find_file(
+    path: Path,
+    max_wait: int = 5,
+    return_waited: bool = False,
+    warn_on_fail: bool = False,
+) -> Union[bool, Tuple[bool, int]]:
+    """Try to find a file, and wait until the file exists and has nonzero size.
+
+    Args:
+        path (Path): pathlib Path object pointing to target file
+        max_wait (int, optional): Maximum number of seconds to wait for successful
+            find. Defaults to 5.
+        return_waited (bool, optional): Whether to return the number of seconds waited.
+            Defaults to False.
+        warn_on_fail (bool, optional): Issue warning instead of error when search times
+            out. Defaults to False.
+
+    Raises:
+        Exception: Failed to find file with nonzero size, with warn_on_fail=False.
+
+    Returns:
+        bool: Whether the file exists and has nonzero size.
+        int, optional: Number of seconds waited before finding file.
+            Only provided if return_waited is True.
+    """
+    waited = 0
+    found = False
+    while waited < max_wait:
+        if path.exists():
+            if path.stat().st_size > 0:
+                found = path.stat().st_size > 0
+                break
+            else:
+                print(
+                    f"File found, but size={path.stat().st_size}. Checking again in 1 second..."
+                )
+                time.sleep(1)
+                waited += 1
+                continue
+        else:
+            print("File not found. Checking again in 1 second...")
+            time.sleep(1)
+            waited += 1
+            continue
+    else:
+        msg = f"File not found with nonzero size after waiting {waited} seconds."
+        if warn_on_fail:
+            warn(msg)
+        else:
+            raise Exception(msg)
+
+    if return_waited:
+        return (found, waited)
+    else:
+        return found
+
+
 def round_to_sigfigs(array, num):
     # From stackoverflow.com/a/59888924
     array = np.asarray(array)
