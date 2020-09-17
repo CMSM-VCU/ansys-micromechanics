@@ -103,14 +103,13 @@ def definitely_delete_file(
     waited = 0
     deleted = False
     while waited < max_wait:
-        try:
-            assert not path.exists(), "File not deleted yet. Checking again..."
-        except:
+        if path.exists():
+            print("File not deleted yet. Checking again in 1 second...")
             time.sleep(1)
             waited += 1
             continue
         else:
-            deleted = True
+            deleted = not path.exists()
             break
     else:
         msg = f"File not deleted after waiting {waited} seconds."
