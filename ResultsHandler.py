@@ -309,30 +309,62 @@ class ResultsHandler:
         self.results[load_case] = properties
         return self.results[load_case]
 
-    def compile_results(self, expected_property_sets, num_load_cases, labels=None):
-        assert num_load_cases == len(self.results), (
-            f"Expected {num_load_cases} results sets "
-            + f"but have {len(self.results)}."
+    @staticmethod
+    def compile_results(
+        expected_property_sets: Sequence[Sequence],
+        results: dict,
+        num_load_cases: int,
+        labels: Sequence[str] = None,
+        debug_results: dict = None,
+    ) -> RecursiveNamespace:
+
+        reportedProperties = ResultsHandler.collect_expected_properties(
+            results, expected_property_sets, num_load_cases, labels
         )
 
+        compiled_results = RecursiveNamespace(
+            **{"reportedProperties": None, "full_results": None, "debug_results": None}
+        )
+        compiled_results.reportedProperties = reportedProperties
+        compiled_results.full_results = results
+        if debug_results is not None:
+            compiled_results.debug_results = debug_results
+
+        return compiled_results
+
+    @staticmethod
+    def collect_expected_properties(
+        results: dict,
+        expected_property_sets: Sequence[Sequence],
+        num_load_cases: int,
+        labels: Sequence[str] = None,
+    ) -> pd.DataFrame:
+        assert num_load_cases == len(
+            results
+        ), f"Expected {num_load_cases} results sets but have {len(results)}."
+
+        # Extend property set to all load cases if only one given
         if len(expected_property_sets) == 1 and num_load_cases > 1:
             expected_property_sets = expected_property_sets * num_load_cases
 
+        # Maps between property strings and results dict keys and indeces
         key_map = {"E": "elasticModuli", "G": "shearModuli", "v": "poissonsRatios"}
         index_map = dict(
             zip(["".join(pair) for pair in permutations("123", r=2)], range(6))
         )
         index_map.update(dict(zip(["11", "22", "33"], range(3))))
 
+        # Create dataframe and add labels if given
         df_index = list(np.unique(np.hstack(expected_property_sets)))
         if labels:
             df_index = ["Label"] + df_index
-        reportedProperties = pd.DataFrame(index=df_index, columns=self.results.keys())
+        reportedProperties = pd.DataFrame(index=df_index, columns=results.keys())
         if labels:
             reportedProperties.loc["Label"] = labels
 
+        # Get properties from load case results sets
         for prop_set, (load_case, results_set) in zip(
-            expected_property_sets, self.results.items()
+            expected_property_sets, results.items()
         ):
             for prop in prop_set:
                 key = prop[0]
@@ -341,11 +373,5 @@ class ResultsHandler:
                     index_map[idx]
                 ]
 
-        results = RecursiveNamespace(
-            **{"reportedProperties": None, "full_results": None, "debug_results": None}
-        )
-        results.reportedProperties = reportedProperties
-        results.full_results = self.results
-        results.debug_results = self.debug_results
+        return reportedProperties
 
-        return results
