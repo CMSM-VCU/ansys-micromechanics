@@ -311,12 +311,29 @@ class ResultsHandler:
 
     @staticmethod
     def compile_results(
-        expected_property_sets: Sequence[Sequence],
         results: dict,
+        expected_property_sets: Sequence[Sequence],
         num_load_cases: int,
         labels: Sequence[str] = None,
         debug_results: dict = None,
     ) -> RecursiveNamespace:
+        """Package calculated properties and other results into single object.
+
+        Args:
+            results (dict): Dictionary containing dictionary of calculated properties
+                for each load case
+            expected_property_sets (Sequence[Sequence]): List of property strings
+                requested from load cases.
+            num_load_cases (int): Total number of load cases
+            labels (Sequence[str], optional): List of labels for each load case.
+                Defaults to None.
+            debug_results (dict, optional): Dictionary containing miscellaneous results
+                sets, useful for debugging. Defaults to None.
+
+        Returns:
+            RecursiveNamespace: Object containing the reported properties, results sets,
+                and debug results sets as attributes.
+        """
 
         reportedProperties = ResultsHandler.collect_expected_properties(
             results, expected_property_sets, num_load_cases, labels
@@ -339,6 +356,22 @@ class ResultsHandler:
         num_load_cases: int,
         labels: Sequence[str] = None,
     ) -> pd.DataFrame:
+        """Collect requested material properties from results of each load case.
+
+        Args:
+            results (dict): Dictionary containing dictionary of calculated properties
+                for each load case
+            expected_property_sets (Sequence[Sequence]): List of property strings
+                requested from load cases.
+            num_load_cases (int): Total number of load cases
+            labels (Sequence[str], optional): List of labels for each load case.
+                Defaults to None.
+
+        Returns:
+            pd.DataFrame: Dataframe containing requested material properties. Columns
+                are load cases and rows are properties. A property not requested for a
+                load case is stored as NaN.
+        """
         assert num_load_cases == len(
             results
         ), f"Expected {num_load_cases} results sets but have {len(results)}."
