@@ -1,5 +1,6 @@
 import numpy as np
-from utils import decorate_all_methods, logger_wraps
+
+import utils
 
 AXES = ["X", "Y", "Z"]
 DISP_AXES = ["UX", "UY", "UZ"]
@@ -14,7 +15,16 @@ SHEAR_FIXED_AXES = [
 ]
 
 
+@utils.decorate_all_methods(utils.logger_wraps)
 class LoadingHandler:
+    """Handler for processing loading input from user and applying specified loads to
+    Ansys RVE test sequence. The LoadingHandler instance is paired with a TestRunner
+    instance on initialization.
+
+    *Note about strain tensors - What is referred to here as a strain tensor is actually
+    the displacement gradient tensor.
+    """
+
     def __init__(self, testrunner):
         self.ansys = testrunner.ansys
         self.retained_nodes = testrunner.retained_nodes
