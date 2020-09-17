@@ -49,7 +49,8 @@ class TestRunner:
             self.ansys.finish()
             self.ansys.run("/CLEAR")
             self.prepare_mesh()
-            self.run_test_sequence()
+            results = self.run_test_sequence()
+        return results
 
     def prepare_mesh(self):
         """Execute the meshing and problem setup. These are the parts that do not change
@@ -85,7 +86,7 @@ class TestRunner:
             self.results_handler.extract_raw_results()
             self.results_handler.calculate_properties(load_case)
 
-        self.test_case.results = ResultsHandler.compile_results(
+        return ResultsHandler.compile_results(
             results=self.results_handler.results,
             expected_property_sets=list(self.test_case.loading.expectedProperties),
             num_load_cases=self.test_case.num_load_cases,

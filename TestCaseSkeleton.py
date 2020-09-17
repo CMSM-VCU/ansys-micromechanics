@@ -38,7 +38,7 @@ class TestCaseSkeleton:
             launch_options (dict, optional): dictionary of keyword arguments for
             TestRunner options
         """
-        self.testrunner.run()
+        self.results = self.testrunner.run()
         print(f"Finished with {self.results.reportedProperties}")
         self.compress_results()
 
