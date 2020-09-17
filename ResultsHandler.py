@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import pyansys
+from pyansys.rst import ResultFile
 
 import utils
 from RecursiveNamespace import RecursiveNamespace
@@ -43,7 +43,7 @@ class ResultsHandler:
 
     def get_results_object(
         self, rst_path: Path = None, max_wait=RESULTS_WAIT_MAX
-    ) -> pyansys.rst.ResultFile:
+    ) -> ResultFile:
         """Extract results object from results file (.rst) of current Ansys instance.
 
         Args:
