@@ -12,6 +12,11 @@ TOLERANCE_MULT = 1e-6
 
 @decorate_all_methods(logger_wraps)
 class PBCHandler:
+    """Handle the preparation and application of periodic boundary conditions for an
+    Ansys RVE test sequence. The ResultsHandler instance is paired with a TestRunner
+    instance on initialization.
+    """
+
     def __init__(self, testrunner):
         self.ansys = testrunner.ansys
         self.retained_nodes = testrunner.retained_nodes
