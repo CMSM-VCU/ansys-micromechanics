@@ -155,13 +155,17 @@ class ResultsHandler:
         Args:
             load_case (int): Load case number, for indexing debug data
             retained_results (Tuple[dict], optional): Dicts containing retained node
-            results data. Defaults to None.
+                results data. Defaults to None, which falls back to the retained_results
+                class attribute.
 
         Returns:
             macro_stress (np.ndarray): Macroscopic stress tensor, shape=(3,3)
             macro_strain (np.ndarray): Macroscopic strain tensor, shape=(3,3)
             displacement_gradient (np.ndarray): Macroscopic displacement gradient
                 tensor, shape=(3,3)
+
+        TODO: Convert to static method - Require retained_results argument, add option
+        to return debug_results, remove load_case argument
         """
         if retained_results is None:
             retained_results = self.retained_results
@@ -264,10 +268,30 @@ class ResultsHandler:
         )
         return 0.5 * (disp_grad + np.transpose(disp_grad))
 
-    def calculate_properties(self, load_case):
-        macro_stress, macro_strain, macro_strain_true = self.calculate_macro_tensors(
-            load_case
-        )
+    def calculate_properties(self, load_case: int) -> dict:
+        """Calculate effective property sets for this load case, using retained node
+        results. Effective properties are stored in a dict of 1D arrays like so:
+        "elasticModuli":  [E11, E22, E33]
+        "shearModuli":    [G12, G13, G21, G23, G31, G32]
+        "poissonsRatios": [v12, v13, v21, v23, v31, v32]
+
+        Note: It is unlikely for all effective properties to be computable in one load
+        case. This method will give unrealistic values for these properties, and it is
+        up to the user to recognize and ignore them.
+
+        Args:
+            load_case (int): Load case number, for indexing results data.
+
+        Returns:
+            dict: Dictionary containing the three arrays of effective properties.
+
+        TODO: Add retained_results to arguments
+        """
+        (
+            macro_stress,
+            macro_strain,
+            displacement_gradient,
+        ) = self.calculate_macro_tensors(load_case, self.retained_results)
 
         properties = {}
         properties["elasticModuli"] = [
@@ -278,11 +302,12 @@ class ResultsHandler:
             for i, j in permutations(range(3), r=2)
         ]
         properties["shearModuli"] = [
-            macro_stress[j, i] / macro_strain_true[j, i]
+            macro_stress[j, i] / displacement_gradient[j, i]
             for i, j in permutations(range(3), r=2)
         ]
 
         self.results[load_case] = properties
+        return self.results[load_case]
 
     def compile_results(self, expected_property_sets, num_load_cases, labels=None):
         assert num_load_cases == len(self.results), (
