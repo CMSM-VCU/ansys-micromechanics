@@ -24,7 +24,7 @@ class TestCaseSkeleton:
     """
 
     def __init__(self):
-        self.decorate_attributes()
+        self.preprocess_attributes()
 
     def attach_to_testrunner(self, TestRunnerClass, options=None):
         self.testrunner = TestRunnerClass(test_case=self, options=options)
@@ -144,7 +144,7 @@ class TestCaseSkeleton:
     def unique_expected_properties(self):
         return np.unique(np.hstack(self.loading.expectedProperties), return_counts=True)
 
-    def decorate_attributes(self):
+    def preprocess_attributes(self):
         if self.mesh_type == "external":
             self.mesh.nodeFileAbsolutePath = str(
                 self.path.parent / self.mesh.nodeFileRelativePath
