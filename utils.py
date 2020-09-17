@@ -1,4 +1,8 @@
 import functools
+import time
+from pathlib import Path
+from typing import Tuple, Union
+from warnings import warn
 
 import numpy as np
 from loguru import logger
@@ -58,6 +62,67 @@ def check_file_exists(file_path):
         Warning: If the file does not exist
     """
     return True
+
+
+def definitely_delete_file(
+    path: Path,
+    missing_ok: bool = False,
+    max_wait: int = 5,
+    return_waited: bool = False,
+    warn_on_fail: bool = False,
+) -> Union[bool, Tuple[bool, int]]:
+    """Delete the file specified by an absolute or relative path, and wait until the
+    file is reported as no longer existing.
+
+    Args:
+        path (Path): pathlib Path object pointing to target file
+        missing_ok (bool, optional): Whether to allow trying to delete a file that does
+            not exist. Defaults to False.
+        max_wait (int, optional): Maximum number of seconds to wait for successful
+            deletion. Defaults to 5.
+        return_waited (bool, optional): Whether to return the number of seconds waited.
+            Defaults to False.
+        warn_on_fail (bool, optional): Issue warning instead of error when existance
+            check times out. Defaults to False.
+
+    Raises:
+        err: Error raised by path.unlink(). Deleting a missing file with
+            missing_ok=False will trigger this.
+        Exception: Existance check has timed out, with warn_on_fail=False.
+
+    Returns:
+        bool: Whether the file was confirmed to be deleted.
+        int, optional: Number of seconds waited before deletion confirmed.
+            Only provided if return_waited is True.
+    """
+    try:
+        path.unlink(missing_ok=missing_ok)
+    except Exception as err:
+        raise err
+
+    waited = 0
+    deleted = False
+    while waited < max_wait:
+        try:
+            assert not path.exists(), "File not deleted yet. Checking again..."
+        except:
+            time.sleep(1)
+            waited += 1
+            continue
+        else:
+            deleted = True
+            break
+    else:
+        msg = f"File not deleted after waiting {waited} seconds."
+        if warn_on_fail:
+            warn(msg)
+        else:
+            raise Exception(msg)
+
+    if return_waited:
+        return (deleted, waited)
+    else:
+        return deleted
 
 
 def round_to_sigfigs(array, num):
