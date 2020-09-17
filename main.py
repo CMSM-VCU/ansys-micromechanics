@@ -1,7 +1,7 @@
-import csv
 import os
-from pprint import pprint
 import sys
+from pathlib import Path
+from pprint import pprint
 
 import utils
 from RVEInputHandler import RVEInputHandler
@@ -67,7 +67,8 @@ def get_input_file_paths():
     """
     input_paths = sys.argv[1:]
     for index, path in reversed(list(enumerate(input_paths))):
-        if not utils.check_file_exists(path):
+        if not Path(path).exists():
+            print(f"Input file not found at {path}")
             input_paths.remove(index)
     return input_paths
 

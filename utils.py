@@ -7,9 +7,6 @@ from warnings import warn
 import numpy as np
 from loguru import logger
 
-# def logger_wraps(*, entry=True, exit=True, level="DEBUG"):
-#     return logger_wrapper(func,)
-
 
 def logger_wraps(_func=None, *, entry=True, exit=True, level="DEBUG"):
     def logger_wrapper(func):
@@ -45,23 +42,6 @@ def decorate_all_methods(decorator, *args, **kwargs):
         return class_
 
     return decorate
-
-
-@logger_wraps()
-def check_file_exists(file_path):
-    """Check whether the file of a given path exists. If not, throw a warning and return
-    False, otherwise return True.
-
-    Arguments:
-        file_path (str) Absolute or relative path to a file
-
-    Returns:
-        (bool): Whether the file exists
-
-    Raises:
-        Warning: If the file does not exist
-    """
-    return True
 
 
 def definitely_delete_file(
