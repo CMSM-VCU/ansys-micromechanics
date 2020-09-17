@@ -1,7 +1,7 @@
 import functools
 import time
 from pathlib import Path
-from typing import Tuple, Union
+from typing import Sequence, Tuple, Union
 from warnings import warn
 
 import numpy as np
@@ -9,6 +9,12 @@ from loguru import logger
 
 
 def logger_wraps(_func=None, *, entry=True, exit=True, level="DEBUG"):
+    """Crazy logging decorator, adjusted to enable use in decorate_all_methods function.
+
+    Args:
+        _func ([type], optional): Function to be wrapped. Defaults to None.
+    """
+
     def logger_wrapper(func):
         name = func.__name__
 
@@ -33,6 +39,13 @@ def logger_wraps(_func=None, *, entry=True, exit=True, level="DEBUG"):
 
 
 def decorate_all_methods(decorator, *args, **kwargs):
+    """Wrap all methods (callable attributes) in a class with the given decorator
+    function.
+
+    Args:
+        decorator (Function): Decorator function to apply to methods.
+    """
+
     def decorate(class_):
         for attr in class_.__dict__:
             if callable(getattr(class_, attr)):
@@ -161,8 +174,19 @@ def definitely_find_file(
         return found
 
 
-def round_to_sigfigs(array, num):
-    # From stackoverflow.com/a/59888924
+def round_to_sigfigs(array: np.typing.ArrayLike, num: int) -> np.ndarray:
+    """Round an array-like (something that can be converted to np array) to the
+    specified number of significant figures.
+
+    From stackoverflow.com/a/59888924
+
+    Args:
+        array (np.typing.ArrayLike): Array to be rounded.
+        num (int): Number of significant figures.
+
+    Returns:
+        np.ndarray: Array after rounding (type changed to array if not already).
+    """
     array = np.asarray(array)
     arr_positive = np.where(
         np.isfinite(array) & (array != 0), np.abs(array), 10 ** (num - 1)
@@ -171,9 +195,26 @@ def round_to_sigfigs(array, num):
     return np.round(array * mags) / mags
 
 
-def nonfinite_to_zero(array):
+def nonfinite_to_zero(array: np.ndarray) -> np.ndarray:
+    """Replace all nonfinite (inf, -inf, NaN) values in an array with 0.0.
+
+    Args:
+        array (np.ndarray): Array to be modified.
+
+    Returns:
+        np.ndarray: Modified array.
+    """
     return np.where(np.isfinite(array), array, 0.0)
 
 
-def all_same(items):
+def all_same(items: Sequence) -> bool:
+    """Check whether all items in a sequence (list, tuple, etc.) are equal to each
+    other. Avoiding conversion to np array in case of mixed types.
+
+    Args:
+        items (Sequence): Set of items to be checked for equality.
+
+    Returns:
+        bool: Whether all items were equal/same.
+    """
     return all(x == items[0] for x in items)
