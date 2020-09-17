@@ -1,18 +1,19 @@
-import pandas as pd
-from RecursiveNamespace import RecursiveNamespace
 import time
 from functools import reduce
-from itertools import permutations, product
+from itertools import permutations
+from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
-from utils import decorate_all_methods, logger_wraps, nonfinite_to_zero
+from RecursiveNamespace import RecursiveNamespace
+import utils
 
 AXES = ["X", "Y", "Z"]
 RESULTS_WAIT_MAX = 10
 
 
-@decorate_all_methods(logger_wraps)
+@utils.decorate_all_methods(utils.logger_wraps)
 class ResultsHandler:
     def __init__(self, testrunner):
         self.ansys = testrunner.ansys
@@ -152,7 +153,7 @@ class ResultsHandler:
         return reduce(  # I know it's not "true" strain. Can't remember what this should be called
             lambda x, y: x + y,
             [
-                nonfinite_to_zero(np.outer(retained_disps[n], 1.0 / rel_coord[n]))
+                utils.nonfinite_to_zero(np.outer(retained_disps[n], 1.0 / rel_coord[n]))
                 for n in range(1, 4)
             ],
         )
@@ -221,4 +222,3 @@ class ResultsHandler:
         results.debug_results = self.debug_results
 
         return results
-
