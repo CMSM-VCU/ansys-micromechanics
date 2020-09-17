@@ -83,10 +83,12 @@ class TestRunner:
             self.results_handler.extract_raw_results()
             self.results_handler.calculate_properties(load_case)
 
-        self.test_case.results = self.results_handler.compile_results(
-            list(self.test_case.loading.expectedProperties),
-            self.test_case.num_load_cases,
-            self.test_case.loading.labels,
+        self.test_case.results = ResultsHandler.compile_results(
+            results=self.results_handler.results,
+            expected_property_sets=list(self.test_case.loading.expectedProperties),
+            num_load_cases=self.test_case.num_load_cases,
+            labels=self.test_case.loading.labels,
+            debug_results=self.results_handler.debug_results,
         )  # expectedProperties passed in list() to pass copy, allowing mutation in function
 
     def load_external_mesh(
