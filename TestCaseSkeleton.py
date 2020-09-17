@@ -78,13 +78,10 @@ class TestCaseSkeleton:
                     shear_theory = mat.elasticModuli[0] / (
                         2 * (1 + mat.poissonsRatios[0])
                     )
-                    try:
-                        assert shear_input == shear_theory
-                    except:
-                        raise ValueError(
-                            f"Material {mat.materialIndex} is isotropic but does not "
-                            + "obey Hooke's Law: {shear_input=}, {shear_theory=}"
-                        )
+                    assert shear_input == shear_theory, (
+                        f"Material {mat.materialIndex} is isotropic but does not "
+                        + "obey Hooke's Law: {shear_input=}, {shear_theory=}"
+                    )
 
         # Check if a label has been provided for each load case, if any
         if getattr(self.loading, "labels", None) is not None:
