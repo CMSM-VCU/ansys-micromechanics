@@ -31,29 +31,54 @@ class LoadingHandler:
         self.lengths = np.diff(testrunner.mesh_extents(), axis=1).T[0]
 
         self.loading = testrunner.test_case.loading
-        self.prepare_loading()
+        self.tensors = LoadingHandler.prepare_loading_tensors(self.loading)
 
-    def prepare_loading(self):
-        if self.loading.kind == "displacement":
-            self.tensors = tuple(
-                self.convert_directions_to_strain_tensors(
-                    self.loading.directions,
-                    self.loading.normalMagnitude,
-                    self.loading.shearMagnitude,
-                    self.lengths,
+    @staticmethod
+    def prepare_loading_tensors(
+        loading_data: RecursiveNamespace, domain_size: Sequence[float] = None
+    ) -> Tuple[np.ndarray]:
+        """Take user input loading parameters and convert to sequence of strain*
+        tensors, one for each load case.
+
+        Args:
+            loading_data (RecursiveNamespace): Object containing loading data as
+                attributes. Available attributes depend on loading_data.kind parameter.
+            domain_size (Sequence[float], optional): Side lengths of domain, assuming
+                rectangular prism. len=3. Defaults to None.
+                - Note: This argument is required when loading_data.kind=="displacement"
+
+        Raises:
+            Exception: domain_size missing when loading_data.kind=="displacement"
+
+        Returns:
+            Tuple[np.ndarray]: Tuple containing one (3,3) array for each load case.
+        """
+        if loading_data.kind == "displacement":
+            assert (
+                domain_size is not None
+            ), "Domain size is required for displacement loading kind."
+
+            tensors = tuple(
+                LoadingHandler.convert_directions_to_strain_tensors(
+                    loading_data.directions,
+                    loading_data.normalMagnitude,
+                    loading_data.shearMagnitude,
+                    domain_size,
                 )
             )
-        elif self.loading.kind == "tensor":
-            mag = self.loading.magnitudeMultiplier
-            self.tensors = tuple(
+        elif loading_data.kind == "tensor":
+            mag = loading_data.magnitudeMultiplier
+            tensors = tuple(
                 [
                     [elem * mag if elem is not None else None for elem in row]
                     for row in tensor
                 ]
-                for tensor in self.loading.tensors
+                for tensor in loading_data.tensors
             )
-        print(self.tensors)
-        pass
+        else:
+            raise Exception(f"Invalid loading kind: {loading_data.kind}")
+
+        return tensors
 
     @staticmethod
     def convert_directions_to_strain_tensors(
