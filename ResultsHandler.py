@@ -2,6 +2,7 @@ import time
 from functools import reduce
 from itertools import permutations
 from pathlib import Path
+from typing import Sequence, Tuple
 
 import numpy as np
 import pandas as pd
@@ -66,55 +67,84 @@ class ResultsHandler:
 
         return self.ansys.result
 
-    def extract_raw_results(self):
+    def extract_raw_results(self, retained_nodes: Sequence = None) -> Tuple[dict]:
+        """Extract coordinates, displacemenets, and reaction forces from retained nodes.
+        Each node's data is stored in a dict, with dicts stored in a tuple.
+
+        Args:
+            retained_nodes (Sequence, optional): List of retained node numbers. Defaults
+                to None, which falls back to the retained_nodes class attribute.
+
+        Returns:
+            Tuple[dict]: Tuple containing results data, stored in a dictionary for each
+                node. Dict keys are "coord", "disp", and "force", each containing a
+                (3,) np.ndarray
+        """
+        if retained_nodes is None:
+            retained_nodes = self.retained_nodes
+
         result = self.get_results_object()
 
         coord = result.mesh.nodes
         nnum, disp = result.nodal_displacement(result.nsets - 1)
 
         self.ansys.run("/POST1")
-        self.retained_results = []
-        for n in self.retained_nodes:
-            n_results = {}
-            n_idx = np.argwhere(nnum == n)[0, 0]
-            n_results["coord"] = coord[n_idx]
-            n_results["disp"] = disp[n_idx]
+        retained_results = []
+        for node_num in retained_nodes:
+            node_results = {}
+            node_index = np.argwhere(nnum == node_num)[0, 0]
+            node_results["coord"] = coord[node_index]
+            node_results["disp"] = disp[node_index]
+            node_results["force"] = self.extract_reaction_forces(node_number=node_num)
 
-            force_n = []
-            for i in range(3):
-                appended = False
-                while not appended:
-                    force_n.append(
-                        self.ansys.get(
-                            par="rforce",
-                            entity="NODE",
-                            entnum=n,
-                            item1="RF",
-                            it1num=f"F{AXES[i]}",
-                        )
+            retained_results.append(node_results)
+
+        self.retained_results = tuple(retained_results)
+
+        return self.retained_results
+
+    def extract_reaction_forces(self, node_number: int) -> np.ndarray:
+        """Extract calculated reaction forces at a node from Ansys. There appears to be
+        some race condition in the pyansys get() command, so extra measures must be
+        taken to ensure the data is correctly extracted.
+
+        Args:
+            node_number (int): Number of the node whose reaction forces to extract
+
+        Returns:
+            np.ndarray: Vector of reaction force components, shape=(3,)
+        """
+        force_n = []
+        for i in range(3):
+            appended = False
+            while not appended:
+                force_n.append(
+                    self.ansys.get(
+                        par="rforce",
+                        entity="NODE",
+                        entnum=node_number,
+                        item1="RF",
+                        it1num=f"F{AXES[i]}",
                     )
+                )
 
-                    if type(force_n[-1]) == float and force_n[-1] != "":
-                        appended = True
-                        continue
-                    else:
-                        try:
-                            time.sleep(1)
-                            force_n[-1] = self.ansys.parameters["rforce"]
-                            if type(force_n[-1]) == float and force_n[-1] != "":
-                                appended = True
-                                continue
-                        except:
-                            print(f"Retrieval failed. Trying again: {n}, {i}")
-                            force_n.pop()
+                if type(force_n[-1]) == float and force_n[-1] != "":
+                    appended = True
+                    continue
+                else:
+                    try:
+                        time.sleep(1)
+                        force_n[-1] = self.ansys.parameters["rforce"]
+                        if type(force_n[-1]) == float and force_n[-1] != "":
+                            appended = True
+                            continue
+                    except:
+                        print(f"Retrieval failed. Trying again: {n}, {i}")
+                        force_n.pop()
 
-                # force_n.append(self.ansys.parameters[f"RFORCE{i+1}"])
-            assert len(force_n) == 3
-            n_results["force"] = np.array(force_n)
-
-            self.retained_results.append(n_results)
-
-        pass
+            # force_n.append(self.ansys.parameters[f"RFORCE{i+1}"])
+        assert len(force_n) == 3, f"Force vector is wrong size: {len(force_n)}"
+        return np.array(force_n)
 
     def calculate_macro_tensors(self, load_case):
         retained_coords = [
