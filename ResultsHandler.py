@@ -23,20 +23,22 @@ class ResultsHandler:
         self.results = {}
         self.debug_results = {}
 
-    def clear_results(self):
-        self.ansys.finish()
+    def clear_results(self, rst_path: Path = None) -> bool:
+        """Delete current results file to ensure correct recording of next load case.
 
-        try:
-            self.rst_path.unlink(missing_ok=True)
-        except Exception as err:
-            raise err
+        Args:
+            rst_path (Path, optional): absolute or relative path to results file.
+                Defaults to None, which falls back to the rst_path class attribute.
 
-        try:
-            assert not self.rst_path.exists()
-        except:
-            time.sleep(1)
-            assert not self.rst_path.exists()
-        pass
+        Returns:
+            bool: Whether the results file was successfully deleted.
+        """
+        if rst_path is None:
+            rst_path = self.rst_path
+
+        self.ansys.finish()  # Safely close results file before deletion
+
+        return utils.definitely_delete_file(rst_path, missing_ok=True)
 
     def find_results_file(self):
         self.ansys.finish()
