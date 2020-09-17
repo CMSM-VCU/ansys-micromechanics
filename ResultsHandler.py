@@ -146,29 +146,50 @@ class ResultsHandler:
         assert len(force_n) == 3, f"Force vector is wrong size: {len(force_n)}"
         return np.array(force_n)
 
-    def calculate_macro_tensors(self, load_case):
-        retained_coords = [
-            node_result["coord"] for node_result in self.retained_results
-        ]
-        retained_disps = [node_result["disp"] for node_result in self.retained_results]
-        retained_forces = [
-            node_result["force"] for node_result in self.retained_results
-        ]
-        macro_stress = self.calculate_macro_stress(retained_coords, retained_forces)
+    def calculate_macro_tensors(
+        self, load_case: int, retained_results: Tuple[dict] = None
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Calculate the macroscopic tensors for the current load case using the
+        retained node results.
 
-        macro_strain_true = self.calculate_macro_strain_true(
+        Args:
+            load_case (int): Load case number, for indexing debug data
+            retained_results (Tuple[dict], optional): Dicts containing retained node
+            results data. Defaults to None.
+
+        Returns:
+            macro_stress (np.ndarray): Macroscopic stress tensor, shape=(3,3)
+            macro_strain (np.ndarray): Macroscopic strain tensor, shape=(3,3)
+            displacement_gradient (np.ndarray): Macroscopic displacement gradient
+                tensor, shape=(3,3)
+        """
+        if retained_results is None:
+            retained_results = self.retained_results
+
+        retained_coords = [node_result["coord"] for node_result in retained_results]
+        retained_disps = [node_result["disp"] for node_result in retained_results]
+        retained_forces = [node_result["force"] for node_result in retained_results]
+
+        macro_stress = ResultsHandler.calculate_macro_stress(
+            retained_coords, retained_forces, self.ansys.mesh.grid.volume
+        )
+
+        displacement_gradient = ResultsHandler.calculate_displacement_gradient(
             retained_coords, retained_disps
         )
-        macro_strain = self.calculate_macro_strain(retained_coords, retained_disps)
+        macro_strain = ResultsHandler.calculate_macro_strain(
+            retained_coords, retained_disps
+        )
 
-        debug_results = {}
-        debug_results["retained_results"] = self.retained_results
-        debug_results["macro_stress"] = macro_stress
-        debug_results["macro_strain_true"] = macro_strain_true
-        debug_results["macro_strain"] = macro_strain
+        debug_results = {
+            "retained_results": retained_results,
+            "macro_stress": macro_stress,
+            "displacement_gradient": displacement_gradient,
+            "macro_strain": macro_strain,
+        }
         self.debug_results[load_case] = debug_results
 
-        return macro_stress, macro_strain, macro_strain_true
+        return macro_stress, macro_strain, displacement_gradient
 
     @staticmethod
     def calculate_macro_stress(
