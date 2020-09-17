@@ -63,11 +63,6 @@ class PBCHandler:
                 axis, mesh_extents[axis_ind], tolerances[axis_ind]
             )
 
-            assert nodes_pos.shape == nodes_neg.shape, (
-                f"Different number of nodes selected on opposite faces: "
-                + f"{nodes_pos.shape=}, {nodes_neg.shape=}"
-            )
-
             nodes_pos = PBCHandler.clean_node_coords(nodes_pos, axis_ind)
             face_nodes_pos = PBCHandler.sort_2d_with_index(nodes_pos, nnum_pos)
 
@@ -112,6 +107,11 @@ class PBCHandler:
 
         nodes_neg = round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
         nnum_neg = np.reshape(self.ansys.mesh.nnum, (-1, 1))
+
+        assert nodes_pos.shape == nodes_neg.shape, (
+            f"Different number of nodes selected on opposite faces: "
+            + f"{nodes_pos.shape=}, {nodes_neg.shape=}"
+        )
 
         self.ansys.seltol()
         self.ansys.allsel()
