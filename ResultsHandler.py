@@ -17,6 +17,10 @@ RESULTS_WAIT_MAX = 10
 
 @utils.decorate_all_methods(utils.logger_wraps)
 class ResultsHandler:
+    """Handler for extracting and processing results from Ansys RVE test sequence. The
+    ResultsHandler instance is paired with a TestRunner instance on initialization.
+    """
+
     def __init__(self, testrunner):
         self.ansys = testrunner.ansys
         self.rst_path = testrunner.rst_path
@@ -139,7 +143,7 @@ class ResultsHandler:
                             appended = True
                             continue
                     except:
-                        print(f"Retrieval failed. Trying again: {n}, {i}")
+                        print(f"Retrieval failed. Trying again: {node_number}, {i}")
                         force_n.pop()
 
             # force_n.append(self.ansys.parameters[f"RFORCE{i+1}"])
@@ -407,4 +411,3 @@ class ResultsHandler:
                 ]
 
         return reportedProperties
-
