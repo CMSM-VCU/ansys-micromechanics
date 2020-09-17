@@ -5,9 +5,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pyansys
 
-from RecursiveNamespace import RecursiveNamespace
 import utils
+from RecursiveNamespace import RecursiveNamespace
 
 AXES = ["X", "Y", "Z"]
 RESULTS_WAIT_MAX = 10
@@ -40,33 +41,33 @@ class ResultsHandler:
 
         return utils.definitely_delete_file(rst_path, missing_ok=True)
 
-    def find_results_file(self):
+    def get_results_object(
+        self, rst_path: Path = None, max_wait=RESULTS_WAIT_MAX
+    ) -> pyansys.rst.ResultFile:
+        """Extract results object from results file (.rst) of current Ansys instance.
+
+        Args:
+            rst_path (Path, optional): pathlib Path object pointing to results file.
+                Defaults to None, which falls back to the rst_path class attribute.
+            max_wait (int, optional): Maximum number of seconds to wait to find results
+                file. Defaults to RESULTS_WAIT_MAX.
+
+        Returns:
+            pyansys.rst.ResultFile: Extracted pyansys results file object.
+        """
+        if rst_path is None:
+            rst_path = self.rst_path
+
         self.ansys.finish()
-        waited = 0
-        while waited < RESULTS_WAIT_MAX:
-            try:
-                assert self.rst_path.exists()
-                assert self.rst_path.stat().st_size > 0
-                print(f"\nHit: {waited=}")
-                break
-            except:
-                time.sleep(1)
-                self.ansys.finish()
-                waited += 1
-                print("miss... ", end="")
-        else:
-            raise Exception(f"\nResults file not found: {self.rst_path.exists()=}")
 
-        try:
-            result = self.ansys.result
-        except:
-            self.rst_path.touch()
-            result = self.ansys.result
+        assert utils.definitely_find_file(
+            rst_path, max_wait=max_wait
+        ), "Could not find results file."
 
-        return result
+        return self.ansys.result
 
     def extract_raw_results(self):
-        result = self.find_results_file()
+        result = self.get_results_object()
 
         coord = result.mesh.nodes
         nnum, disp = result.nodal_displacement(result.nsets - 1)
