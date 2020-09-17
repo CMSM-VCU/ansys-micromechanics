@@ -1,3 +1,4 @@
+from typing import Sequence, Tuple
 import numpy as np
 from numpy.core import test
 
@@ -25,7 +26,7 @@ class PBCHandler:
     def apply_periodic_conditions(self):
         self.ansys.run("/PREP7")
 
-        pair_sets = self.find_node_pairs()
+        pair_sets = self.find_node_pairs(self.mesh_extents)
 
         rn = self.retained_nodes
 
@@ -50,60 +51,74 @@ class PBCHandler:
                         )
                         # fmt: on
         pass
+        # Can I get the number of constraint equations to use as a return value?
 
-    def find_node_pairs(self):
+    def find_node_pairs(self, mesh_extents: np.ndarray) -> Sequence[np.ndarray]:
         pair_sets = []
 
-        tolerances = (np.diff(self.mesh_extents) * TOLERANCE_MULT).flatten()
+        tolerances = (np.diff(mesh_extents) * TOLERANCE_MULT).flatten()
 
         for axis_ind, axis in enumerate(AXES):  # Select exterior nodes on each axis
-            self.ansys.seltol(tolerances[axis_ind])
+            nodes_pos, nnum_pos, nodes_neg, nnum_neg = self.get_opposite_face_nodes(
+                axis, mesh_extents[axis_ind], tolerances[axis_ind]
+            )
 
-            self.ansys.nsel("S", "LOC", axis, self.mesh_extents[axis_ind, 1])
+            assert nodes_pos.shape == nodes_neg.shape, (
+                f"Different number of nodes selected on opposite faces: "
+                + f"{nodes_pos.shape=}, {nodes_neg.shape=}"
+            )
 
-            nodes_pos = round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
-            nnum_pos = np.reshape(self.ansys.mesh.nnum, (-1, 1))
+            nodes_pos = PBCHandler.clean_node_coords(nodes_pos, axis_ind)
+            face_nodes_pos = PBCHandler.sort_2d_with_index(nodes_pos, nnum_pos)
 
-            self.ansys.nsel("S", "LOC", axis, self.mesh_extents[axis_ind, 0])
+            nodes_neg = PBCHandler.clean_node_coords(nodes_neg, axis_ind)
+            face_nodes_neg = PBCHandler.sort_2d_with_index(nodes_neg, nnum_neg)
 
-            nodes_neg = round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
-            nnum_neg = np.reshape(self.ansys.mesh.nnum, (-1, 1))
-
-            try:
-                assert nodes_pos.shape == nodes_neg.shape
-            except:
-                print(f"{nodes_pos.shape=}, {nodes_neg.shape=}")
-                pass
-
-            # Delete coordinates column for current axis
-            nodes_pos = np.delete(nodes_pos, axis_ind, axis=1)
-            nodes_neg = np.delete(nodes_neg, axis_ind, axis=1)
-
-            # Replace values near zero with exactly zero
-            nodes_pos = np.where(np.abs(nodes_pos) > EPSILON, nodes_pos, 0.0)
-            nodes_neg = np.where(np.abs(nodes_neg) > EPSILON, nodes_neg, 0.0)
-
-            # Get coordinates and number in one row
-            face_nodes_pos = np.hstack([nodes_pos, nnum_pos])
-            face_nodes_neg = np.hstack([nodes_neg, nnum_neg])
-
-            # Sort coordinates so counterparts will be at same index
-            face_nodes_pos = face_nodes_pos[np.lexsort(np.transpose(nodes_pos))]
-            face_nodes_neg = face_nodes_neg[np.lexsort(np.transpose(nodes_neg))]
-
-            assert self.verify_equality(face_nodes_pos[:, :2], face_nodes_neg[:, :2])
+            assert PBCHandler.verify_equality(
+                face_nodes_pos[:, :2], face_nodes_neg[:, :2]
+            )
 
             # Extract every pair of node numbers
             pair_sets.append(
                 np.stack((face_nodes_pos[:, -1], face_nodes_neg[:, -1])).astype(int).T
             )
 
-        self.ansys.seltol()
-        self.ansys.allsel()
-
         return pair_sets
 
-    def verify_equality(self, arr1, arr2):
+    @staticmethod
+    def sort_2d_with_index(nodes: np.ndarray, node_nums: np.ndarray) -> np.ndarray:
+        nodes_combined = np.hstack([nodes, node_nums])
+        return nodes_combined[np.lexsort(np.transpose(nodes))]
+
+    @staticmethod
+    def clean_node_coords(nodes: np.ndarray, axis_index: int) -> np.ndarray:
+        # Delete coordinates column for current axis
+        nodes = np.delete(nodes, axis_index, axis=1)
+        # Replace values near zero with exactly zero
+        nodes = np.where(np.abs(nodes) > EPSILON, nodes, 0.0)
+        return nodes
+
+    def get_opposite_face_nodes(
+        self, axis: str, axis_extents: Sequence[float], tolerance: float = ""
+    ) -> Tuple[np.ndarray]:
+        self.ansys.seltol(tolerance)
+
+        self.ansys.nsel("S", "LOC", axis, axis_extents[1])
+
+        nodes_pos = round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
+        nnum_pos = np.reshape(self.ansys.mesh.nnum, (-1, 1))
+
+        self.ansys.nsel("S", "LOC", axis, axis_extents[0])
+
+        nodes_neg = round_to_sigfigs(self.ansys.mesh.nodes, SIG_FIGS)
+        nnum_neg = np.reshape(self.ansys.mesh.nnum, (-1, 1))
+
+        self.ansys.seltol()
+        self.ansys.allsel()
+        return nodes_pos, nnum_pos, nodes_neg, nnum_neg
+
+    @staticmethod
+    def verify_equality(arr1, arr2):
         if np.array_equal(arr1, arr2):
             return True
 
