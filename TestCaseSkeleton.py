@@ -1,3 +1,4 @@
+from typing import Tuple
 from warnings import warn
 
 import numpy as np
@@ -11,38 +12,43 @@ PLANES_SHEAR = ("12", "13", "21", "23", "31", "32")
 
 @decorate_all_methods(logger_wraps)
 class TestCaseSkeleton:
-    """Contains the parameters and calculates the results for a single test case.
-
-    Attributes:
-        dimensions (Dims): geometry of domain and elements
-        materials (List[Material]): list of input property sets for each material
-        arrangements (Array): array containing centroids of all elements of
-        non-default materials
-        loads (Loads): type and magnitude of loading for normal and shear tests
-        properties (List[Props]): list of effective property sets calculated by tests
-
+    """This class is used as the base for the TestCase class that is created at
+    runtime by RecursiveClassFactory in coordination with the input schema. Most of
+    the attributes are defined at runtime according the the schema structure and naming.
     """
 
     def __init__(self):
         self.preprocess_attributes()
 
     def attach_to_testrunner(self, TestRunnerClass, options=None):
+        """Initialize a test runner with a set of options, and tie it and the test case
+        together in attributes.
+
+        Args:
+            TestRunnerClass (Class): Specific TestRunner class (not instance) to use.
+            options ([type], optional): Dictionary of options specific to the TestRunner
+            class initialization. Defaults to None.
+        """
         self.testrunner = TestRunnerClass(test_case=self, options=options)
 
     def run_tests(self):
-        """Run set of mechanical tests on cubic RVE. Normal and shear tests each in all
-        three directions. Distill results into effective elastic moduli, shear moduli,
-        and poisson's ratios.
-
-        Arguments:
-            launch_options (dict, optional): dictionary of keyword arguments for
-            TestRunner options
+        """Activate testrunner's test sequence, culminating in the delivery of the
+        results object.
         """
         self.results = self.testrunner.run()
         print(f"Finished with {self.results.reportedProperties}")
         self.compress_results()
 
-    def compress_results(self):
+    def compress_results(self) -> bool:
+        """Attempt to compress results of multiple load cases into a single set. Only
+        works if every property was only calculated in one load case. Adds a new column
+        to self.results.reportedProperties containing collected results.
+
+        Returns:
+            bool: Whether the results were able to be compressed.
+
+        TODO: Move to ResultsHandler.
+        """
         assert self.results, "Results do not exist yet."
 
         if np.all(self.unique_expected_properties[1] == 1):
@@ -54,7 +60,14 @@ class TestCaseSkeleton:
             print("Results cannot be compressed.")
             return False
 
-    def check_parameters(self):
+    def check_parameters(self) -> bool:
+        """Run various self-checks on the test case input parameters.
+
+        Returns:
+            bool: Whether the parameters passed the checks.
+
+        TODO: Break tests up into separate methods.
+        """
         passed_checks = True
         # Check if mapped mesh dimensions are well-behaved
         if self.mesh_type == "centroid":
@@ -118,7 +131,15 @@ class TestCaseSkeleton:
         return passed_checks
 
     @property
-    def mesh_type(self):
+    def mesh_type(self) -> str:
+        """What kind of mesh is being used, according to user input parameters.
+
+        Raises:
+            Exception: If mesh type is unable to be determined.
+
+        Returns:
+            str: Mesh type, currently either "centroid" or "external".
+        """
         if getattr(self.mesh, "locationsWithId", None) is not None:
             return "centroid"
         elif getattr(self.mesh, "nodeFileRelativePath", None) is not None:
@@ -127,21 +148,42 @@ class TestCaseSkeleton:
             raise Exception("Unable to determine mesh type")
 
     @property
-    def loading_type(self):
+    def loading_type(self) -> str:
+        """What kind of loading is being used, according to user input parameter.
+
+        Returns:
+            str: Loading type, currently either "displacement" or "tensor".
+        """
         return self.loading.kind
 
     @property
-    def num_load_cases(self):
+    def num_load_cases(self) -> int:
+        """How many load cases are in this test case, according to length of user input
+        parameters.
+
+        Returns:
+            int: Number of load cases
+        """
         if self.loading.kind == "displacement":
             return len(self.loading.directions)
         elif self.loading.kind == "tensor":
             return len(self.loading.tensors)
 
     @property
-    def unique_expected_properties(self):
+    def unique_expected_properties(self) -> Tuple[np.ndarray]:
+        """The array of all unique properties expected by the user, across all load
+        cases.
+
+        Returns:
+            Tuple[np.ndarray]: Tuple containing array with all unique property strings
+            and array with counts of each property.
+        """
         return np.unique(np.hstack(self.loading.expectedProperties), return_counts=True)
 
     def preprocess_attributes(self):
+        """Manipulate user input attributes to prepare for future use. Currently,
+        setting absolute paths to mesh files from user input relative paths.
+        """
         if self.mesh_type == "external":
             self.mesh.nodeFileAbsolutePath = str(
                 self.path.parent / self.mesh.nodeFileRelativePath
