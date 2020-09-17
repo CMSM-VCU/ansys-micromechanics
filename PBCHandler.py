@@ -24,6 +24,12 @@ class PBCHandler:
         self.mesh_extents = testrunner.mesh_extents()
 
     def apply_periodic_conditions(self):
+        """Apply periodic boundary constraints to Ansys RVE using constraint equations
+        applied to displacements of nodes on opposite faces and the retained nodes.
+
+        Returns:
+            None: (Does not return a value)
+        """
         self.ansys.run("/PREP7")
 
         pair_sets = self.find_node_pairs(self.mesh_extents)
@@ -54,6 +60,18 @@ class PBCHandler:
         # Can I get the number of constraint equations to use as a return value?
 
     def find_node_pairs(self, mesh_extents: np.ndarray) -> Sequence[np.ndarray]:
+        """Identify the pairs of corresponding nodes on each pair of opposite faces of
+        RVE. Returns 3 (n,2) arrays, where each row holds the two numbers of the node
+        pair, one array per pair of opposite faces
+
+        Args:
+            mesh_extents (np.ndarray): (3,2) array containing the -/+ xyz extents of the
+            mesh/domain.
+
+        Returns:
+            Sequence[np.ndarray]: 3 arrays containing node number pairs for each opposite
+            face pair.
+        """
         pair_sets = []
 
         tolerances = (np.diff(mesh_extents) * TOLERANCE_MULT).flatten()
@@ -82,11 +100,35 @@ class PBCHandler:
 
     @staticmethod
     def sort_2d_with_index(nodes: np.ndarray, node_nums: np.ndarray) -> np.ndarray:
+        """Combine an array of 2d coordinates with corresponding indices, and sort
+        according to coordinates in both axes.
+
+        Args:
+            nodes (np.ndarray): (n,2) array containing 2d coordinates (3d with one axis
+                removed).
+            node_nums (np.ndarray): (n,) array containing indices corresponding with
+                nodes.
+
+        Returns:
+            np.ndarray: (n,3) array containing coordinates and indices, sorted by
+                coordinates.
+        """
         nodes_combined = np.hstack([nodes, node_nums])
         return nodes_combined[np.lexsort(np.transpose(nodes))]
 
     @staticmethod
     def clean_node_coords(nodes: np.ndarray, axis_index: int) -> np.ndarray:
+        """Precondition node coordinates arrays for sorting process. Remove the
+        specified axis, round to a set number of significant figures, and round any
+        near-zero values to zero.
+
+        Args:
+            nodes (np.ndarray): (n,3) array containing node coordinates.
+            axis_index (int): Index of axis to be removed from coordinates.
+
+        Returns:
+            np.ndarray: (n,2) array containing condition node coordinates.
+        """
         # Delete coordinates column for current axis
         nodes = np.delete(nodes, axis_index, axis=1)
         # Replace values near zero with exactly zero
@@ -96,6 +138,20 @@ class PBCHandler:
     def get_opposite_face_nodes(
         self, axis: str, axis_extents: Sequence[float], tolerance: float = ""
     ) -> Tuple[np.ndarray]:
+        """Obtain coordinates and numbers of nodes on opposite faces of RVE.
+
+        Args:
+            axis (str): Axis string for Ansys selection command ("X", "Y", or "Z").
+            axis_extents (Sequence[float]): Coordinates of opposite faces, [low, high].
+            tolerance (float, optional): Tolerance value to use for Ansys selection
+                commands. Defaults to "".
+
+        Returns:
+            Tuple[np.ndarray]: Four arrays containing node coordinates and numbers for
+                each face, shapes are (n,3), (n,), (n,3), (n,)
+
+        TODO: Move round_to_sigfigs step to clean_node_coords.
+        """
         self.ansys.seltol(tolerance)
 
         self.ansys.nsel("S", "LOC", axis, axis_extents[1])
@@ -118,7 +174,16 @@ class PBCHandler:
         return nodes_pos, nnum_pos, nodes_neg, nnum_neg
 
     @staticmethod
-    def verify_equality(arr1, arr2):
+    def verify_equality(arr1: np.ndarray, arr2: np.ndarray) -> bool:
+        """Verify that opposite face node coordinates are equal after sorting.
+
+        Args:
+            arr1 (np.ndarray): First array of node coordinates
+            arr2 (np.ndarray): Second array of node coordinates
+
+        Returns:
+            bool: Whether the coordinate arrays are equal.
+        """
         if np.array_equal(arr1, arr2):
             return True
         else:
