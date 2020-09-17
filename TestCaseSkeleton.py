@@ -103,7 +103,6 @@ class TestCaseSkeleton:
             "v11", "v22", "v33"
         )
         # fmt: on
-        expected_unique = np.unique(np.hstack(self.loading.expectedProperties))
         assert not (
             bad_props := [
                 prop
