@@ -1,18 +1,18 @@
 import functools
 import time
 from pathlib import Path
-from typing import Sequence, Tuple, Union
+from typing import Callable, Sequence, Tuple, Union
 from warnings import warn
 
 import numpy as np
 from loguru import logger
 
 
-def logger_wraps(_func=None, *, entry=True, exit=True, level="DEBUG"):
+def logger_wraps(_func: Callable = None, *, entry=True, exit=True, level="DEBUG"):
     """Crazy logging decorator, adjusted to enable use in decorate_all_methods function.
 
     Args:
-        _func ([type], optional): Function to be wrapped. Defaults to None.
+        _func (Callable, optional): Function to be wrapped. Defaults to None.
     """
 
     def logger_wrapper(func):
@@ -38,12 +38,12 @@ def logger_wraps(_func=None, *, entry=True, exit=True, level="DEBUG"):
         return logger_wrapper(_func)
 
 
-def decorate_all_methods(decorator, *args, **kwargs):
+def decorate_all_methods(decorator: Callable, *args, **kwargs):
     """Wrap all methods (callable attributes) in a class with the given decorator
     function.
 
     Args:
-        decorator (Function): Decorator function to apply to methods.
+        decorator (Callable): Decorator function to apply to methods.
     """
 
     def decorate(class_):
