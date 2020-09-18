@@ -89,15 +89,15 @@
                 },
                 "expectedProperties": {
                     "type": "array",
-                    "description": "The list of effective properties to be reported for each test. Either one list for all tests or one list for each test (n_lists == 1 or n_lists == n_tests)",
+                    "description": "The list of effective properties to be reported for each test. Either one list for all tests or one list for each test (n_lists == 1 or n_lists == n_tests). A list containing 'all' will be replaced with all available properties.",
                     "minItems": 1,
                     "items": {
                         "type": "array",
                         "minItems": 1,
                         "items": {
                             "type": "string",
-                            "pattern": "^[EGv][123][123]$",
-                            "examples": ["E11", "G12", "v31"]
+                            "pattern": "^([EGv][123][123]|all)$",
+                            "examples": ["E11", "G12", "v31", "all"]
                         }
                     }
                 }

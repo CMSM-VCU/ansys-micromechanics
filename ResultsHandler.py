@@ -13,6 +13,13 @@ from RecursiveNamespace import RecursiveNamespace
 
 AXES = ["X", "Y", "Z"]
 RESULTS_WAIT_MAX = 10
+# fmt: off
+AVAILABLE_PROPERTIES=(
+    "E11", "E22", "E33",
+    "G12", "G13", "G21","G23", "G31", "G32",
+    "v12", "v13", "v21","v23", "v31", "v32"
+)
+# fmt: on
 
 
 @utils.decorate_all_methods(utils.logger_wraps)
@@ -379,6 +386,11 @@ class ResultsHandler:
         assert num_load_cases == len(
             results
         ), f"Expected {num_load_cases} results sets but have {len(results)}."
+
+        # If a property set is (starts with) "all", replace with all available options
+        for i, prop_set in enumerate(expected_property_sets):
+            if isinstance(prop_set[0], str) and prop_set[0].lower() == "all":
+                expected_property_sets[i] = list(AVAILABLE_PROPERTIES)
 
         # Extend property set to all load cases if only one given
         if len(expected_property_sets) == 1 and num_load_cases > 1:
