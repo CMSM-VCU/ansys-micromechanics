@@ -46,13 +46,11 @@ def main():
         case.check_parameters()
         case.attach_to_testrunner(TestRunnerClass=TestRunner, options=LAUNCH_OPTIONS)
         case.run_tests()
-        case_result_sets = extract_okereke_data(case, case_result_sets)
 
-    pprint(case_result_sets)
-    with open("debug/testOutput.csv", mode="w", newline="") as f:
-        csv_output = csv.writer(f)
-        for key, item in case_result_sets.items():
-            csv_output.writerow([key] + item)
+    for case in cases:
+        print(case.results.reportedProperties)
+        case.save_results()
+
     pass
 
 
@@ -71,25 +69,6 @@ def get_input_file_paths():
             print(f"Input file not found at {path}")
             input_paths.remove(index)
     return input_paths
-
-
-def extract_okereke_data(case, set_):
-    results = case.results
-
-    set_["E11"].append(results[1]["elasticModuli"][0])
-    set_["E22"].append(results[2]["elasticModuli"][1])
-    set_["E33"].append(results[3]["elasticModuli"][2])
-    set_["G12"].append(results[4]["shearModuli"][0])
-    set_["G13"].append(results[6]["shearModuli"][4])  # according to the order output
-    set_["G23"].append(results[5]["shearModuli"][3])  # by itertools.permutations()
-    set_["v12"].append(results[1]["poissonsRatios"][0])
-    set_["v13"].append(results[1]["poissonsRatios"][1])
-    set_["v23"].append(results[2]["poissonsRatios"][3])  # according to the order output
-    set_["v21"].append(results[2]["poissonsRatios"][2])  # by itertools.permutations()
-    set_["v31"].append(results[3]["poissonsRatios"][4])
-    set_["v32"].append(results[3]["poissonsRatios"][5])
-
-    return set_
 
 
 if __name__ == "__main__":
