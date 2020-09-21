@@ -60,6 +60,17 @@ class TestCaseSkeleton:
             print("Results cannot be compressed.")
             return False
 
+    def save_results(self):
+        """Save the reportedProperties dataframe to a csv file. Creates a new folder
+        `results` in the directory that the input file is in. The file is named
+        `[input file name]_[case id].csv`.
+        """
+        folder = self.path.parent / "results"
+        if not folder.is_dir():
+            folder.mkdir()
+        filename = str(self.path.stem) + "_" + str(self.caseId) + ".csv"
+        self.results.reportedProperties.to_csv(str(folder) + "/" + filename)
+
     def check_parameters(self) -> bool:
         """Run various self-checks on the test case input parameters.
 
