@@ -1,0 +1,50 @@
+{
+    "caseId": 111111,
+    "caseDescription": "Single fiber verification case, using strain tensors. Fewer load cases for faster debugging.",
+    "units": {
+        "length": "micrometer",
+        "mass": "gram",
+        "time": "second"
+    },
+    "loading": {
+        "kind": "tensor",
+        "labels": ["x normal", "zx shear"],
+        "magnitudeMultiplier": 0.001,
+        "tensors": [
+            [
+                [1, 0, 0],
+                [0, null, 0],
+                [0, 0, null]
+            ],
+            [
+                [0, 0, 0],
+                [0, 0, 0],
+                [1, 0, 0]
+            ]
+        ],
+        "expectedProperties": [["E11", "v12", "v13"], ["G31"]]
+    },
+    "materials": [
+        {
+            "materialIndex": 1,
+            "materialName": "Polypropylene",
+            "materialType": "isotropic",
+            "elasticModuli": [1.31e6],
+            "poissonsRatios": [0.43],
+            "density": 903e-15
+        },
+        {
+            "materialIndex": 2,
+            "materialName": "Glass fiber",
+            "materialType": "isotropic",
+            "elasticModuli": [7.3e7],
+            "poissonsRatios": [0.2],
+            "density": 1450e-15
+        }
+    ],
+    "mesh": {
+        "elementType": "SOLID186",
+        "nodeFileRelativePath": "./meshes/fiber_corners_ex01.node",
+        "elementFileRelativePath": "./meshes/fiber_corners_ex01.elem"
+    }
+}
