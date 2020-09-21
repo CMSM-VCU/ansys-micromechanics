@@ -4,7 +4,7 @@ from typing import List
 
 import jsonschema
 
-from utils import decorate_all_methods, logger_wraps
+from .utils import decorate_all_methods, logger_wraps
 
 
 @decorate_all_methods(logger_wraps)

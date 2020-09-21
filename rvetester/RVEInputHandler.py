@@ -1,7 +1,7 @@
-from InputHandler import InputHandler
-from RecursiveClassFactory import RecursiveClassFactory
-from TestCaseSkeleton import TestCaseSkeleton
-from utils import decorate_all_methods, logger_wraps
+from .InputHandler import InputHandler
+from .RecursiveClassFactory import RecursiveClassFactory
+from .TestCaseSkeleton import TestCaseSkeleton
+from .utils import decorate_all_methods, logger_wraps
 
 
 @decorate_all_methods(logger_wraps)

@@ -1,8 +1,9 @@
 from typing import List, Sequence, Tuple
-from RecursiveNamespace import RecursiveNamespace
+
 import numpy as np
 
-import utils
+from rvetester.RecursiveNamespace import RecursiveNamespace
+from rvetester.utils import decorate_all_methods, logger_wraps
 
 AXES = ["X", "Y", "Z"]
 DISP_AXES = ["UX", "UY", "UZ"]
@@ -17,7 +18,7 @@ SHEAR_FIXED_AXES = [
 ]
 
 
-@utils.decorate_all_methods(utils.logger_wraps)
+@decorate_all_methods(logger_wraps)
 class LoadingHandler:
     """Handler for processing loading input from user and applying specified loads to
     Ansys RVE test sequence. The LoadingHandler instance is paired with a TestRunner

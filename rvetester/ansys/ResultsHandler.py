@@ -8,8 +8,8 @@ import numpy as np
 import pandas as pd
 from pyansys.rst import ResultFile
 
-import utils
-from RecursiveNamespace import RecursiveNamespace
+import rvetester.utils as utils
+from rvetester.RecursiveNamespace import RecursiveNamespace
 
 AXES = ["X", "Y", "Z"]
 RESULTS_WAIT_MAX = 10

@@ -1,12 +1,10 @@
 import os
 import sys
 from pathlib import Path
-from pprint import pprint
 
-import utils
-from RVEInputHandler import RVEInputHandler
-from TestRunner import TestRunner
-from utils import logger_wraps
+from rvetester.ansys.TestRunner import TestRunner
+from rvetester.RVEInputHandler import RVEInputHandler
+from rvetester.utils import logger_wraps
 
 SCHEMA_PATH = "./input_schema/input.schema.json"
 

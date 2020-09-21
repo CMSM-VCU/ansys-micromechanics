@@ -1,4 +1,4 @@
-from RecursiveNamespace import RecursiveNamespace
+from .RecursiveNamespace import RecursiveNamespace
 
 
 class RecursiveClassFactory:

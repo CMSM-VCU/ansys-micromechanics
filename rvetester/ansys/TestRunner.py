@@ -3,11 +3,12 @@ from typing import Any, List
 
 import numpy as np
 
-from AnsysContainer import AnsysContainer
-from LoadingHandler import LoadingHandler
-from PBCHandler import PBCHandler
-from ResultsHandler import ResultsHandler
-from utils import decorate_all_methods, logger_wraps
+from rvetester.utils import decorate_all_methods, logger_wraps
+
+from .AnsysContainer import AnsysContainer
+from .LoadingHandler import LoadingHandler
+from .PBCHandler import PBCHandler
+from .ResultsHandler import ResultsHandler
 
 AXES = ["X", "Y", "Z"]
 
