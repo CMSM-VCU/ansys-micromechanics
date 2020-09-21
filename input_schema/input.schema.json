@@ -29,6 +29,17 @@
             },
             "required": ["length", "mass", "time"]
         },
+        "boundaryConditions": {
+            "description": "The parameters defining the boundary conditions",
+            "type": "object",
+            "properties": {
+                "kind": {
+                    "type": "string",
+                    "enum": ["Okereke"]
+                }
+            },
+            "required": ["kind"]
+        },
         "loading": {
             "description": "The loading parameters for a test case",
             "type": "object",
@@ -290,5 +301,13 @@
             ]
         }
     },
-    "required": ["caseId", "caseDescription", "units", "loading", "materials", "mesh"]
+    "required": [
+        "caseId",
+        "caseDescription",
+        "units",
+        "boundaryConditions",
+        "loading",
+        "materials",
+        "mesh"
+    ]
 }

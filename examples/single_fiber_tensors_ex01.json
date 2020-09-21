@@ -6,6 +6,9 @@
         "mass": "gram",
         "time": "second"
     },
+    "boundaryConditions": {
+        "kind": "Okereke"
+    },
     "loading": {
         "kind": "tensor",
         "labels": [
