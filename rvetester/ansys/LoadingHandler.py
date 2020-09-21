@@ -5,17 +5,7 @@ import numpy as np
 from rvetester.RecursiveNamespace import RecursiveNamespace
 from rvetester.utils import decorate_all_methods, logger_wraps
 
-AXES = ["X", "Y", "Z"]
 DISP_AXES = ["UX", "UY", "UZ"]
-
-# Axes that will always be constrained for each retained node
-NORMAL_FIXED_AXES = [["UX", "UY", "UZ"], ["UY", "UZ"], ["UX", "UZ"], ["UX", "UY"]]
-SHEAR_FIXED_AXES = [
-    ["UX", "UY", "UZ"],
-    ["UX", "UY", "UZ"],
-    ["UX", "UY", "UZ"],
-    ["UX", "UY", "UZ"],
-]
 
 
 @decorate_all_methods(logger_wraps)

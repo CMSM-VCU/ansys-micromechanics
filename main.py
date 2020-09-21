@@ -32,14 +32,6 @@ def main():
     for input_dict in handler.input_dicts:
         cases.append(RVETestCase(**input_dict))
 
-    # fmt: off
-    case_result_sets = {
-        "E11": [],"E22": [],"E33": [],
-        "G12": [],"G13": [],"G23": [],
-        "v12": [],"v13": [],"v23": [],"v21": [],"v31": [],"v32": [],
-    }
-    # fmt: on
-
     for case in cases:
         case.check_parameters()
         case.attach_to_testrunner(TestRunnerClass=TestRunner, options=LAUNCH_OPTIONS)

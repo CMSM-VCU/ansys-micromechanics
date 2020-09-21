@@ -10,8 +10,6 @@ from .LoadingHandler import LoadingHandler
 from .PBCHandler import PBCHandler
 from .ResultsHandler import ResultsHandler
 
-AXES = ["X", "Y", "Z"]
-
 
 @decorate_all_methods(logger_wraps)
 class TestRunner:

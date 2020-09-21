@@ -5,9 +5,6 @@ import numpy as np
 
 from .utils import decorate_all_methods, logger_wraps, all_same
 
-PLANES_NORMAL = ("11", "22", "33")
-PLANES_SHEAR = ("12", "13", "21", "23", "31", "32")
-
 
 @decorate_all_methods(logger_wraps)
 class TestCaseSkeleton:
