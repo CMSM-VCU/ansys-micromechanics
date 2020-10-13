@@ -113,8 +113,29 @@ class TestRunner:
         """
         self.ansys.run("/prep7")
         self.ansys.et(1, elementType)
-        self.ansys.nread(nodeFileAbsolutePath)
-        self.ansys.eread(elementFileAbsolutePath)
+        try:
+            self.ansys.nread(nodeFileAbsolutePath)
+            self.ansys.eread(elementFileAbsolutePath)
+        except Exception as err:
+            print(
+                "Load failed. Likely caused by bad file name. Attempting with symbolic links..."
+            )
+            temp_path_base = self.jobdir + ".temp_mesh_file"
+            try:
+                temp_node = Path(temp_path_base + ".node").symlink_to(
+                    nodeFileAbsolutePath
+                )
+                temp_elem = Path(temp_path_base + ".elem").symlink_to(
+                    elementFileAbsolutePath
+                )
+            except OSError as symLinkError:
+                print("ERROR: User does not have privileges to create symbolic links.")
+                raise symLinkError
+            else:
+                self.ansys.nread(temp_node)
+                self.ansys.eread(temp_elem)
+                temp_node.unlink()
+                temp_elem.unlink()
 
         assert self.ansys.mesh.n_node > 0, "No nodes loaded."
         assert self.ansys.mesh.n_elem > 0, "No elements loaded."
