@@ -10,4 +10,4 @@ dependencies:
     - pandas
     - pip
     - pip:
-          - pyansys>=0.43.2
+          - pyansys==0.43.2
