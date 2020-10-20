@@ -1,6 +1,6 @@
 {
-    "caseId": 111111,
-    "caseDescription": "Single fiber verification case, using strain tensors. Fewer load cases for faster debugging.",
+    "caseId": 111113,
+    "caseDescription": "Single fiber verification case, using strain tensors. Fewer load cases for faster debugging. Example of orthotropic material input",
     "units": {
         "length": "micrometer",
         "mass": "gram",
@@ -39,9 +39,10 @@
         {
             "materialIndex": 2,
             "materialName": "Glass fiber",
-            "materialType": "isotropic",
-            "elasticModuli": [7.3e7],
-            "poissonsRatios": [0.2],
+            "materialType": "orthotropic",
+            "elasticModuli": [7.3e7, 7.3e6, 7.3e6],
+            "shearModuli": [3.8e7, 3.8e6, 3.8e6],
+            "poissonsRatios": [0.2, 0.3, 0.3],
             "density": 1450e-15
         }
     ],
