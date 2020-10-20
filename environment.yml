@@ -1,0 +1,13 @@
+name: rve-tester
+channels:
+    - conda-forge
+    - defaults
+dependencies:
+    - python=3.8
+    - numpy
+    - jsonschema
+    - loguru
+    - pandas
+    - pip
+    - pip:
+          - pyansys>=0.43.2
