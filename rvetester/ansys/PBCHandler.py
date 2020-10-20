@@ -37,7 +37,7 @@ class PBCHandler:
 
         print("Applying periodic BCs to face set ", end="")
         for i, pair_set in enumerate(pair_sets):
-            print("i... ", end="")
+            print(f"{i}... ", end="")
             # with self.ansys.chain_commands:
             with self.ansys.non_interactive:
                 for pair in pair_set:
