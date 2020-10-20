@@ -11,9 +11,9 @@ SCHEMA_PATH = "./input_schema/input.schema.json"
 LAUNCH_OPTIONS = {
     "override": True,
     "run_location": os.getcwd() + "\dump",
-    "jobname": "rve_debug",
+    "jobname": "rve_tester",
     "log_apdl": "w",
-    "nproc": 12,
+    "nproc": 4,
 }
 
 
