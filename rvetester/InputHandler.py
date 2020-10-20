@@ -24,7 +24,6 @@ class InputHandler:
             self.schema = InputHandler.load_schema(schema_file_path)
         else:
             print("Creating input handler with no schema...")
-        pass
 
     @staticmethod
     def load_schema(schema_file_path: str) -> dict:

@@ -21,16 +21,13 @@ LAUNCH_OPTIONS = {
 def main():
     input_file_paths = get_input_file_paths()
 
-    cases = []
-
     handler = RVEInputHandler(schema_file_path=SCHEMA_PATH)
 
     RVETestCase = handler.create_testcase_class()
 
     handler.load_input_files(input_file_paths=input_file_paths)
 
-    for input_dict in handler.input_dicts:
-        cases.append(RVETestCase(**input_dict))
+    cases = [RVETestCase(**input_dict) for input_dict in handler.input_dicts]
 
     for case in cases:
         case.check_parameters()
@@ -40,8 +37,6 @@ def main():
     for case in cases:
         print(case.results.reportedProperties)
         case.save_results()
-
-    pass
 
 
 @logger_wraps()

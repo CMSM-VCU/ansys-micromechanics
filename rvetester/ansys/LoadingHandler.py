@@ -122,18 +122,10 @@ class LoadingHandler:
             np.ndarray: (3,3) array containing corresponding strain* tensor.
         """
         base = ([0, 0, 0], [0, 0, 0], [0, 0, 0])
-        if len(direction) == 3:
-            sign = -1
-        else:
-            sign = 1
-
+        sign = -1 if len(direction) == 3 else 1
         i, j = list(map(lambda x: int(x) - 1, direction[-2:]))
 
-        if i == j:
-            mag = normal_mag
-        else:
-            mag = shear_mag
-
+        mag = normal_mag if i == j else shear_mag
         mag = mag / lengths[i]
 
         tensor = list(base)

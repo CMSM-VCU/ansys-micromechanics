@@ -55,7 +55,6 @@ class PBCHandler:
                             node1=rn[0], lab1=ax, c1=1,
                         )
                         # fmt: on
-        pass
         # Can I get the number of constraint equations to use as a return value?
 
     def find_node_pairs(self, mesh_extents: np.ndarray) -> Sequence[np.ndarray]:
