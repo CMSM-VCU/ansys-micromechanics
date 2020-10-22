@@ -79,7 +79,9 @@ class TestRunner:
                 self.loading_handler.tensors[load_case - 1]
             )
 
+            print(f"Beginning solve for {load_case=}")
             self.solve()
+            print(f"Finished solve for {load_case=}")
             self.debug_stat()
 
             self.results_handler.extract_raw_results()
