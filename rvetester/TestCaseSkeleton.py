@@ -1,9 +1,19 @@
+from pathlib import Path
 from typing import Tuple
 from warnings import warn
 
 import numpy as np
 
+from .RecursiveNamespace import RecursiveNamespace
 from .utils import decorate_all_methods, logger_wraps, all_same
+
+RUNNER_OPTIONS_DEFAULTS = {
+    "override": True,
+    "run_location": Path.cwd() / "dump",
+    "jobname": "rve_tester",
+    "log_apdl": "w",
+    "nproc": 4,
+}
 
 
 @decorate_all_methods(logger_wraps)
@@ -199,3 +209,14 @@ class TestCaseSkeleton:
             self.mesh.elementFileAbsolutePath = str(
                 self.path.parent / self.mesh.elementFileRelativePath
             )
+
+        if getattr(self, "runnerOptions", None) is not None:
+            dict_from_input = vars(self.runnerOptions)
+        else:
+            dict_from_input = {}
+        self.runnerOptions = RecursiveNamespace(
+            **{**RUNNER_OPTIONS_DEFAULTS, **dict_from_input}
+        )
+        self.runnerOptions.run_location = str(
+            Path.resolve(self.path.parent / self.runnerOptions.run_location)
+        )

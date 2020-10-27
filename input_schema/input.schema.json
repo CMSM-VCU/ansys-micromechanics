@@ -299,6 +299,11 @@
                     ]
                 }
             ]
+        },
+        "runnerOptions": {
+            "description": "The options for configuring the test runner",
+            "type": "object",
+            "additionalProperties": true
         }
     },
     "required": [

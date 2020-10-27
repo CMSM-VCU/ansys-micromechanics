@@ -31,7 +31,9 @@ def main():
 
     for case in cases:
         case.check_parameters()
-        case.attach_to_testrunner(TestRunnerClass=TestRunner, options=LAUNCH_OPTIONS)
+        case.attach_to_testrunner(
+            TestRunnerClass=TestRunner, options=vars(case.runnerOptions)
+        )
         case.run_tests()
 
     for case in cases:
