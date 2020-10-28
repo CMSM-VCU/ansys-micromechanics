@@ -99,8 +99,8 @@ class TestCaseSkeleton:
         if self.mesh_type == "external":
             attrs = [kind + "FileAbsolutePath" for kind in ["node", "element", "csys"]]
             for attr in attrs:
-                if (path_ := getattr(self.mesh, attr, None)) is not None:
-                    assert Path(path_).exists(), f"{path_} could not be found."
+                if (path := getattr(self.mesh, attr, None)) is not None:
+                    assert Path(path).exists(), f"{path} could not be found."
 
         # Check if "fake" isotropic materials obey Hooke's Law
         for mat in self.materials:
@@ -205,17 +205,22 @@ class TestCaseSkeleton:
         return np.unique(np.hstack(self.loading.expectedProperties), return_counts=True)
 
     def preprocess_attributes(self):
-        """Manipulate user input attributes to prepare for future use. Currently,
-        setting absolute paths to mesh files from user input relative paths.
+        """Manipulate user input attributes to prepare for future use.
+            - Converting user input relative paths to absolute paths
+            - Combining user input runner options with default options
         """
         if self.mesh_type == "external":
-            self.mesh.nodeFileAbsolutePath = str(
-                self.path.parent / self.mesh.nodeFileRelativePath
-            )
-
-            self.mesh.elementFileAbsolutePath = str(
-                self.path.parent / self.mesh.elementFileRelativePath
-            )
+            attrs_rel = [
+                kind + "FileRelativePath" for kind in ["node", "element", "csys"]
+            ]
+            attrs_abs = [
+                kind + "FileAbsolutePath" for kind in ["node", "element", "csys"]
+            ]
+            for rel, abs_ in zip(attrs_rel, attrs_abs):
+                if (path := getattr(self.mesh, rel, None)) is not None:
+                    setattr(self.mesh, abs_, str(self.path.parent / path))
+                else:
+                    setattr(self.mesh, abs_, None)
 
         if getattr(self, "runnerOptions", None) is not None:
             dict_from_input = vars(self.runnerOptions)
