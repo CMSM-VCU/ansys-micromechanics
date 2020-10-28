@@ -281,6 +281,10 @@
                 "elementFileRelativePath": {
                     "type": "string",
                     "description": "The path to the file containing element data (relative to this input file)"
+                },
+                "csysFileRelativePath": {
+                    "type": "string",
+                    "description": "The path to the file containing element coordinate system data (relative to this input file)"
                 }
             },
             "oneOf": [
