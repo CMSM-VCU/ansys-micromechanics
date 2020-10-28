@@ -95,6 +95,13 @@ class TestCaseSkeleton:
                 )
                 passed_checks = False
 
+        # Check if specified mesh files are able to be found
+        if self.mesh_type == "external":
+            attrs = [kind + "FileAbsolutePath" for kind in ["node", "element", "csys"]]
+            for attr in attrs:
+                if (path_ := getattr(self.mesh, attr, None)) is not None:
+                    assert Path(path_).exists(), f"{path_} could not be found."
+
         # Check if "fake" isotropic materials obey Hooke's Law
         for mat in self.materials:
             if mat.materialType == "orthotropic":
