@@ -100,6 +100,7 @@ class TestRunner:
         elementType: str,
         nodeFileAbsolutePath: str,
         elementFileAbsolutePath: str,
+        csysFileAbsolutePath: str = None,
         **kwargs,
     ):
         """Generate a mesh from a pair of preexisting node and element files, in Ansys
@@ -127,7 +128,29 @@ class TestRunner:
 
         assert self.ansys.mesh.n_node > 0, "No nodes loaded."
         assert self.ansys.mesh.n_elem > 0, "No elements loaded."
+
+        if csysFileAbsolutePath:
+            self.load_coordinate_systems(csysFileAbsolutePath)
+        else:
+            if self.ansys.get("_", "ELEM", 0, "ESYM", "MAX") > 0:
+                print(
+                    "Warning: Elements have non-default csys numbers, ",
+                    "but no coordinate systems were provided. ",
+                    "Setting all csys numbers to 0...",
+                )
+                self.ansys.emodif("ALL", "ESYS", 0)
+
         return (self.ansys.mesh.n_node, self.ansys.mesh.n_elem)
+
+    def load_coordinate_systems(self, csysFileAbsolutePath):
+        csys_nums, *csys_angles = np.genfromtxt(
+            csysFileAbsolutePath, delimiter=",", unpack=True
+        )
+        with self.ansys.non_interactive:
+            for num, angles in zip(csys_nums, zip(*csys_angles)):
+                self.ansys.local(num, thxy=angles[0], thyz=angles[1], thzx=angles[2])
+
+        self.ansys.csys()  # Reset to global cartesian
 
     def get_retained_nodes(self):
         """Get the numbers of the retained nodes in the current mesh.
