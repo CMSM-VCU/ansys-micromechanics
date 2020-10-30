@@ -8,14 +8,6 @@ from rvetester.utils import logger_wraps
 
 SCHEMA_PATH = "./input_schema/input.schema.json"
 
-LAUNCH_OPTIONS = {
-    "override": True,
-    "run_location": os.getcwd() + "\dump",
-    "jobname": "rve_tester",
-    "log_apdl": "w",
-    "nproc": 4,
-}
-
 
 @logger_wraps()
 def main():
