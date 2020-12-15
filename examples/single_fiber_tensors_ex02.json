@@ -50,5 +50,9 @@
         "elementType": "SOLID186",
         "nodeFileRelativePath": "./meshes/fiber_corners_ex01.node",
         "elementFileRelativePath": "./meshes/fiber_corners_ex01.elem"
+    },
+    "runnerOptions": {
+        "nproc": 2,
+        "jobname": "single_fiber_ex02"
     }
 }

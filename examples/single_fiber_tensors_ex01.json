@@ -81,7 +81,7 @@
     ],
     "mesh": {
         "elementType": "SOLID186",
-        "nodeFileRelativePath": "./meshes/fiber_corners_ex01.node",
-        "elementFileRelativePath": "./meshes/fiber_corners_ex01.elem"
+        "nodeFileRelativePath": "./meshes/fiber_center_ex01.node",
+        "elementFileRelativePath": "./meshes/fiber_center_ex01.elem"
     }
 }
