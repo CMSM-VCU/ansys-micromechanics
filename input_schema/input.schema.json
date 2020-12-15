@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/schema#",
-    "title": "RVE Tester Input",
-    "description": "Input deck defining an RVE test case",
+    "title": "Ansys Micromechanics Input",
+    "description": "Input deck defining a micromechanics test case",
     "type": "object",
     "properties": {
         "caseId": {

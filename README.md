@@ -1,1 +1,1 @@
-# ansys-rve-tester
+# ansys-micromechanics

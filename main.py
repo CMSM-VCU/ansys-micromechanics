@@ -2,9 +2,9 @@ import os
 import sys
 from pathlib import Path
 
-from rvetester.ansys.TestRunner import TestRunner
-from rvetester.RVEInputHandler import RVEInputHandler
-from rvetester.utils import logger_wraps
+from ansysmicro.ansys.TestRunner import TestRunner
+from ansysmicro.AnsysInputHandler import AnsysInputHandler
+from ansysmicro.utils import logger_wraps
 
 SCHEMA_PATH = "./input_schema/input.schema.json"
 
@@ -13,13 +13,13 @@ SCHEMA_PATH = "./input_schema/input.schema.json"
 def main():
     input_file_paths = get_input_file_paths()
 
-    handler = RVEInputHandler(schema_file_path=SCHEMA_PATH)
+    handler = AnsysInputHandler(schema_file_path=SCHEMA_PATH)
 
-    RVETestCase = handler.create_testcase_class()
+    TestCaseClass = handler.create_testcase_class()
 
     handler.load_input_files(input_file_paths=input_file_paths)
 
-    cases = [RVETestCase(**input_dict) for input_dict in handler.input_dicts]
+    cases = [TestCaseClass(**input_dict) for input_dict in handler.input_dicts]
 
     for case in cases:
         case.check_parameters()

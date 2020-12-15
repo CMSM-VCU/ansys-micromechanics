@@ -2,7 +2,7 @@ from typing import Sequence, Tuple
 
 import numpy as np
 
-from rvetester.utils import decorate_all_methods, logger_wraps, round_to_sigfigs
+from ansysmicro.utils import decorate_all_methods, logger_wraps, round_to_sigfigs
 
 AXES = ["X", "Y", "Z"]
 SIG_FIGS = 8
