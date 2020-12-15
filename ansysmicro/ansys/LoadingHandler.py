@@ -2,8 +2,8 @@ from typing import List, Sequence, Tuple
 
 import numpy as np
 
-from rvetester.RecursiveNamespace import RecursiveNamespace
-from rvetester.utils import decorate_all_methods, logger_wraps
+from ansysmicro.RecursiveNamespace import RecursiveNamespace
+from ansysmicro.utils import decorate_all_methods, logger_wraps
 
 DISP_AXES = ["UX", "UY", "UZ"]
 

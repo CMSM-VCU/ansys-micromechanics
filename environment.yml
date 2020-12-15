@@ -1,4 +1,4 @@
-name: rve-tester
+name: ansys-micro
 channels:
     - conda-forge
     - defaults

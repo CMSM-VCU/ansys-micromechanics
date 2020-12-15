@@ -3,7 +3,7 @@ from typing import Any, List
 
 import numpy as np
 
-from rvetester.utils import decorate_all_methods, logger_wraps
+from ansysmicro.utils import decorate_all_methods, logger_wraps
 
 from .AnsysContainer import AnsysContainer
 from .LoadingHandler import LoadingHandler
