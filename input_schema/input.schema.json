@@ -1,5 +1,6 @@
 {
     "$schema": "http://json-schema.org/schema#",
+    "$id": "ansysmicro/input",
     "title": "Ansys Micromechanics Input",
     "description": "Input deck defining a micromechanics test case",
     "type": "object",
@@ -14,7 +15,7 @@
             "type": "string"
         },
         "units": {
-            "description": "The set of units used for a test case (documentation only, no effect on simulation",
+            "description": "The set of units used for a test case (documentation only, no effect on simulation)",
             "type": "object",
             "properties": {
                 "length": {
@@ -46,25 +47,7 @@
             "properties": {
                 "kind": {
                     "type": "string",
-                    "enum": ["displacement", "tensor"]
-                },
-                "directions": {
-                    "type": "array",
-                    "minItems": 1,
-                    "uniqueItems": true,
-                    "items": {
-                        "type": "string",
-                        "pattern": "^-?[123][123]$",
-                        "examples": ["11", "12", "-23", "31"]
-                    }
-                },
-                "normalMagnitude": {
-                    "type": "number",
-                    "description": "The magnitude of loading for all normal tests, units depending on kind"
-                },
-                "shearMagnitude": {
-                    "type": "number",
-                    "description": "The magnitude of loading for all shear tests, units depending on kind"
+                    "enum": ["tensor", "displacement"]
                 },
                 "tensors": {
                     "type": "array",
@@ -111,17 +94,36 @@
                             "examples": ["E11", "G12", "v31", "all"]
                         }
                     }
+                },
+                "directions": {
+                    "description": "[Deprecated]",
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                        "type": "string",
+                        "pattern": "^-?[123][123]$",
+                        "examples": ["11", "12", "-23", "31"]
+                    }
+                },
+                "normalMagnitude": {
+                    "type": "number",
+                    "description": "[Deprecated] The magnitude of loading for all normal tests, units depending on kind"
+                },
+                "shearMagnitude": {
+                    "type": "number",
+                    "description": "[Deprecated] The magnitude of loading for all shear tests, units depending on kind"
                 }
             },
             "required": ["kind", "expectedProperties"],
             "oneOf": [
                 {
-                    "properties": { "kind": { "enum": ["displacement"] } },
-                    "required": ["directions", "normalMagnitude", "shearMagnitude"]
-                },
-                {
                     "properties": { "kind": { "enum": ["tensor"] } },
                     "required": ["tensors", "magnitudeMultiplier"]
+                },
+                {
+                    "properties": { "kind": { "enum": ["displacement"] } },
+                    "required": ["directions", "normalMagnitude", "shearMagnitude"]
                 }
             ]
         },
@@ -149,26 +151,26 @@
                         "description": "The elastic moduli of a material in the three principal directions",
                         "type": "array",
                         "items": {
-                            "type": "number"
-                        },
-                        "exclusiveMinimum": 0.0
+                            "type": "number",
+                            "exclusiveMinimum": 0.0
+                        }
                     },
                     "shearModuli": {
                         "description": "The shear moduli of a material in the three principal planes: 1-2, 2-3, 3-1",
                         "type": "array",
                         "items": {
-                            "type": "number"
-                        },
-                        "exclusiveMinimum": 0.0
+                            "type": "number",
+                            "exclusiveMinimum": 0.0
+                        }
                     },
                     "poissonsRatios": {
                         "description": "The poisson's ratios of a material in the three principal planes: 1-2, 2-3, 3-1",
                         "type": "array",
                         "items": {
-                            "type": "number"
-                        },
-                        "minimum": -1.0,
-                        "maximum": 0.5
+                            "type": "number",
+                            "minimum": -1.0,
+                            "maximum": 0.5
+                        }
                     },
                     "density": {
                         "description": "The volumetric density of a material. Only used in PD cases (currently).",
@@ -231,17 +233,34 @@
             "description": "The data defining the RVE mesh",
             "type": "object",
             "properties": {
+                "elementType": {
+                    "type": "string",
+                    "description": "The element type to use in the mesh",
+                    "default": "SOLID185"
+                },
+                "nodeFileRelativePath": {
+                    "type": "string",
+                    "description": "The path to the file containing node data (relative to this input file)"
+                },
+                "elementFileRelativePath": {
+                    "type": "string",
+                    "description": "The path to the file containing element data (relative to this input file)"
+                },
+                "csysFileRelativePath": {
+                    "type": "string",
+                    "description": "The path to the file containing element coordinate system data (relative to this input file)"
+                },
                 "domainSideLength": {
                     "type": "number",
-                    "description": "The side length of the cubic domain, centered on the origin"
+                    "description": "[Deprecated] The side length of the cubic domain, centered on the origin"
                 },
                 "elementSpacing": {
                     "type": "number",
-                    "description": "The element edge length in FEA cases, the grid spacing in PD cases",
+                    "description": "[Deprecated] The element edge length in FEA cases, the grid spacing in PD cases",
                     "exclusiveMinimum": 0.0
                 },
                 "locationsWithId": {
-                    "description": "The locations ordered as [xloc, yloc, zloc, materialIndex]",
+                    "description": "[Deprecated] The locations ordered as [xloc, yloc, zloc, materialIndex]",
                     "type": "array",
                     "items": {
                         "type": "array",
@@ -268,23 +287,6 @@
                         "additionalItems": false
                     },
                     "minItems": 0
-                },
-                "elementType": {
-                    "type": "string",
-                    "description": "The element type to use in the mesh",
-                    "default": "SOLID185"
-                },
-                "nodeFileRelativePath": {
-                    "type": "string",
-                    "description": "The path to the file containing node data (relative to this input file)"
-                },
-                "elementFileRelativePath": {
-                    "type": "string",
-                    "description": "The path to the file containing element data (relative to this input file)"
-                },
-                "csysFileRelativePath": {
-                    "type": "string",
-                    "description": "The path to the file containing element coordinate system data (relative to this input file)"
                 }
             },
             "oneOf": [
