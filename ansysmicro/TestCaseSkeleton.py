@@ -9,7 +9,7 @@ from .utils import decorate_all_methods, logger_wraps, all_same
 
 RUNNER_OPTIONS_DEFAULTS = {
     "override": True,
-    "run_location": Path.cwd() / "dump",
+    "run_location": Path.cwd() / "ansys_working",
     "jobname": "rve_tester",
     "log_apdl": "w",
     "nproc": 4,
