@@ -6,7 +6,7 @@ from typing import Sequence, Tuple
 
 import numpy as np
 import pandas as pd
-from pyansys.rst import ResultFile
+from ansys.mapdl.reader.rst import Result
 
 import ansysmicro.utils as utils
 from ansysmicro.RecursiveNamespace import RecursiveNamespace
@@ -46,6 +46,9 @@ class ResultsHandler:
         Returns:
             bool: Whether the results file was successfully deleted.
         """
+        if rst_path is None and self.rst_path is None:
+            return True
+
         if rst_path is None:
             rst_path = self.rst_path
 
@@ -55,7 +58,7 @@ class ResultsHandler:
 
     def get_results_object(
         self, rst_path: Path = None, max_wait=RESULTS_WAIT_MAX
-    ) -> ResultFile:
+    ) -> Result:
         """Extract results object from results file (.rst) of current Ansys instance.
 
         Args:

@@ -54,6 +54,7 @@
     "runnerOptions": {
         "nproc": 2,
         "jobname": "single_fiber_ex02",
-        "run_location": "./ex02_working_dir"
+        "run_location": "./ex02_working_dir",
+        "additional_switches": "-db -512"
     }
 }
