@@ -29,6 +29,7 @@ class TestRunner:
         self.test_case.results = {}
         self.test_case.debug_results = {}
         self.launch_options = options
+        self.rst_path = None
         try:
             self.jobname = options["jobname"]
         except:
@@ -44,7 +45,6 @@ class TestRunner:
         """Execute the full test process. Launches and closes an Ansys instance.
         """
         with AnsysContainer(self.launch_options) as self.ansys:
-            self.rst_path = Path(self.ansys._result_file)
             self.ansys.finish()
             self.ansys.run("/CLEAR")
             self.prepare_mesh()
@@ -84,6 +84,8 @@ class TestRunner:
             print(f"Finished solve for {load_case=}")
             self.debug_stat()
 
+            self.rst_path = Path(self.ansys._result_file)
+            self.results_handler.rst_path = self.rst_path
             self.results_handler.extract_raw_results()
             self.results_handler.calculate_properties(load_case)
 
