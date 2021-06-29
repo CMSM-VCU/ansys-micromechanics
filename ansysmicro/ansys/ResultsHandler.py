@@ -46,6 +46,9 @@ class ResultsHandler:
         Returns:
             bool: Whether the results file was successfully deleted.
         """
+        if rst_path is None and self.rst_path is None:
+            return True
+
         if rst_path is None:
             rst_path = self.rst_path
 
