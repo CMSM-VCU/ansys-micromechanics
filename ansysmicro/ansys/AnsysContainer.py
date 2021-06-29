@@ -1,6 +1,7 @@
 from pathlib import Path
 
-import pyansys
+import ansys.mapdl.core
+from ansys.mapdl.core import launch_mapdl
 
 
 class AnsysContainer:
@@ -14,11 +15,11 @@ class AnsysContainer:
                 Path(self.launch_options["run_location"]).mkdir(
                     parents=True, exist_ok=True
                 )
-            self.ansys = pyansys.launch_mapdl(**self.launch_options)
+            self.ansys = launch_mapdl(**self.launch_options)
         else:
-            self.ansys = pyansys.launch_mapdl()
+            self.ansys = launch_mapdl()
 
-        setattr(self.ansys, "pyansys_version", pyansys.__version__)
+        setattr(self.ansys, "pymapdl_version", ansys.mapdl.core.__version__)
         print(self.ansys)
         return self.ansys
 
