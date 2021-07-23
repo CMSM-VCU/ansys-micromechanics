@@ -102,7 +102,7 @@ class ResultsHandler:
         coord = result.mesh.nodes
         nnum, disp = result.nodal_displacement(result.nsets - 1)
 
-        self.ansys.run("/POST1")
+        self.ansys.post1()
         retained_results = []
         for node_num in retained_nodes:
             node_results = {}

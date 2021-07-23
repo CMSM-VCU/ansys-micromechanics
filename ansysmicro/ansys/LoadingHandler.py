@@ -144,7 +144,7 @@ class LoadingHandler:
         Args:
             tensor (np.ndarray): (3,3) array containing strain* values
         """
-        self.ansys.run("/SOLU")
+        self.ansys.slashsolu()
         self.ansys.allsel()
         self.ansys.ddele("ALL")
 

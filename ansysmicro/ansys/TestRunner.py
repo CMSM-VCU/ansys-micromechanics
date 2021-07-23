@@ -46,7 +46,7 @@ class TestRunner:
         """
         with AnsysContainer(self.launch_options) as self.ansys:
             self.ansys.finish()
-            self.ansys.run("/CLEAR")
+            self.ansys.clear()
             self.prepare_mesh()
             results = self.run_test_sequence()
         return results
@@ -116,7 +116,7 @@ class TestRunner:
         Returns:
             tuple(int, int): tuple containing number of nodes and elements in loaded mesh
         """
-        self.ansys.run("/prep7")
+        self.ansys.prep7()
         self.ansys.et(1, elementType)
         try:
             self.ansys.nread(nodeFileAbsolutePath)
@@ -229,7 +229,7 @@ class TestRunner:
         g_str = ["GXY", "GYZ", "GXZ"]
         pr_str = ["PRXY", "PRYZ", "PRXZ"]
 
-        self.ansys.run("/PREP7")
+        self.ansys.prep7()
         for material in materials:
             id = material.materialIndex
             if material.materialType == "isotropic":
@@ -248,7 +248,7 @@ class TestRunner:
         """Calculate the solution for the current load case.
         """
         # with self.ansys.non_interactive:
-        self.ansys.run("/SOLU")
+        self.ansys.slashsolu()
         self.ansys.allsel()
         self.ansys.solve()
 
@@ -291,7 +291,7 @@ class TestRunner:
             tuple(int, int): tuple containing number of nodes and elements in generated mesh
         """
         half_side = domainSideLength / 2
-        self.ansys.run("/PREP7")
+        self.ansys.prep7()
         self.ansys.block(
             -half_side, half_side, -half_side, half_side, -half_side, half_side,
         )
@@ -312,7 +312,7 @@ class TestRunner:
         Individual emodif commands may be extra slow, so try adding to component
         per material number, then emodif on each component
         """
-        self.ansys.run("/PREP7")
+        self.ansys.prep7()
         for element in self.test_case.mesh.locationsWithId:
             self.ansys.esel("S", "CENT", "X", element[0])
             self.ansys.esel("R", "CENT", "Y", element[1])

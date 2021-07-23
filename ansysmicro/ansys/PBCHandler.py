@@ -29,7 +29,7 @@ class PBCHandler:
         Returns:
             None: (Does not return a value)
         """
-        self.ansys.run("/PREP7")
+        self.ansys.prep7()
 
         pair_sets = self.find_node_pairs(self.mesh_extents)
 
