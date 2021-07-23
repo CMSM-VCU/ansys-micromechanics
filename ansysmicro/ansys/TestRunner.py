@@ -250,7 +250,7 @@ class TestRunner:
         # with self.ansys.non_interactive:
         self.ansys.slashsolu()
         self.ansys.allsel()
-        self.ansys.solve()
+        return self.ansys.solve()
 
     def mesh_extents(self, current: bool = False) -> np.ndarray:
         """Calculate +/- xyz extents of mesh.
