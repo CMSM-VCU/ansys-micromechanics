@@ -269,12 +269,12 @@ class TestRunner:
             return np.column_stack((mins, maxs))
 
     def debug_stat(self):
-        self.ansys.lsoper()
-        self.ansys.stat()
-        self.ansys.fecons()
-        self.ansys.stat()
-        self.ansys.ceqn()
-        self.ansys.stat()
+        print(self.ansys.lsoper())
+        print(self.ansys.stat())
+        print(self.ansys.fecons())
+        print(self.ansys.stat())
+        print(self.ansys.ceqn())
+        print(self.ansys.stat())
 
     def generate_base_mesh(
         self, elementType: str, domainSideLength: float, elementSpacing: float, **kwargs
