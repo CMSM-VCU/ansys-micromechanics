@@ -43,11 +43,21 @@ def get_input_file_paths():
         input_paths (List[Str]): List of paths to each input file
     """
     input_paths = sys.argv[1:]
-    for index, path in reversed(list(enumerate(input_paths))):
-        if not Path(path).exists():
+    real_paths = []
+    for path_ in input_paths:
+        path = Path(path_)
+        if "*" in str(path):
+            print(f"Reading as glob: {path}")
+            glob = list(path.parent.glob(str(path.name)))
+            real_paths += glob
+        elif path.exists():
+            real_paths += path
+        else:
             print(f"Input file not found at {path}")
-            input_paths.remove(index)
-    return input_paths
+
+    print(f"Running input files: {real_paths}")
+
+    return real_paths
 
 
 if __name__ == "__main__":
