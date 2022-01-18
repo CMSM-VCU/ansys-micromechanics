@@ -83,6 +83,8 @@ class TestRunner:
             self.solve()
             print(f"Finished solve for {load_case=}")
             self.debug_stat()
+            self.ansys.post1()
+            self.ansys.set("last")
 
             self.rst_path = Path(self.ansys._result_file)
             self.results_handler.rst_path = self.rst_path
