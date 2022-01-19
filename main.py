@@ -51,7 +51,7 @@ def get_input_file_paths():
             glob = list(path.parent.glob(str(path.name)))
             real_paths += glob
         elif path.exists():
-            real_paths += path
+            real_paths += [path]
         else:
             print(f"Input file not found at {path}")
 
