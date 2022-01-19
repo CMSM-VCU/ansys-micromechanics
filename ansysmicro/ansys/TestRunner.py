@@ -143,6 +143,7 @@ class TestRunner:
                     "Setting all csys numbers to 0...",
                 )
                 self.ansys.emodif("ALL", "ESYS", 0)
+        self.ansys.prep7()
         self.ansys.nummrg("NODE")
 
         return (self.ansys.mesh.n_node, self.ansys.mesh.n_elem)
