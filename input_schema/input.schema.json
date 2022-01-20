@@ -249,54 +249,9 @@
                 "csysFileRelativePath": {
                     "type": "string",
                     "description": "The path to the file containing element coordinate system data (relative to this input file)"
-                },
-                "domainSideLength": {
-                    "type": "number",
-                    "description": "[Deprecated] The side length of the cubic domain, centered on the origin"
-                },
-                "elementSpacing": {
-                    "type": "number",
-                    "description": "[Deprecated] The element edge length in FEA cases, the grid spacing in PD cases",
-                    "exclusiveMinimum": 0.0
-                },
-                "locationsWithId": {
-                    "description": "[Deprecated] The locations ordered as [xloc, yloc, zloc, materialIndex]",
-                    "type": "array",
-                    "items": {
-                        "type": "array",
-                        "items": [
-                            {
-                                "type": "number",
-                                "description": "x coordinate"
-                            },
-                            {
-                                "type": "number",
-                                "description": "y coordinate"
-                            },
-                            {
-                                "type": "number",
-                                "description": "z coordinate"
-                            },
-                            {
-                                "type": "integer",
-                                "description": "Material index",
-                                "minimum": 1
-                            }
-                        ],
-                        "minItems": 4,
-                        "additionalItems": false
-                    },
-                    "minItems": 0
                 }
             },
             "oneOf": [
-                {
-                    "required": [
-                        "domainSideLength",
-                        "elementSpacing",
-                        "locationsWithId"
-                    ]
-                },
                 {
                     "required": [
                         "elementType",
