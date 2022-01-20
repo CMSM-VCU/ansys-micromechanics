@@ -27,8 +27,6 @@ def main():
             TestRunnerClass=TestRunner, options=vars(case.runnerOptions)
         )
         case.run_tests()
-
-    for case in cases:
         print(case.results.reportedProperties)
         case.save_results()
 
