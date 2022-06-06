@@ -69,4 +69,4 @@ The input files use the standard JSON format and are validated using a schema.
 
 # Background Summary
 
-[See here](https://www.notion.so/Ansys-Micromechanics-Background-Summary-cbcfac8c0d2f4c3eac8476f963047e3b) for a summary of the method being applied by this tool.
+[See here](https://www.notion.so/cmsm-vcu/Ansys-Micromechanics-Background-Summary-10fe3ffb22ad46e492dd119479cd20e1) for a summary of the method being applied by this tool. [See here](https://www.notion.so/cmsm-vcu/Micromechanics-Tester-Verification-a35cf1a92c0b4f9fbc9a0222febc2c69) for notes on the verification of this tool.
