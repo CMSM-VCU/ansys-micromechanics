@@ -1,6 +1,9 @@
 import os
+import shutil
+import stat
 import sys
 from pathlib import Path
+import time
 
 from ansysmicro.ansys.TestRunner import TestRunner
 from ansysmicro.AnsysInputHandler import AnsysInputHandler
@@ -11,6 +14,12 @@ SCHEMA_PATH = "./input_schema/input.schema.json"
 
 @logger_wraps()
 def main():
+    if sys.argv[1] == "--cleanup":
+        cleanup_working_dir = True
+        sys.argv.pop(1)
+    else:
+        cleanup_working_dir = False
+
     input_file_paths = get_input_file_paths()
 
     handler = AnsysInputHandler(schema_file_path=SCHEMA_PATH)
@@ -29,6 +38,20 @@ def main():
         case.run_tests()
         print(case.results.reportedProperties)
         case.save_results()
+        if cleanup_working_dir:
+            case.testrunner = None
+            print("waiting before delete...")
+            time.sleep(10)
+            shutil.rmtree(
+                Path(case.runnerOptions.run_location), onerror=remove_readonly
+            )
+
+
+def remove_readonly(func, path, _):
+    "Clear the readonly bit and reattempt the removal"
+    os.chmod(path, stat.S_IWRITE)
+    print(path)
+    func(path)
 
 
 @logger_wraps()
