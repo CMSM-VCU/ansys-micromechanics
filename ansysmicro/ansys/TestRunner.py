@@ -116,6 +116,10 @@ class TestRunner:
         Returns:
             tuple(int, int): tuple containing number of nodes and elements in loaded mesh
         """
+        logger.info(f"Using {elementType=}")
+        logger.info(
+            f"Reading mesh files {nodeFileAbsolutePath=} and {elementFileAbsolutePath=}"
+        )
         self.ansys.prep7()
         self.ansys.et(1, elementType)
         try:
@@ -147,6 +151,7 @@ class TestRunner:
         return self.ansys.mesh.n_node, self.ansys.mesh.n_elem
 
     def load_coordinate_systems(self, csysFileAbsolutePath):
+        logger.info(f"Reading coordinate systems file {csysFileAbsolutePath=}")
         csys_nums, *csys_angles = np.genfromtxt(
             csysFileAbsolutePath, delimiter=",", unpack=True
         )
@@ -173,6 +178,7 @@ class TestRunner:
         node_coords = [[extents[index] for index in node] for node in coord_indices]
         self.retained_nodes = [self.get_node_num_at_loc(*node) for node in node_coords]
 
+        logger.info(f"Retained node numbers are {self.retained_nodes}")
         return self.retained_nodes  # for logging purposes
 
     def get_node_num_at_loc(self, x: float, y: float, z: float) -> int:
