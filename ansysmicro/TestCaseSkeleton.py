@@ -5,13 +5,12 @@ from warnings import warn
 import numpy as np
 
 from .RecursiveNamespace import RecursiveNamespace
-from .utils import decorate_all_methods, logger_wraps, all_same
+from .utils import all_same, decorate_all_methods, logger_wraps
 
 RUNNER_OPTIONS_DEFAULTS = {
     "override": True,
     "run_location": Path.cwd() / "ansys_working",
     "jobname": "rve_tester",
-    "log_apdl": "w",
     "nproc": 4,
 }
 
@@ -206,8 +205,8 @@ class TestCaseSkeleton:
 
     def preprocess_attributes(self):
         """Manipulate user input attributes to prepare for future use.
-            - Converting user input relative paths to absolute paths
-            - Combining user input runner options with default options
+        - Converting user input relative paths to absolute paths
+        - Combining user input runner options with default options
         """
         if self.mesh_type == "external":
             attrs_rel = [
