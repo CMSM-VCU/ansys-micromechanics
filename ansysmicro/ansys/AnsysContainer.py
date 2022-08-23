@@ -2,6 +2,7 @@ from pathlib import Path
 
 import ansys.mapdl.core
 from ansys.mapdl.core import launch_mapdl
+from loguru import logger
 
 
 class AnsysContainer:
@@ -20,11 +21,11 @@ class AnsysContainer:
             self.ansys = launch_mapdl()
 
         setattr(self.ansys, "pymapdl_version", ansys.mapdl.core.__version__)
-        print(self.ansys)
+        logger.debug(self.ansys)
         return self.ansys
 
     def __exit__(self, type, value, traceback):
         """Ensure that Ansys instance is closed when done using class."""
-        print("Attempting to exit Ansys...")
+        logger.info("Attempting to exit Ansys...")
         self.ansys.exit()
-        print("Exited successfully")
+        logger.info("Exited successfully")

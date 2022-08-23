@@ -378,7 +378,7 @@ class ResultsHandler:
         key_map = {"E": "elasticModuli", "G": "shearModuli", "v": "poissonsRatios"}
         index_map = dict(
             zip(["".join(pair) for pair in permutations("123", r=2)], range(6))
-        ) | zip(["11", "22", "33"], range(3))
+        ) | dict(zip(["11", "22", "33"], range(3)))
 
         # Create dataframe and add labels if given
         df_index = list(np.unique(np.hstack(expected_property_sets)))

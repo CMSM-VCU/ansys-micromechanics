@@ -5,6 +5,8 @@ import sys
 import time
 from pathlib import Path
 
+from loguru import logger
+
 from ansysmicro.ansys.TestRunner import TestRunner
 from ansysmicro.AnsysInputHandler import AnsysInputHandler
 from ansysmicro.utils import logger_wraps
@@ -36,13 +38,13 @@ def main():
             TestRunnerClass=TestRunner, options=vars(case.runnerOptions)
         )
         case.run_tests()
-        print(case.results.reportedProperties)
+        logger.info(case.results.reportedProperties)
         case.save_results()
         if cleanup_working_dir:
-            print("cleanup disabled")
+            logger.debug("cleanup disabled")
             continue
             case.testrunner = None
-            print("waiting before delete...")
+            logger.debug("waiting before delete...")
             time.sleep(10)
             shutil.rmtree(
                 Path(case.runnerOptions.run_location), onerror=remove_readonly
@@ -52,7 +54,7 @@ def main():
 def remove_readonly(func, path, _):
     "Clear the readonly bit and reattempt the removal"
     os.chmod(path, stat.S_IWRITE)
-    print(path)
+    logger.debug(path)
     func(path)
 
 
@@ -70,15 +72,15 @@ def get_input_file_paths():
     for path_ in input_paths:
         path = Path(path_)
         if "*" in str(path):
-            print(f"Reading as glob: {path}")
+            logger.info(f"Reading as glob: {path}")
             glob = list(path.parent.glob(str(path.name)))
             real_paths += glob
         elif path.exists():
             real_paths += [path]
         else:
-            print(f"Input file not found at {path}")
+            logger.warning(f"Input file not found at {path}")
 
-    print(f"Running input files: {real_paths}")
+    logger.info(f"Running input files: {real_paths}")
 
     return real_paths
 

@@ -2,7 +2,6 @@ import functools
 import time
 from pathlib import Path
 from typing import Callable, Sequence, Tuple, Union
-from warnings import warn
 
 import numpy as np
 from loguru import logger
@@ -10,6 +9,8 @@ from loguru import logger
 
 def logger_wraps(_func: Callable = None, *, entry=True, exit=True, level="DEBUG"):
     """Crazy logging decorator, adjusted to enable use in decorate_all_methods function.
+    From loguru documentation:
+    loguru.readthedocs.io/en/stable/resources/recipes.html#logging-entry-and-exit-of-functions-with-a-decorator
 
     Args:
         _func (Callable, optional): Function to be wrapped. Defaults to None.
@@ -99,7 +100,7 @@ def definitely_delete_file(
     deleted = False
     while waited < max_wait:
         if path.exists():
-            print("File not deleted yet. Checking again in 1 second...")
+            logger.debug("File not deleted yet. Checking again in 1 second...")
             time.sleep(1)
             waited += 1
             continue
@@ -109,7 +110,7 @@ def definitely_delete_file(
     else:
         msg = f"File not deleted after waiting {waited} seconds."
         if warn_on_fail:
-            warn(msg)
+            logger.warning(msg)
         else:
             raise Exception(msg)
 
@@ -152,21 +153,21 @@ def definitely_find_file(
                 found = path.stat().st_size > 0
                 break
             else:
-                print(
+                logger.debug(
                     f"File found, but size={path.stat().st_size}. Checking again in 1 second..."
                 )
                 time.sleep(1)
                 waited += 1
                 continue
         else:
-            print("File not found. Checking again in 1 second...")
+            logger.debug("File not found. Checking again in 1 second...")
             time.sleep(1)
             waited += 1
             continue
     else:
         msg = f"File not found with nonzero size after waiting {waited} seconds."
         if warn_on_fail:
-            warn(msg)
+            logger.warning(msg)
         else:
             raise Exception(msg)
 

@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Tuple
-from warnings import warn
 
 import numpy as np
+from loguru import logger
 
 from .RecursiveNamespace import RecursiveNamespace
 from .utils import all_same, decorate_all_methods, logger_wraps
@@ -41,7 +41,7 @@ class TestCaseSkeleton:
         results object.
         """
         self.results = self.testrunner.run()
-        print(f"Finished with {self.results.reportedProperties}")
+        logger.info(f"Finished with {self.results.reportedProperties}")
         self.compress_results()
 
     def compress_results(self) -> bool:
@@ -62,7 +62,7 @@ class TestCaseSkeleton:
             self.results.reportedProperties.insert(0, 0, collapsed_column)
             return True
         else:
-            print("Results cannot be compressed.")
+            logger.warning("Results cannot be compressed.")
             return False
 
     def save_results(self):

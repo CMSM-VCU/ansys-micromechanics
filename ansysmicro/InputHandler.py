@@ -3,6 +3,7 @@ import pathlib
 from typing import List
 
 import jsonschema
+from loguru import logger
 
 from .utils import decorate_all_methods, logger_wraps
 
@@ -23,7 +24,7 @@ class InputHandler:
         if schema_file_path:
             self.schema = InputHandler.load_schema(schema_file_path)
         else:
-            print("Creating input handler with no schema...")
+            logger.debug("Creating input handler with no schema...")
 
     @staticmethod
     def load_schema(schema_file_path: str) -> dict:
@@ -89,7 +90,7 @@ class InputHandler:
                 input_dict, self.schema, raise_failure
             )
 
-        print("InputHandler: No schema loaded")
+        logger.warning("InputHandler: No schema loaded")
         return False
 
     def load_input_files(
@@ -141,5 +142,5 @@ class InputHandler:
         if self.schema:
             return self.schema["required"]
 
-        print("InputHandler: No schema loaded")
+        logger.warning("InputHandler: No schema loaded")
         return False

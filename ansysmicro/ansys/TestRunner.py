@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Any, List
 
 import numpy as np
+from loguru import logger
 
 from ansysmicro.utils import decorate_all_methods, logger_wraps
 
@@ -33,12 +34,12 @@ class TestRunner:
         try:
             self.jobname = options["jobname"]
         except Exception:
-            print("No jobname found. Defaulting to `file`")
+            logger.info("No jobname found. Defaulting to `file`")
             self.jobname = "file"
         try:
             self.jobdir = options["run_location"] + "\\"
         except Exception:
-            print("No jobdir found. Defaulting to `.\`")
+            logger.info("No jobdir found. Defaulting to `.\`")
             self.jobdir = ".\\"
 
     def run(self):
@@ -76,9 +77,9 @@ class TestRunner:
                 self.loading_handler.tensors[load_case - 1]
             )
 
-            print(f"Beginning solve for {load_case=}")
+            logger.info(f"Beginning solve for {load_case=}")
             self.solve()
-            print(f"Finished solve for {load_case=}")
+            logger.info(f"Finished solve for {load_case=}")
             self.debug_stat()
             self.ansys.post1()
             self.ansys.set("last")
@@ -121,7 +122,7 @@ class TestRunner:
             self.ansys.nread(nodeFileAbsolutePath)
             self.ansys.eread(elementFileAbsolutePath)
         except Exception as err:
-            print(
+            logger.warning(
                 "Load failed. Likely caused by bad file name. ",
                 "Attempting with symbolic links...",
             )
@@ -134,7 +135,7 @@ class TestRunner:
         if csysFileAbsolutePath:
             self.load_coordinate_systems(csysFileAbsolutePath)
         elif self.ansys.get("_", "ELEM", 0, "ESYM", "MAX") > 0:
-            print(
+            logger.warning(
                 "Warning: Elements have non-default csys numbers, ",
                 "but no coordinate systems were provided. ",
                 "Setting all csys numbers to 0...",
@@ -277,9 +278,8 @@ class TestRunner:
             temp_elem = Path(f"{temp_path_base}.elem").symlink_to(
                 elementFileAbsolutePath
             )
-        except OSError as symLinkError:
-            print("ERROR: User does not have privileges to create symbolic links.")
-            raise symLinkError
+        except OSError:
+            logger.exception("User does not have privileges to create symbolic links.")
         else:
             self.ansys.nread(temp_node)
             self.ansys.eread(temp_elem)

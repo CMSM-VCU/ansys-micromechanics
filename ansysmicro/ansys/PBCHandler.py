@@ -1,6 +1,7 @@
 from typing import Sequence, Tuple
 
 import numpy as np
+from loguru import logger
 
 from ansysmicro.utils import decorate_all_methods, logger_wraps, round_to_sigfigs
 
@@ -35,9 +36,9 @@ class PBCHandler:
 
         rn = self.retained_nodes
 
-        print("Applying periodic BCs to face set ", end="")
+        logger.info("Applying periodic BCs to face set:")
         for i, pair_set in enumerate(pair_sets):
-            print(f"{i}... ", end="")
+            logger.opt(raw=True).info(f"{i}... ")
             # with self.ansys.chain_commands:
             with self.ansys.non_interactive:
                 for pair in pair_set:
@@ -55,6 +56,7 @@ class PBCHandler:
                             node1=rn[0], lab1=ax, c1=1,
                         )
                         # fmt: on
+        logger.opt(raw=True).info("\n")
         # Can I get the number of constraint equations to use as a return value?
 
     def find_node_pairs(self, mesh_extents: np.ndarray) -> Sequence[np.ndarray]:
@@ -186,7 +188,7 @@ class PBCHandler:
             return True
 
         # Identify bad elements for debugging
-        print(np.max(np.abs(arr1 - arr2)))
+        logger.debug(f"{np.max(np.abs(arr1 - arr2))=}")
         bad_idx = np.argwhere(np.not_equal(arr1, arr2))
         bad_arr1 = arr1[bad_idx[:, 0]]
         bad_arr2 = arr2[bad_idx[:, 0]]
@@ -194,5 +196,5 @@ class PBCHandler:
         culprits = diff.argsort(axis=0)[-1]
         x_bad = bad_arr1[culprits[0]], bad_arr2[culprits[0]]
         y_bad = bad_arr1[culprits[1]], bad_arr2[culprits[1]]
-        print(x_bad, y_bad)
+        logger.debug(f"{x_bad=}, {y_bad=}")
         return False
