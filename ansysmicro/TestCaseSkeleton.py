@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Tuple
 
@@ -16,12 +17,13 @@ RUNNER_OPTIONS_DEFAULTS = {
 
 
 @decorate_all_methods(logger_wraps)
-class TestCaseSkeleton:
+class TestCaseSkeleton(ABC):
     """This class is used as the base for the TestCase class that is created at
     runtime by RecursiveClassFactory in coordination with the input schema. Most of
     the attributes are defined at runtime according the the schema structure and naming.
     """
 
+    @abstractmethod
     def __init__(self):
         self.preprocess_attributes()
 
