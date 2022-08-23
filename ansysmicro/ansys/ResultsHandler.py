@@ -213,7 +213,8 @@ class ResultsHandler:
 
     @staticmethod
     def calculate_displacement_gradient(
-        retained_coords: Sequence[np.ndarray], retained_disps: Sequence[np.ndarray],
+        retained_coords: Sequence[np.ndarray],
+        retained_disps: Sequence[np.ndarray],
     ) -> np.ndarray:
         """Calculate the macroscopic displacement gradient tensor using retained node
         results.
@@ -238,7 +239,8 @@ class ResultsHandler:
 
     @staticmethod
     def calculate_macro_strain(
-        retained_coords: Sequence[np.ndarray], retained_disps: Sequence[np.ndarray],
+        retained_coords: Sequence[np.ndarray],
+        retained_disps: Sequence[np.ndarray],
     ) -> np.ndarray:
         """Calculate the macroscopic strain tensor using retained node results. Uses
         macroscopic displacement gradient.

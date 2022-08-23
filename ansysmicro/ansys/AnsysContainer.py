@@ -24,8 +24,7 @@ class AnsysContainer:
         return self.ansys
 
     def __exit__(self, type, value, traceback):
-        """Ensure that Ansys instance is closed when done using class.
-        """
+        """Ensure that Ansys instance is closed when done using class."""
         print("Attempting to exit Ansys...")
         self.ansys.exit()
         print("Exited successfully")

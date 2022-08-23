@@ -2,8 +2,8 @@ import os
 import shutil
 import stat
 import sys
-from pathlib import Path
 import time
+from pathlib import Path
 
 from ansysmicro.ansys.TestRunner import TestRunner
 from ansysmicro.AnsysInputHandler import AnsysInputHandler

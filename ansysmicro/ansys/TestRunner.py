@@ -42,8 +42,7 @@ class TestRunner:
             self.jobdir = ".\\"
 
     def run(self):
-        """Execute the full test process. Launches and closes an Ansys instance.
-        """
+        """Execute the full test process. Launches and closes an Ansys instance."""
         with AnsysContainer(self.launch_options) as self.ansys:
             self.ansys.finish()
             self.ansys.clear()
@@ -67,8 +66,7 @@ class TestRunner:
         self.pbc_handler.apply_periodic_conditions()
 
     def run_test_sequence(self):
-        """Execute the load cases and process results.
-        """
+        """Execute the load cases and process results."""
         self.results_handler = ResultsHandler(self)
         self.loading_handler = LoadingHandler(self)
         for load_case in np.arange(self.test_case.num_load_cases) + 1:
@@ -248,8 +246,7 @@ class TestRunner:
         return
 
     def solve(self):
-        """Calculate the solution for the current load case.
-        """
+        """Calculate the solution for the current load case."""
         # with self.ansys.non_interactive:
         self.ansys.slashsolu()
         self.ansys.allsel()
@@ -296,7 +293,12 @@ class TestRunner:
         half_side = domainSideLength / 2
         self.ansys.prep7()
         self.ansys.block(
-            -half_side, half_side, -half_side, half_side, -half_side, half_side,
+            -half_side,
+            half_side,
+            -half_side,
+            half_side,
+            -half_side,
+            half_side,
         )
 
         self.ansys.et(1, elementType)

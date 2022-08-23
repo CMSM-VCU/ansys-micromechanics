@@ -50,7 +50,9 @@ def decorate_all_methods(decorator: Callable, *args, **kwargs):
         for attr in class_.__dict__:
             if callable(getattr(class_, attr)):
                 setattr(
-                    class_, attr, decorator(getattr(class_, attr), *args, **kwargs),
+                    class_,
+                    attr,
+                    decorator(getattr(class_, attr), *args, **kwargs),
                 )
         return class_
 

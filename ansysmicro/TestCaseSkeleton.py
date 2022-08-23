@@ -104,11 +104,7 @@ class TestCaseSkeleton:
         # Check if "fake" isotropic materials obey Hooke's Law
         for mat in self.materials:
             if mat.materialType == "orthotropic":
-                prop_sets = [
-                    mat.elasticModuli,
-                    mat.shearModuli,
-                    mat.poissonsRatios,
-                ]
+                prop_sets = [mat.elasticModuli, mat.shearModuli, mat.poissonsRatios]
                 if all([all_same(prop) for prop in prop_sets]):
                     shear_input = mat.shearModuli[0]
                     shear_theory = mat.elasticModuli[0] / (
