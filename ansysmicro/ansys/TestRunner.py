@@ -54,11 +54,10 @@ class TestRunner:
         """Execute the meshing and problem setup. These are the parts that do not change
         with load cases.
         """
-        if self.test_case.mesh_type == "centroid":
-            self.generate_base_mesh(**self.test_case.mesh)
-            self.assign_element_materials()
-        elif self.test_case.mesh_type == "external":
-            self.load_external_mesh(**self.test_case.mesh)
+        assert (
+            self.test_case.mesh_type == "external"
+        ), f"Invalid mesh type label: {self.test_case.mesh_type}"
+        self.load_external_mesh(**self.test_case.mesh)
         self.debug_stat()
         self.define_materials(self.test_case.materials)
         self.get_retained_nodes()
@@ -275,54 +274,6 @@ class TestRunner:
         print(self.ansys.stat())
         print(self.ansys.ceqn())
         print(self.ansys.stat())
-
-    def generate_base_mesh(
-        self, elementType: str, domainSideLength: float, elementSpacing: float, **kwargs
-    ):
-        """DEPRECATED: Generate uniform cubic mesh according to overall side length and
-        element edge length. Assumes a cube centered around (0,0,0).
-
-        Args:
-            elementType (str): Ansys element type used to create this mesh
-            domainSideLength (float): side length of cubic domain
-            elementSpacing (float): target element edge length
-
-        Returns:
-            tuple(int, int): tuple containing number of nodes and elements in generated mesh
-        """
-        half_side = domainSideLength / 2
-        self.ansys.prep7()
-        self.ansys.block(
-            -half_side,
-            half_side,
-            -half_side,
-            half_side,
-            -half_side,
-            half_side,
-        )
-
-        self.ansys.et(1, elementType)
-        self.ansys.lesize("ALL", elementSpacing)
-        self.ansys.mshkey(1)
-        self.ansys.vmesh("ALL")
-
-        assert self.ansys.mesh.n_node > 0, "No nodes generated."
-        assert self.ansys.mesh.n_elem > 0, "No elements generated."
-        return (self.ansys.mesh.n_node, self.ansys.mesh.n_elem)
-
-    def assign_element_materials(self):
-        """DEPRECATED: Assign material numbers to elements located by their centroids.
-
-        This implementation is probably super slow
-        Individual emodif commands may be extra slow, so try adding to component
-        per material number, then emodif on each component
-        """
-        self.ansys.prep7()
-        for element in self.test_case.mesh.locationsWithId:
-            self.ansys.esel("S", "CENT", "X", element[0])
-            self.ansys.esel("R", "CENT", "Y", element[1])
-            self.ansys.esel("R", "CENT", "Z", element[2])
-            self.ansys.emodif("ALL", "MAT", element[3])
 
     def load_mesh_with_symlinks(self, nodeFileAbsolutePath, elementFileAbsolutePath):
         temp_path_base = self.jobdir + ".temp_mesh_file"

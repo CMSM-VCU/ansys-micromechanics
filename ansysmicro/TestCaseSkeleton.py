@@ -84,15 +84,6 @@ class TestCaseSkeleton:
 
         TODO: Break tests up into separate methods.
         """
-        passed_checks = True
-        # Check if mapped mesh dimensions are well-behaved
-        if self.mesh_type == "centroid":
-            elements_per_side = self.mesh.domainSideLength / self.mesh.elementSpacing
-            if elements_per_side % round(elements_per_side) > 1e-3:
-                warn(
-                    "Domain side length is not evenly divisible by element edge length"
-                )
-                passed_checks = False
 
         # Check if specified mesh files are able to be found
         if self.mesh_type == "external":
@@ -147,7 +138,7 @@ class TestCaseSkeleton:
                 + f"in single load case: {i+1}: {prop_set}"
             )
 
-        return passed_checks
+        return True
 
     @property
     def mesh_type(self) -> str:
@@ -157,11 +148,9 @@ class TestCaseSkeleton:
             Exception: If mesh type is unable to be determined.
 
         Returns:
-            str: Mesh type, currently either "centroid" or "external".
+            str: Mesh type, currently only "external".
         """
-        if getattr(self.mesh, "locationsWithId", None) is not None:
-            return "centroid"
-        elif getattr(self.mesh, "nodeFileRelativePath", None) is not None:
+        if getattr(self.mesh, "nodeFileRelativePath", None) is not None:
             return "external"
         else:
             raise Exception("Unable to determine mesh type")
