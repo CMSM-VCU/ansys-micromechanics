@@ -1,6 +1,7 @@
 import os
 import shutil
 import stat
+import sys
 import time
 from argparse import ArgumentParser
 from pathlib import Path
@@ -23,7 +24,17 @@ def main():
         action="store_true",
         help="[INACTIVE] Clean up working directory after each case",
     )
+    parser.add_argument(
+        "-v", "--verbose", help="increase output verbosity", action="store_true"
+    )
     args = parser.parse_args()
+    if args.verbose:
+        logger.remove()
+        logger.add(sys.stderr, level="DEBUG")
+    else:
+        logger.remove()
+        logger.add(sys.stderr, level="INFO")
+
     logger.debug(f"Command line arguments: {args}")
     cleanup_working_dir = args.cleanup
 
