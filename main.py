@@ -39,6 +39,8 @@ def main():
         print(case.results.reportedProperties)
         case.save_results()
         if cleanup_working_dir:
+            print("cleanup disabled")
+            continue
             case.testrunner = None
             print("waiting before delete...")
             time.sleep(10)
