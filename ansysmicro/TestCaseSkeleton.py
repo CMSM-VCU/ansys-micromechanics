@@ -172,10 +172,7 @@ class TestCaseSkeleton:
         Returns:
             int: Number of load cases
         """
-        if self.loading.kind == "displacement":
-            return len(self.loading.directions)
-        elif self.loading.kind == "tensor":
-            return len(self.loading.tensors)
+        return len(self.loading.tensors)
 
     @property
     def unique_expected_properties(self) -> Tuple[np.ndarray]:
