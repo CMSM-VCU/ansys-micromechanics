@@ -3,11 +3,11 @@ channels:
     - conda-forge
     - defaults
 dependencies:
-    - python=3.8
+    - python=3.10
     - numpy
     - jsonschema
     - loguru
     - pandas
     - pip
     - pip:
-          - ansys-mapdl-core==0.59.3
+          - ansys-mapdl-core
