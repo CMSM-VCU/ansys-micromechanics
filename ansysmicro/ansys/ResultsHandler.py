@@ -128,36 +128,11 @@ class ResultsHandler:
         Returns:
             np.ndarray: Vector of reaction force components, shape=(3,)
         """
-        force_n = []
-        for i in range(3):
-            appended = False
-            while not appended:
-                force_n.append(
-                    self.ansys.get(
-                        par="rforce",
-                        entity="NODE",
-                        entnum=node_number,
-                        item1="RF",
-                        it1num=f"F{AXES[i]}",
-                    )
-                )
-
-                if type(force_n[-1]) == float and force_n[-1] != "":
-                    appended = True
-                    continue
-                else:
-                    try:
-                        time.sleep(1)
-                        force_n[-1] = self.ansys.parameters["rforce"]
-                        if type(force_n[-1]) == float and force_n[-1] != "":
-                            appended = True
-                            continue
-                    except:
-                        print(f"Retrieval failed. Trying again: {node_number}, {i}")
-                        force_n.pop()
-
-            # force_n.append(self.ansys.parameters[f"RFORCE{i+1}"])
-        assert len(force_n) == 3, f"Force vector is wrong size: {len(force_n)}"
+        force_n = [0.0, 0.0, 0.0]
+        vals, nnums, comps = self.ansys.result.nodal_reaction_forces(0)
+        idx = nnums == node_number
+        for val, comp in zip(vals[idx], comps[idx]):
+            force_n[comp - 1] = val
         return np.array(force_n)
 
     def calculate_macro_tensors(
