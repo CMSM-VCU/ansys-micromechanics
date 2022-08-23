@@ -78,15 +78,18 @@ class TestCaseSkeleton(ABC):
         filename = f"{str(self.path.stem)}_{str(self.caseId)}.csv"
         self.results.reportedProperties.to_csv(f"{str(folder)}/{filename}")
 
-    def check_parameters(self) -> bool:
-        """Run various self-checks on the test case input parameters.
-
-        Returns:
-            bool: Whether the parameters passed the checks.
-
-        TODO: Break tests up into separate methods.
+    def check_parameters(self) -> None:
+        """Run various self-checks on the test case input parameters. Raises an
+        AssertionError if any fail.
         """
 
+        self.check_mesh_files_exist()
+        self.check_orthotropic_obeys_hooke()
+        self.check_all_labels_given()
+        self.check_impossible_expected_properties()
+        self.check_duplicate_expected_properties()
+
+    def check_mesh_files_exist(self) -> None:
         # Check if specified mesh files are able to be found
         if self.mesh_type == "external":
             attrs = [f"{kind}FileAbsolutePath" for kind in ["node", "element", "csys"]]
@@ -94,6 +97,7 @@ class TestCaseSkeleton(ABC):
                 if (path := getattr(self.mesh, attr, None)) is not None:
                     assert Path(path).exists(), f"{path} could not be found."
 
+    def check_orthotropic_obeys_hooke(self) -> None:
         # Check if "fake" isotropic materials obey Hooke's Law
         for mat in self.materials:
             if mat.materialType == "orthotropic":
@@ -108,15 +112,15 @@ class TestCaseSkeleton(ABC):
                         + f"obey Hooke's Law: {shear_input=}, {shear_theory=}"
                     )
 
-        # Check if a label has been provided for each load case, if any
-        if getattr(self.loading, "labels", None) is not None:
+    def check_all_labels_given(self) -> None:
+        # heck if a label has been provided for each load case, if
+        if self.loading.labels is not None:
             assert len(self.loading.labels) == self.num_load_cases, (
                 "Number of labels must equal number of load cases. "
                 + f"{len(self.loading.labels)} labels given for {self.num_load_cases} load cases."
             )
-        else:
-            self.loading.labels = None  # Prevent future AttributeErrors
 
+    def check_impossible_expected_properties(self) -> None:
         # Check for impossible expected properties
         # fmt: off
         forbidden_props = (
@@ -133,14 +137,13 @@ class TestCaseSkeleton(ABC):
             ]
         ), f"Expected properties contains impossible property(s): {bad_props}"
 
+    def check_duplicate_expected_properties(self) -> None:
         # Check for duplicate expected properties in same load case
         for i, prop_set in enumerate(self.loading.expectedProperties):
             assert len(prop_set) == len(set(prop_set)), (
                 "Expected properties contains duplicates "
                 + f"in single load case: {i+1}: {prop_set}"
             )
-
-        return True
 
     @property
     def mesh_type(self) -> str:
@@ -215,3 +218,6 @@ class TestCaseSkeleton(ABC):
         self.runnerOptions.run_location = str(
             Path.resolve(self.path.parent / self.runnerOptions.run_location)
         )
+
+        # If missing, initialize as None
+        self.loading.labels = getattr(self.loading, "labels", None)
