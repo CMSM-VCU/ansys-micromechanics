@@ -264,12 +264,15 @@ class TestRunner:
         return np.column_stack((mins, maxs))
 
     def debug_stat(self):
-        print(self.ansys.lsoper())
-        print(self.ansys.stat())
-        print(self.ansys.fecons())
-        print(self.ansys.stat())
-        print(self.ansys.ceqn())
-        print(self.ansys.stat())
+        logger.debug("Debug stats:")
+        logger.opt(raw=True).debug(
+            f"{self.ansys.lsoper()}\n"
+            + f"{self.ansys.stat()}\n"
+            + f"{self.ansys.fecons()}\n"
+            + f"{self.ansys.stat()}\n"
+            + f"{self.ansys.ceqn()}\n"
+            + f"{self.ansys.stat()}\n"
+        )
 
     def load_mesh_with_symlinks(self, nodeFileAbsolutePath, elementFileAbsolutePath):
         temp_path_base = f"{self.jobdir}.temp_mesh_file"
