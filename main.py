@@ -1,8 +1,8 @@
 import os
 import shutil
 import stat
-import sys
 import time
+from argparse import ArgumentParser
 from pathlib import Path
 
 from loguru import logger
@@ -16,13 +16,18 @@ SCHEMA_PATH = "./input_schema/input.schema.json"
 
 @logger_wraps()
 def main():
-    if sys.argv[1] == "--cleanup":
-        cleanup_working_dir = True
-        sys.argv.pop(1)
-    else:
-        cleanup_working_dir = False
+    parser = ArgumentParser()
+    parser.add_argument("file", nargs="+", help="The input file to run", type=str)
+    parser.add_argument(
+        "--cleanup",
+        action="store_true",
+        help="[INACTIVE] Clean up working directory after each case",
+    )
+    args = parser.parse_args()
+    logger.debug(f"Command line arguments: {args}")
+    cleanup_working_dir = args.cleanup
 
-    input_file_paths = get_input_file_paths()
+    input_file_paths = get_input_file_paths(paths=args.file)
 
     handler = AnsysInputHandler(schema_file_path=SCHEMA_PATH)
 
@@ -59,7 +64,7 @@ def remove_readonly(func, path, _):
 
 
 @logger_wraps()
-def get_input_file_paths():
+def get_input_file_paths(paths):
     """Obtain paths to input files from command line arguments. Assumes that each and
     all arguments are an input file path. Paths must be absolute or relative to calling
     directory. Non-existant files will throw a warning.
@@ -67,9 +72,8 @@ def get_input_file_paths():
     Returns:
         input_paths (List[Str]): List of paths to each input file
     """
-    input_paths = sys.argv[1:]
     real_paths = []
-    for path_ in input_paths:
+    for path_ in paths:
         path = Path(path_)
         if "*" in str(path):
             logger.info(f"Reading as glob: {path}")
