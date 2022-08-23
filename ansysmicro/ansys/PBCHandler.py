@@ -163,7 +163,7 @@ class PBCHandler:
         nnum_neg = np.reshape(self.ansys.mesh.nnum, (-1, 1))
 
         assert nodes_pos.shape == nodes_neg.shape, (
-            f"Different number of nodes selected on opposite faces: "
+            "Different number of nodes selected on opposite faces: "
             + f"{nodes_pos.shape=}, {nodes_neg.shape=}"
         )
 
@@ -184,16 +184,15 @@ class PBCHandler:
         """
         if np.array_equal(arr1, arr2):
             return True
-        else:
-            # Identify bad elements for debugging
-            print(np.max(np.abs(arr1 - arr2)))
-            bad_idx = np.argwhere(np.not_equal(arr1, arr2))
-            bad_arr1 = arr1[bad_idx[:, 0]]
-            bad_arr2 = arr2[bad_idx[:, 0]]
-            diff = np.abs(bad_arr1 - bad_arr2)
-            culprits = diff.argsort(axis=0)[-1]
-            x_bad = (bad_arr1[culprits[0]], bad_arr2[culprits[0]])
-            y_bad = (bad_arr1[culprits[1]], bad_arr2[culprits[1]])
 
-            print(x_bad, y_bad)
-            return False
+        # Identify bad elements for debugging
+        print(np.max(np.abs(arr1 - arr2)))
+        bad_idx = np.argwhere(np.not_equal(arr1, arr2))
+        bad_arr1 = arr1[bad_idx[:, 0]]
+        bad_arr2 = arr2[bad_idx[:, 0]]
+        diff = np.abs(bad_arr1 - bad_arr2)
+        culprits = diff.argsort(axis=0)[-1]
+        x_bad = bad_arr1[culprits[0]], bad_arr2[culprits[0]]
+        y_bad = bad_arr1[culprits[1]], bad_arr2[culprits[1]]
+        print(x_bad, y_bad)
+        return False

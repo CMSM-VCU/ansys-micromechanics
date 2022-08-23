@@ -88,9 +88,9 @@ class InputHandler:
             return InputHandler.validate_dict_against_schema(
                 input_dict, self.schema, raise_failure
             )
-        else:
-            print("InputHandler: No schema loaded")
-            return False
+
+        print("InputHandler: No schema loaded")
+        return False
 
     def load_input_files(
         self, input_file_paths: List[str], check_first: bool = True
@@ -140,6 +140,6 @@ class InputHandler:
         """
         if self.schema:
             return self.schema["required"]
-        else:
-            print("InputHandler: No schema loaded")
-            return False
+
+        print("InputHandler: No schema loaded")
+        return False

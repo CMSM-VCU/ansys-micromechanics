@@ -73,8 +73,8 @@ class TestCaseSkeleton:
         folder = self.path.parent / "results"
         if not folder.is_dir():
             folder.mkdir()
-        filename = str(self.path.stem) + "_" + str(self.caseId) + ".csv"
-        self.results.reportedProperties.to_csv(str(folder) + "/" + filename)
+        filename = f"{str(self.path.stem)}_{str(self.caseId)}.csv"
+        self.results.reportedProperties.to_csv(f"{str(folder)}/{filename}")
 
     def check_parameters(self) -> bool:
         """Run various self-checks on the test case input parameters.
@@ -87,7 +87,7 @@ class TestCaseSkeleton:
 
         # Check if specified mesh files are able to be found
         if self.mesh_type == "external":
-            attrs = [kind + "FileAbsolutePath" for kind in ["node", "element", "csys"]]
+            attrs = [f"{kind}FileAbsolutePath" for kind in ["node", "element", "csys"]]
             for attr in attrs:
                 if (path := getattr(self.mesh, attr, None)) is not None:
                     assert Path(path).exists(), f"{path} could not be found."
@@ -96,20 +96,20 @@ class TestCaseSkeleton:
         for mat in self.materials:
             if mat.materialType == "orthotropic":
                 prop_sets = [mat.elasticModuli, mat.shearModuli, mat.poissonsRatios]
-                if all([all_same(prop) for prop in prop_sets]):
+                if all(all_same(prop) for prop in prop_sets):
                     shear_input = mat.shearModuli[0]
                     shear_theory = mat.elasticModuli[0] / (
                         2 * (1 + mat.poissonsRatios[0])
                     )
                     assert shear_input == shear_theory, (
                         f"Material {mat.materialIndex} is isotropic but does not "
-                        + "obey Hooke's Law: {shear_input=}, {shear_theory=}"
+                        + f"obey Hooke's Law: {shear_input=}, {shear_theory=}"
                     )
 
         # Check if a label has been provided for each load case, if any
         if getattr(self.loading, "labels", None) is not None:
             assert len(self.loading.labels) == self.num_load_cases, (
-                f"Number of labels must equal number of load cases. "
+                "Number of labels must equal number of load cases. "
                 + f"{len(self.loading.labels)} labels given for {self.num_load_cases} load cases."
             )
         else:
@@ -134,7 +134,7 @@ class TestCaseSkeleton:
         # Check for duplicate expected properties in same load case
         for i, prop_set in enumerate(self.loading.expectedProperties):
             assert len(prop_set) == len(set(prop_set)), (
-                f"Expected properties contains duplicates "
+                "Expected properties contains duplicates "
                 + f"in single load case: {i+1}: {prop_set}"
             )
 
@@ -192,17 +192,16 @@ class TestCaseSkeleton:
         """
         if self.mesh_type == "external":
             attrs_rel = [
-                kind + "FileRelativePath" for kind in ["node", "element", "csys"]
+                f"{kind}FileRelativePath" for kind in ["node", "element", "csys"]
             ]
             attrs_abs = [
-                kind + "FileAbsolutePath" for kind in ["node", "element", "csys"]
+                f"{kind}FileAbsolutePath" for kind in ["node", "element", "csys"]
             ]
             for rel, abs_ in zip(attrs_rel, attrs_abs):
                 if (path := getattr(self.mesh, rel, None)) is not None:
                     setattr(self.mesh, abs_, str(self.path.parent / path))
                 else:
                     setattr(self.mesh, abs_, None)
-
         if getattr(self, "runnerOptions", None) is not None:
             dict_from_input = vars(self.runnerOptions)
         else:
@@ -210,6 +209,7 @@ class TestCaseSkeleton:
         self.runnerOptions = RecursiveNamespace(
             **{**RUNNER_OPTIONS_DEFAULTS, **dict_from_input}
         )
+
         self.runnerOptions.run_location = str(
             Path.resolve(self.path.parent / self.runnerOptions.run_location)
         )

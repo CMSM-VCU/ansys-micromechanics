@@ -32,12 +32,12 @@ class TestRunner:
         self.rst_path = None
         try:
             self.jobname = options["jobname"]
-        except:
+        except Exception:
             print("No jobname found. Defaulting to `file`")
             self.jobname = "file"
         try:
             self.jobdir = options["run_location"] + "\\"
-        except:
+        except Exception:
             print("No jobdir found. Defaulting to `.\`")
             self.jobdir = ".\\"
 
@@ -125,6 +125,7 @@ class TestRunner:
                 "Load failed. Likely caused by bad file name. ",
                 "Attempting with symbolic links...",
             )
+
             self.load_mesh_with_symlinks(nodeFileAbsolutePath, elementFileAbsolutePath)
 
         assert self.ansys.mesh.n_node > 0, "No nodes loaded."
@@ -132,18 +133,17 @@ class TestRunner:
 
         if csysFileAbsolutePath:
             self.load_coordinate_systems(csysFileAbsolutePath)
-        else:
-            if self.ansys.get("_", "ELEM", 0, "ESYM", "MAX") > 0:
-                print(
-                    "Warning: Elements have non-default csys numbers, ",
-                    "but no coordinate systems were provided. ",
-                    "Setting all csys numbers to 0...",
-                )
-                self.ansys.emodif("ALL", "ESYS", 0)
+        elif self.ansys.get("_", "ELEM", 0, "ESYM", "MAX") > 0:
+            print(
+                "Warning: Elements have non-default csys numbers, ",
+                "but no coordinate systems were provided. ",
+                "Setting all csys numbers to 0...",
+            )
+
+            self.ansys.emodif("ALL", "ESYS", 0)
         self.ansys.prep7()
         self.ansys.nummrg("NODE")
-
-        return (self.ansys.mesh.n_node, self.ansys.mesh.n_elem)
+        return self.ansys.mesh.n_node, self.ansys.mesh.n_elem
 
     def load_coordinate_systems(self, csysFileAbsolutePath):
         csys_nums, *csys_angles = np.genfromtxt(
@@ -170,11 +170,7 @@ class TestRunner:
 
         extents = self.mesh_extents()
         node_coords = [[extents[index] for index in node] for node in coord_indices]
-
-        self.retained_nodes = []
-
-        for node in node_coords:
-            self.retained_nodes.append(self.get_node_num_at_loc(*node))
+        self.retained_nodes = [self.get_node_num_at_loc(*node) for node in node_coords]
 
         return self.retained_nodes  # for logging purposes
 
@@ -193,7 +189,7 @@ class TestRunner:
             int: number of closest node
         """
         inline = f"node({x},{y},{z})"
-        self.ansys.run("NODE_NUMBER_TEMP=" + inline)
+        self.ansys.run(f"NODE_NUMBER_TEMP={inline}")
         return int(self.ansys.parameters["node_number_temp"])
 
     def select_node_at_loc(self, x: float, y: float, z: float, kind: str = "S") -> int:
@@ -231,15 +227,15 @@ class TestRunner:
 
         self.ansys.prep7()
         for material in materials:
-            id = material.materialIndex
+            id_ = material.materialIndex
             if material.materialType == "isotropic":
-                self.ansys.mp("EX", id, material.elasticModuli[0])
-                self.ansys.mp("PRXY", id, material.poissonsRatios[0])
+                self.ansys.mp("EX", id_, material.elasticModuli[0])
+                self.ansys.mp("PRXY", id_, material.poissonsRatios[0])
             elif material.materialType == "orthotropic":
                 for i in range(3):
-                    self.ansys.mp(e_str[i], id, material.elasticModuli[i])
-                    self.ansys.mp(g_str[i], id, material.shearModuli[i])
-                    self.ansys.mp(pr_str[i], id, material.poissonsRatios[i])
+                    self.ansys.mp(e_str[i], id_, material.elasticModuli[i])
+                    self.ansys.mp(g_str[i], id_, material.shearModuli[i])
+                    self.ansys.mp(pr_str[i], id_, material.poissonsRatios[i])
         # How do I verify that materials were input correctly? How do I access the
         # materials from self.ansys?
         return
@@ -262,10 +258,9 @@ class TestRunner:
         """
         if not current:
             return np.reshape(self.ansys.mesh.grid.bounds, (-1, 2))
-        else:
-            mins = self.ansys.mesh.nodes.min(axis=0)
-            maxs = self.ansys.mesh.nodes.max(axis=0)
-            return np.column_stack((mins, maxs))
+        mins = self.ansys.mesh.nodes.min(axis=0)
+        maxs = self.ansys.mesh.nodes.max(axis=0)
+        return np.column_stack((mins, maxs))
 
     def debug_stat(self):
         print(self.ansys.lsoper())
@@ -276,10 +271,10 @@ class TestRunner:
         print(self.ansys.stat())
 
     def load_mesh_with_symlinks(self, nodeFileAbsolutePath, elementFileAbsolutePath):
-        temp_path_base = self.jobdir + ".temp_mesh_file"
+        temp_path_base = f"{self.jobdir}.temp_mesh_file"
         try:
-            temp_node = Path(temp_path_base + ".node").symlink_to(nodeFileAbsolutePath)
-            temp_elem = Path(temp_path_base + ".elem").symlink_to(
+            temp_node = Path(f"{temp_path_base}.node").symlink_to(nodeFileAbsolutePath)
+            temp_elem = Path(f"{temp_path_base}.elem").symlink_to(
                 elementFileAbsolutePath
             )
         except OSError as symLinkError:

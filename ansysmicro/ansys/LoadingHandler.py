@@ -95,20 +95,16 @@ class LoadingHandler:
         Returns:
             np.ndarray: (3,3) array containing corresponding strain* tensor.
         """
-        base = ([0, 0, 0], [0, 0, 0], [0, 0, 0])
+        base = [0, 0, 0], [0, 0, 0], [0, 0, 0]
         sign = -1 if len(direction) == 3 else 1
         i, j = list(map(lambda x: int(x) - 1, direction[-2:]))
-
         mag = normal_mag if i == j else shear_mag
-        mag = mag / lengths[i]
-
+        mag /= lengths[i]
         tensor = list(base)
         tensor[i][j] = sign * mag
-
         if i == j:
             tensor[(i + 1) % 3][(i + 1) % 3] = None
             tensor[(i + 2) % 3][(i + 2) % 3] = None
-
         return tensor
 
     def apply_strain_tensor(self, tensor: np.ndarray) -> None:

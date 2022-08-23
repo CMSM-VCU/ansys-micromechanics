@@ -46,14 +46,12 @@ class ResultsHandler:
         Returns:
             bool: Whether the results file was successfully deleted.
         """
-        if rst_path is None and self.rst_path is None:
-            return True
-
         if rst_path is None:
+            if self.rst_path is None:
+                return True
             rst_path = self.rst_path
 
-        self.ansys.finish()  # Safely close results file before deletion
-
+        self.ansys.finish()
         return utils.definitely_delete_file(rst_path, missing_ok=True)
 
     def get_results_object(
@@ -96,7 +94,6 @@ class ResultsHandler:
         """
         if retained_nodes is None:
             retained_nodes = self.retained_nodes
-
         result = self.get_results_object()
 
         coord = result.mesh.nodes
@@ -105,16 +102,15 @@ class ResultsHandler:
         self.ansys.post1()
         retained_results = []
         for node_num in retained_nodes:
-            node_results = {}
             node_index = np.argwhere(nnum == node_num)[0, 0]
-            node_results["coord"] = coord[node_index]
-            node_results["disp"] = disp[node_index]
-            node_results["force"] = self.extract_reaction_forces(node_number=node_num)
+            node_results = {
+                "coord": coord[node_index],
+                "disp": disp[node_index],
+                "force": self.extract_reaction_forces(node_number=node_num),
+            }
 
             retained_results.append(node_results)
-
         self.retained_results = tuple(retained_results)
-
         return self.retained_results
 
     def extract_reaction_forces(self, node_number: int) -> np.ndarray:
@@ -382,8 +378,7 @@ class ResultsHandler:
         key_map = {"E": "elasticModuli", "G": "shearModuli", "v": "poissonsRatios"}
         index_map = dict(
             zip(["".join(pair) for pair in permutations("123", r=2)], range(6))
-        )
-        index_map.update(dict(zip(["11", "22", "33"], range(3))))
+        ) | zip(["11", "22", "33"], range(3))
 
         # Create dataframe and add labels if given
         df_index = list(np.unique(np.hstack(expected_property_sets)))

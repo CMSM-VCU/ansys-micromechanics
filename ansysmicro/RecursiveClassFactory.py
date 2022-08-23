@@ -1,3 +1,5 @@
+import contextlib
+
 from .RecursiveNamespace import RecursiveNamespace
 
 
@@ -8,10 +10,8 @@ class RecursiveClassFactory:
 
         def __init__(self, **kwargs):
             for key, _ in kwargs.items():
-                try:
+                with contextlib.suppress(Exception):
                     arg_filled[required_args.index(key)] = True
-                except:
-                    pass
             if not all(arg_filled):
                 raise ValueError("Not all required arguments were filled.")
 
