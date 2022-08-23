@@ -7,7 +7,7 @@ import numpy as np
 from loguru import logger
 
 
-def logger_wraps(_func: Callable = None, *, entry=True, exit=True, level="DEBUG"):
+def logger_wraps(_func: Callable = None, *, entry=True, exit=True, level="TRACE"):
     """Crazy logging decorator, adjusted to enable use in decorate_all_methods function.
     From loguru documentation:
     loguru.readthedocs.io/en/stable/resources/recipes.html#logging-entry-and-exit-of-functions-with-a-decorator

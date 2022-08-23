@@ -25,10 +25,13 @@ def main():
         help="[INACTIVE] Clean up working directory after each case",
     )
     parser.add_argument(
-        "-v", "--verbose", help="increase output verbosity", action="store_true"
+        "-v", "--verbose", help="increase output verbosity", action="count", default=0
     )
     args = parser.parse_args()
-    if args.verbose:
+    if args.verbose > 1:
+        logger.remove()
+        logger.add(sys.stderr, level="TRACE")
+    elif args.verbose > 0:
         logger.remove()
         logger.add(sys.stderr, level="DEBUG")
     else:
