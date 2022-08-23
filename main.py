@@ -54,7 +54,7 @@ def main():
             TestRunnerClass=TestRunner, options=vars(case.runnerOptions)
         )
         case.run_tests()
-        logger.info(case.results.reportedProperties)
+        logger.info(f"Results: \n{case.results.reportedProperties}")
         case.save_results()
         if cleanup_working_dir:
             logger.debug("cleanup disabled")

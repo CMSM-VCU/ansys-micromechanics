@@ -41,7 +41,7 @@ class TestCaseSkeleton:
         results object.
         """
         self.results = self.testrunner.run()
-        logger.info(f"Finished with {self.results.reportedProperties}")
+        logger.info(f"Finished with\n{self.results.reportedProperties}")
         self.compress_results()
 
     def compress_results(self) -> bool:
