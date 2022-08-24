@@ -27,13 +27,13 @@ class TestCaseSkeleton(ABC):
     def __init__(self):
         self.preprocess_attributes()
 
-    def attach_to_testrunner(self, TestRunnerClass, options=None):
+    def attach_to_testrunner(self, TestRunnerClass, options=dict):
         """Initialize a test runner with a set of options, and tie it and the test case
         together in attributes.
 
         Args:
             TestRunnerClass (Class): Specific TestRunner class (not instance) to use.
-            options ([type], optional): Dictionary of options specific to the TestRunner
+            options (dict, optional): Dictionary of options specific to the TestRunner
             class initialization. Defaults to None.
         """
         self.testrunner = TestRunnerClass(test_case=self, options=options)

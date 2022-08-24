@@ -20,7 +20,7 @@ class TestRunner:
     _retained_nodes: list[int] = None
     retained_results: List[dict]
 
-    def __init__(self, test_case, options=None):
+    def __init__(self, test_case, options: dict = None):
         """See pyansys documentation for launch options such as job directory and executable path.
 
         Args:
@@ -32,16 +32,8 @@ class TestRunner:
         self.test_case.debug_results = {}
         self.launch_options = options
         self.rst_path = None
-        try:
-            self.jobname = options["jobname"]
-        except Exception:
-            logger.info("No jobname found. Defaulting to `file`")
-            self.jobname = "file"
-        try:
-            self.jobdir = options["run_location"] + "\\"
-        except Exception:
-            logger.info("No jobdir found. Defaulting to `.\`")
-            self.jobdir = ".\\"
+        self.jobname = options.get("jobname", default="file")
+        self.jobdir = options.get("jobdir", default=".\\")
 
     def run(self):
         """Execute the full test process. Launches and closes an Ansys instance."""
