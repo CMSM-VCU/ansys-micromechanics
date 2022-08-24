@@ -6,19 +6,14 @@ from loguru import logger
 
 
 class AnsysContainer:
-    def __init__(self, launch_options=None):
+    def __init__(self, launch_options: dict = dict()):
         self.launch_options = launch_options
 
     def __enter__(self):
         # TODO: Add exception handling for lock file conflict
-        if isinstance(self.launch_options, dict):
-            if "run_location" in self.launch_options:
-                Path(self.launch_options["run_location"]).mkdir(
-                    parents=True, exist_ok=True
-                )
-            self.ansys = launch_mapdl(**self.launch_options)
-        else:
-            self.ansys = launch_mapdl()
+        if "run_location" in self.launch_options:
+            Path(self.launch_options["run_location"]).mkdir(parents=True, exist_ok=True)
+        self.ansys = launch_mapdl(**self.launch_options)
 
         setattr(self.ansys, "pymapdl_version", ansys.mapdl.core.__version__)
         logger.debug(self.ansys)
