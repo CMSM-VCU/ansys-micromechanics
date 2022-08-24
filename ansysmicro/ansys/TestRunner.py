@@ -17,6 +17,7 @@ class TestRunner:
     ansys: Any  #: pyansys.mapdl_corba.MapdlCorba # don't know how to type hint this
     launch_options: dict
     retained_nodes: List[int]
+    _retained_nodes: list[int] = None
     retained_results: List[dict]
 
     def __init__(self, test_case, options=None):
@@ -61,7 +62,6 @@ class TestRunner:
         self.load_external_mesh(**self.test_case.mesh)
         self.debug_stat()
         self.define_materials(self.test_case.materials)
-        self.get_retained_nodes()
         self.pbc_handler = PBCHandler(self)
         self.pbc_handler.apply_periodic_conditions()
 
@@ -161,7 +161,16 @@ class TestRunner:
 
         self.ansys.csys()  # Reset to global cartesian
 
-    def get_retained_nodes(self):
+    @property
+    def retained_nodes(self) -> list[int]:
+        if self._retained_nodes:
+            return self._retained_nodes
+
+        self._retained_nodes = self._get_retained_nodes()
+        logger.info(f"Retained node numbers are {self._retained_nodes}")
+        return self._retained_nodes
+
+    def _get_retained_nodes(self) -> list[int]:
         """Get the numbers of the retained nodes in the current mesh.
 
         Returns:
@@ -176,10 +185,7 @@ class TestRunner:
 
         extents = self.mesh_extents()
         node_coords = [[extents[index] for index in node] for node in coord_indices]
-        self.retained_nodes = [self.get_node_num_at_loc(*node) for node in node_coords]
-
-        logger.info(f"Retained node numbers are {self.retained_nodes}")
-        return self.retained_nodes  # for logging purposes
+        return [self.get_node_num_at_loc(*node) for node in node_coords]
 
     def get_node_num_at_loc(self, x: float, y: float, z: float) -> int:
         """Get the number of the node at, or closest to, the specifed xyz location.
