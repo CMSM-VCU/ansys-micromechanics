@@ -183,7 +183,7 @@ class TestRunner:
             [(0, 0), (1, 0), (2, 1)],
         ]
 
-        extents = self.mesh_extents()
+        extents = self.mesh_extents
         node_coords = [[extents[index] for index in node] for node in coord_indices]
         return [self.get_node_num_at_loc(*node) for node in node_coords]
 
@@ -260,17 +260,22 @@ class TestRunner:
         self.ansys.allsel()
         return self.ansys.solve()
 
-    def mesh_extents(self, current: bool = False) -> np.ndarray:
+    @property
+    def mesh_extents(self) -> np.ndarray:
         """Calculate +/- xyz extents of mesh.
-
-        Args:
-            current (bool, optional): calculate extents of currently selected mesh. Defaults to False.
 
         Returns:
             np.ndarray: extents formatted as [[-x,+x], [-y,+y], [-z,+z]]
         """
-        if not current:
-            return np.reshape(self.ansys.mesh.grid.bounds, (-1, 2))
+        return np.reshape(self.ansys.mesh.grid.bounds, (-1, 2))
+
+    @property
+    def selected_mesh_extents(self) -> np.ndarray:
+        """Calculate +/- xyz extents of currently selected mesh.
+
+        Returns:
+            np.ndarray: extents formatted as [[-x,+x], [-y,+y], [-z,+z]]
+        """
         mins = self.ansys.mesh.nodes.min(axis=0)
         maxs = self.ansys.mesh.nodes.max(axis=0)
         return np.column_stack((mins, maxs))

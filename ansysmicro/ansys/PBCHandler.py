@@ -21,7 +21,7 @@ class PBCHandler:
     def __init__(self, testrunner):
         self.ansys = testrunner.ansys
         self.retained_nodes = testrunner.retained_nodes
-        self.mesh_extents = testrunner.mesh_extents()
+        self.mesh_extents = testrunner.mesh_extents
 
     def apply_periodic_conditions(self):
         """Apply periodic boundary constraints to Ansys RVE using constraint equations

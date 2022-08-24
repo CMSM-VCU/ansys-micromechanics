@@ -21,7 +21,7 @@ class LoadingHandler:
     def __init__(self, testrunner):
         self.ansys = testrunner.ansys
         self.retained_nodes = testrunner.retained_nodes
-        self.lengths = np.diff(testrunner.mesh_extents(), axis=1).T[0]
+        self.lengths = np.diff(testrunner.mesh_extents, axis=1).T[0]
 
         self.loading = testrunner.test_case.loading
         self.tensors = LoadingHandler.prepare_loading_tensors(self.loading)
