@@ -1,4 +1,4 @@
-from typing import Sequence, Tuple
+from typing import Sequence
 
 import numpy as np
 from loguru import logger
@@ -23,7 +23,7 @@ class PBCHandler:
         self.retained_nodes = testrunner.retained_nodes
         self.mesh_extents = testrunner.mesh_extents
 
-    def apply_periodic_conditions(self):
+    def apply_periodic_conditions(self) -> None:
         """Apply periodic boundary constraints to Ansys RVE using constraint equations
         applied to displacements of nodes on opposite faces and the retained nodes.
 
@@ -59,7 +59,7 @@ class PBCHandler:
         logger.opt(raw=True).info("\n")
         # Can I get the number of constraint equations to use as a return value?
 
-    def find_node_pairs(self, mesh_extents: np.ndarray) -> Sequence[np.ndarray]:
+    def find_node_pairs(self, mesh_extents: np.ndarray) -> list[np.ndarray]:
         """Identify the pairs of corresponding nodes on each pair of opposite faces of
         RVE. Returns 3 (n,2) arrays, where each row holds the two numbers of the node
         pair, one array per pair of opposite faces
@@ -69,7 +69,7 @@ class PBCHandler:
             mesh/domain.
 
         Returns:
-            Sequence[np.ndarray]: 3 arrays containing node number pairs for each opposite
+            list[np.ndarray]: 3 arrays containing node number pairs for each opposite
             face pair.
         """
         pair_sets = []
@@ -136,15 +136,15 @@ class PBCHandler:
         return nodes
 
     def get_opposite_face_nodes(
-        self, axis: str, axis_extents: Sequence[float], tolerance: float = ""
-    ) -> Tuple[np.ndarray]:
+        self, axis: str, axis_extents: Sequence[float], tolerance: float | str = ""
+    ) -> tuple[np.ndarray]:
         """Obtain coordinates and numbers of nodes on opposite faces of RVE.
 
         Args:
             axis (str): Axis string for Ansys selection command ("X", "Y", or "Z").
             axis_extents (Sequence[float]): Coordinates of opposite faces, [low, high].
             tolerance (float, optional): Tolerance value to use for Ansys selection
-                commands. Defaults to "".
+                commands. Defaults to "" (Ansys interprets empty string as default).
 
         Returns:
             Tuple[np.ndarray]: Four arrays containing node coordinates and numbers for

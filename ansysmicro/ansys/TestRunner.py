@@ -1,9 +1,10 @@
 from pathlib import Path
-from typing import Any, List
+from typing import Any
 
 import numpy as np
 from loguru import logger
 
+from ansysmicro.RecursiveNamespace import RecursiveNamespace
 from ansysmicro.utils import decorate_all_methods, logger_wraps
 
 from .AnsysContainer import AnsysContainer
@@ -16,9 +17,9 @@ from .ResultsHandler import ResultsHandler
 class TestRunner:
     ansys: Any  #: pyansys.mapdl_corba.MapdlCorba # don't know how to type hint this
     launch_options: dict
-    retained_nodes: List[int]
+    retained_nodes: list[int]
     _retained_nodes: list[int] = None
-    retained_results: List[dict]
+    retained_results: list[dict]
 
     def __init__(self, test_case, options: dict = None):
         """See pyansys documentation for launch options such as job directory and executable path.
@@ -35,7 +36,7 @@ class TestRunner:
         self.jobname = options.get("jobname", default="file")
         self.jobdir = options.get("jobdir", default=".\\")
 
-    def run(self):
+    def run(self) -> RecursiveNamespace:
         """Execute the full test process. Launches and closes an Ansys instance."""
         with AnsysContainer(self.launch_options) as self.ansys:
             self.ansys.finish()
@@ -44,7 +45,7 @@ class TestRunner:
             results = self.run_test_sequence()
         return results
 
-    def prepare_mesh(self):
+    def prepare_mesh(self) -> None:
         """Execute the meshing and problem setup. These are the parts that do not change
         with load cases.
         """
@@ -57,7 +58,7 @@ class TestRunner:
         self.pbc_handler = PBCHandler(self)
         self.pbc_handler.apply_periodic_conditions()
 
-    def run_test_sequence(self):
+    def run_test_sequence(self) -> RecursiveNamespace:
         """Execute the load cases and process results."""
         self.results_handler = ResultsHandler(self)
         self.loading_handler = LoadingHandler(self)
@@ -96,7 +97,7 @@ class TestRunner:
         elementFileAbsolutePath: str,
         csysFileAbsolutePath: str = None,
         **kwargs,
-    ):
+    ) -> tuple[int, int]:
         """Generate a mesh from a pair of preexisting node and element files, in Ansys
         NWRITE/NREAD and EWRITE/EREAD format.
 
@@ -142,7 +143,7 @@ class TestRunner:
         self.ansys.nummrg("NODE")
         return self.ansys.mesh.n_node, self.ansys.mesh.n_elem
 
-    def load_coordinate_systems(self, csysFileAbsolutePath):
+    def load_coordinate_systems(self, csysFileAbsolutePath: str) -> None:
         logger.info(f"Reading coordinate systems file {csysFileAbsolutePath=}")
         csys_nums, *csys_angles = np.genfromtxt(
             csysFileAbsolutePath, delimiter=",", unpack=True
@@ -213,7 +214,7 @@ class TestRunner:
         self.ansys.nsel(kind, "NODE", "", nnum)
         return nnum
 
-    def define_materials(self, materials):
+    def define_materials(self, materials: list[RecursiveNamespace]) -> None:
         """Define the material properties in Ansys. Linear isotropic and linear
         orthotropic are currently supported.
 
@@ -245,7 +246,7 @@ class TestRunner:
         # materials from self.ansys?
         return
 
-    def solve(self):
+    def solve(self) -> str:
         """Calculate the solution for the current load case."""
         # with self.ansys.non_interactive:
         self.ansys.slashsolu()
@@ -272,7 +273,7 @@ class TestRunner:
         maxs = self.ansys.mesh.nodes.max(axis=0)
         return np.column_stack((mins, maxs))
 
-    def debug_stat(self):
+    def debug_stat(self) -> None:
         logger.debug("Debug stats:")
         logger.opt(raw=True).debug(
             f"{self.ansys.lsoper()}\n"
@@ -283,7 +284,9 @@ class TestRunner:
             + f"{self.ansys.stat()}\n"
         )
 
-    def load_mesh_with_symlinks(self, nodeFileAbsolutePath, elementFileAbsolutePath):
+    def load_mesh_with_symlinks(
+        self, nodeFileAbsolutePath: str, elementFileAbsolutePath: str
+    ) -> None:
         temp_path_base = f"{self.jobdir}.temp_mesh_file"
         try:
             temp_node = Path(f"{temp_path_base}.node").symlink_to(nodeFileAbsolutePath)

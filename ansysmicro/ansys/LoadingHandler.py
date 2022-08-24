@@ -1,5 +1,3 @@
-from typing import List, Sequence, Tuple
-
 import numpy as np
 
 from ansysmicro.RecursiveNamespace import RecursiveNamespace
@@ -27,7 +25,7 @@ class LoadingHandler:
         self.tensors = LoadingHandler.prepare_loading_tensors(self.loading)
 
     @staticmethod
-    def prepare_loading_tensors(loading_data: RecursiveNamespace) -> Tuple[np.ndarray]:
+    def prepare_loading_tensors(loading_data: RecursiveNamespace) -> tuple[np.ndarray]:
         """Take user input loading parameters and convert to sequence of strain*
         tensors, one for each load case.
 

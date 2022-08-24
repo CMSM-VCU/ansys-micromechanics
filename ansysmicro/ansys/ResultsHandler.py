@@ -2,7 +2,7 @@ import time
 from functools import reduce
 from itertools import permutations
 from pathlib import Path
-from typing import Sequence, Tuple
+from typing import Sequence
 
 import numpy as np
 import pandas as pd
@@ -55,7 +55,7 @@ class ResultsHandler:
         return utils.definitely_delete_file(rst_path, missing_ok=True)
 
     def get_results_object(
-        self, rst_path: Path = None, max_wait=RESULTS_WAIT_MAX
+        self, rst_path: Path = None, max_wait: int = RESULTS_WAIT_MAX
     ) -> Result:
         """Extract results object from results file (.rst) of current Ansys instance.
 
@@ -79,7 +79,7 @@ class ResultsHandler:
 
         return self.ansys.result
 
-    def extract_raw_results(self, retained_nodes: Sequence = None) -> Tuple[dict]:
+    def extract_raw_results(self, retained_nodes: Sequence[int] = None) -> tuple[dict]:
         """Extract coordinates, displacemenets, and reaction forces from retained nodes.
         Each node's data is stored in a dict, with dicts stored in a tuple.
 
@@ -132,8 +132,8 @@ class ResultsHandler:
         return np.array(force_n)
 
     def calculate_macro_tensors(
-        self, load_case: int, retained_results: Tuple[dict] = None
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        self, load_case: int, retained_results: tuple[dict] = None
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Calculate the macroscopic tensors for the current load case using the
         retained node results.
 
@@ -255,7 +255,7 @@ class ResultsHandler:
         )
         return 0.5 * (disp_grad + np.transpose(disp_grad))
 
-    def calculate_properties(self, load_case: int) -> dict:
+    def calculate_properties(self, load_case: int) -> dict[str, np.ndarray]:
         """Calculate effective property sets for this load case, using retained node
         results. Effective properties are stored in a dict of 1D arrays like so:
         "elasticModuli":  [E11, E22, E33]
@@ -341,7 +341,7 @@ class ResultsHandler:
     @staticmethod
     def collect_expected_properties(
         results: dict,
-        expected_property_sets: Sequence[Sequence],
+        expected_property_sets: Sequence[Sequence[str]],
         num_load_cases: int,
         labels: Sequence[str] = None,
     ) -> pd.DataFrame:
@@ -350,7 +350,7 @@ class ResultsHandler:
         Args:
             results (dict): Dictionary containing dictionary of calculated properties
                 for each load case
-            expected_property_sets (Sequence[Sequence]): List of property strings
+            expected_property_sets (Sequence[Sequence[str]]): List of property strings
                 requested from load cases.
             num_load_cases (int): Total number of load cases
             labels (Sequence[str], optional): List of labels for each load case.

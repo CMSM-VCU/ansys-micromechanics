@@ -1,13 +1,15 @@
 import functools
 import time
 from pathlib import Path
-from typing import Callable, Sequence, Tuple, Union
+from typing import Callable, Sequence
 
 import numpy as np
 from loguru import logger
 
 
-def logger_wraps(_func: Callable = None, *, entry=True, exit=True, level="TRACE"):
+def logger_wraps(
+    _func: Callable = None, *, entry=True, exit=True, level="TRACE"
+) -> Callable:
     """Crazy logging decorator, adjusted to enable use in decorate_all_methods function.
     From loguru documentation:
     loguru.readthedocs.io/en/stable/resources/recipes.html#logging-entry-and-exit-of-functions-with-a-decorator
@@ -39,7 +41,7 @@ def logger_wraps(_func: Callable = None, *, entry=True, exit=True, level="TRACE"
         return logger_wrapper(_func)
 
 
-def decorate_all_methods(decorator: Callable, *args, **kwargs):
+def decorate_all_methods(decorator: Callable, *args, **kwargs) -> Callable:
     """Wrap all methods (callable attributes) in a class with the given decorator
     function.
 
@@ -66,7 +68,7 @@ def definitely_delete_file(
     max_wait: int = 5,
     return_waited: bool = False,
     warn_on_fail: bool = False,
-) -> Union[bool, Tuple[bool, int]]:
+) -> bool | tuple[bool, int]:
     """Delete the file specified by an absolute or relative path, and wait until the
     file is reported as no longer existing.
 
@@ -125,7 +127,7 @@ def definitely_find_file(
     max_wait: int = 5,
     return_waited: bool = False,
     warn_on_fail: bool = False,
-) -> Union[bool, Tuple[bool, int]]:
+) -> bool | tuple[bool, int]:
     """Try to find a file, and wait until the file exists and has nonzero size.
 
     Args:

@@ -78,13 +78,13 @@ def remove_readonly(func, path, _):
 
 
 @logger_wraps()
-def get_input_file_paths(paths):
+def get_input_file_paths(paths: list[str | Path]) -> list[Path]:
     """Obtain paths to input files from command line arguments. Assumes that each and
     all arguments are an input file path. Paths must be absolute or relative to calling
     directory. Non-existant files will throw a warning.
 
     Returns:
-        input_paths (List[Str]): List of paths to each input file
+        input_paths (list[Path]): List of paths to each input file
     """
     real_paths = []
     for path_ in paths:

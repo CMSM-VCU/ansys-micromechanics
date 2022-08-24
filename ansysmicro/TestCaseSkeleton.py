@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Tuple
 
 import numpy as np
 from loguru import logger
@@ -27,7 +26,7 @@ class TestCaseSkeleton(ABC):
     def __init__(self):
         self.preprocess_attributes()
 
-    def attach_to_testrunner(self, TestRunnerClass, options=dict):
+    def attach_to_testrunner(self, TestRunnerClass, options=dict) -> None:
         """Initialize a test runner with a set of options, and tie it and the test case
         together in attributes.
 
@@ -38,7 +37,7 @@ class TestCaseSkeleton(ABC):
         """
         self.testrunner = TestRunnerClass(test_case=self, options=options)
 
-    def run_tests(self):
+    def run_tests(self) -> None:
         """Activate testrunner's test sequence, culminating in the delivery of the
         results object.
         """
@@ -67,7 +66,7 @@ class TestCaseSkeleton(ABC):
             logger.warning("Results cannot be compressed.")
             return False
 
-    def save_results(self):
+    def save_results(self) -> None:
         """Save the reportedProperties dataframe to a csv file. Creates a new folder
         `results` in the directory that the input file is in. The file is named
         `[input file name]_[case id].csv`.
@@ -180,7 +179,7 @@ class TestCaseSkeleton(ABC):
         return len(self.loading.tensors)
 
     @property
-    def unique_expected_properties(self) -> Tuple[np.ndarray]:
+    def unique_expected_properties(self) -> tuple[np.ndarray]:
         """The array of all unique properties expected by the user, across all load
         cases.
 

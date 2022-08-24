@@ -1,4 +1,7 @@
 # Taken from https://dev.to/taqkarim/extending-simplenamespace-for-nested-dictionaries-58e8
+from typing import Any
+
+
 class RecursiveNamespace:
     @staticmethod
     def map_entry(entry):
@@ -15,7 +18,7 @@ class RecursiveNamespace:
             else:  # this is the only addition
                 setattr(self, key, val)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             "\n\t"
             + "\n\t".join(
@@ -24,8 +27,8 @@ class RecursiveNamespace:
             + "\n"
         )
 
-    def keys(self):
+    def keys(self) -> dict[str, Any]:
         return vars(self).keys()
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> Any:
         return getattr(self, key)

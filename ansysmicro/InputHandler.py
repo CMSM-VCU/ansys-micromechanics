@@ -1,6 +1,5 @@
 import json
 import pathlib
-from typing import List
 
 import jsonschema
 from loguru import logger
@@ -94,7 +93,7 @@ class InputHandler:
         return False
 
     def load_input_files(
-        self, input_file_paths: List[str], check_first: bool = True
+        self, input_file_paths: list[str], check_first: bool = True
     ) -> int:
         """Load, parse, and check a series of input files from a list of paths. Input
         files must be in JSON format and are loaded using json.load(). Checking
@@ -107,7 +106,7 @@ class InputHandler:
         the key "path".
 
         Args:
-            input_file_paths (List[str]): List of absolute or relative paths to input
+            input_file_paths (list[str]): List of absolute or relative paths to input
                 files.
             check_first (bool, optional): Whether to check the input file against the
                 JSON schema before keeping. Defaults to True.
@@ -128,7 +127,7 @@ class InputHandler:
         return len(self.input_dicts)
 
     @property
-    def get_required_properties(self) -> List[str]:
+    def get_required_properties(self) -> list[str]:
         """Get list of required properties from this InputHandler's schema.
         Note: This currently only accesses the top level of required properties. This
         provides no information on required properties of properties, etc.
@@ -137,7 +136,7 @@ class InputHandler:
         How to do required properties of optional properties though?
 
         Returns:
-            List: List of names of top-level required properties.
+            list: List of names of top-level required properties.
         """
         if self.schema:
             return self.schema["required"]
