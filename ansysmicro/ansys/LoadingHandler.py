@@ -47,66 +47,6 @@ class LoadingHandler:
             for tensor in loading_data.tensors
         )
 
-    @staticmethod
-    def convert_directions_to_strain_tensors(
-        directions: Sequence[str],
-        normal_mag: float,
-        shear_mag: float,
-        lengths: Sequence[float],
-    ) -> List[np.ndarray]:
-        """Produce list of strain* tensors according to list of loading directions,
-        two magnitudes, and domain side lengths. See convert_direction_to_strain_tensor
-        for details.
-
-        Args:
-            directions (Sequence[str]): List of direction strings
-            normal_mag (float): Displacement magnitude for normal loading cases
-            shear_mag (float): Displacement magnitude for shear loading cases
-            lengths (Sequence): Side lengths of domain
-
-        Returns:
-            List[np.ndarray]: List of (3,3) arrays containing strain* tensors.
-        """
-        return [
-            LoadingHandler.convert_direction_to_strain_tensor(
-                direction, normal_mag, shear_mag, lengths
-            )
-            for direction in directions
-        ]
-
-    @staticmethod
-    def convert_direction_to_strain_tensor(
-        direction: str, normal_mag: float, shear_mag: float, lengths: Sequence[float]
-    ) -> np.ndarray:
-        """Produce strain* tensor according to loading direction/planes, a displacement
-        magnitude for normal and shear loading, and the side lengths of the rectangular
-        prismatic domain.
-
-        Note: A value of None in the strain* tensor indicates a traction-free boundary
-        condition or unprescribed strain value.
-
-        Args:
-            direction (str): String giving uniaxial loading direction. Must obey the
-            regex: ^-?[123][123]$ , such as "11", "-13", "32".
-            normal_mag (float): Displacement magnitude if direction is normal (i==j)
-            shear_mag (float): Displacement magnitude if direction is shear (i!=j)
-            lengths (Sequence[float]): Side lengths of domain, used to convert to strain
-
-        Returns:
-            np.ndarray: (3,3) array containing corresponding strain* tensor.
-        """
-        base = [0, 0, 0], [0, 0, 0], [0, 0, 0]
-        sign = -1 if len(direction) == 3 else 1
-        i, j = list(map(lambda x: int(x) - 1, direction[-2:]))
-        mag = normal_mag if i == j else shear_mag
-        mag /= lengths[i]
-        tensor = list(base)
-        tensor[i][j] = sign * mag
-        if i == j:
-            tensor[(i + 1) % 3][(i + 1) % 3] = None
-            tensor[(i + 2) % 3][(i + 2) % 3] = None
-        return tensor
-
     def apply_strain_tensor(self, tensor: np.ndarray) -> None:
         """Apply a strain* tensor as displacement constraints on the retained nodes of
         an RVE using Ansys.
