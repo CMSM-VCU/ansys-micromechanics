@@ -27,6 +27,12 @@ def main():
     parser.add_argument(
         "-v", "--verbose", help="increase output verbosity", action="count", default=0
     )
+    parser.add_argument(
+        "-i",
+        "--interactive",
+        help="offer to open GUI after each load case",
+        action="store_true",
+    )
     args = parser.parse_args()
     if args.verbose > 1:
         logger.remove()
@@ -54,7 +60,8 @@ def main():
     for case in cases:
         case.check_parameters()
         case.attach_to_testrunner(
-            TestRunnerClass=TestRunner, options=vars(case.runnerOptions)
+            TestRunnerClass=TestRunner,
+            options=vars(case.runnerOptions) | {"interactive": args.interactive},
         )
         case.run_tests()
         logger.info(f"Results: \n{case.results.reportedProperties}")

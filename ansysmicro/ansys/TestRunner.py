@@ -35,6 +35,7 @@ class TestRunner:
         self.rst_path = None
         self.jobname = options.get("jobname", "file")
         self.jobdir = options.get("jobdir", ".\\")
+        self.is_interactive = options.get("interactive", False)
 
     def run(self) -> RecursiveNamespace:
         """Execute the full test process. Launches and closes an Ansys instance."""
@@ -81,6 +82,8 @@ class TestRunner:
             self.results_handler.rst_path = self.rst_path
             self.results_handler.extract_raw_results()
             self.results_handler.calculate_properties(load_case)
+
+            self.interactive_pause()
 
         return ResultsHandler.compile_results(
             results=self.results_handler.results,
@@ -272,6 +275,13 @@ class TestRunner:
         mins = self.ansys.mesh.nodes.min(axis=0)
         maxs = self.ansys.mesh.nodes.max(axis=0)
         return np.column_stack((mins, maxs))
+
+    def interactive_pause(self) -> None:
+        if not self.is_interactive:
+            return
+        answer = input("\033[92m\nOpen GUI to view results? (y/[n]): \033[0m")
+        if answer.lower().strip().startswith("y"):
+            self.ansys.open_gui()
 
     def debug_stat(self) -> None:
         logger.debug("Debug stats:")
