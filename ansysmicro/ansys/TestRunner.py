@@ -33,8 +33,8 @@ class TestRunner:
         self.test_case.debug_results = {}
         self.launch_options = options
         self.rst_path = None
-        self.jobname = options.get("jobname", default="file")
-        self.jobdir = options.get("jobdir", default=".\\")
+        self.jobname = options.get("jobname", "file")
+        self.jobdir = options.get("jobdir", ".\\")
 
     def run(self) -> RecursiveNamespace:
         """Execute the full test process. Launches and closes an Ansys instance."""
