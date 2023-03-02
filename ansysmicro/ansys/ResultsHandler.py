@@ -2,7 +2,7 @@ import time
 from functools import reduce
 from itertools import permutations
 from pathlib import Path
-from typing import Sequence, Tuple
+from typing import Sequence
 
 import numpy as np
 import pandas as pd
@@ -46,18 +46,16 @@ class ResultsHandler:
         Returns:
             bool: Whether the results file was successfully deleted.
         """
-        if rst_path is None and self.rst_path is None:
-            return True
-
         if rst_path is None:
+            if self.rst_path is None:
+                return True
             rst_path = self.rst_path
 
-        self.ansys.finish()  # Safely close results file before deletion
-
+        self.ansys.finish()
         return utils.definitely_delete_file(rst_path, missing_ok=True)
 
     def get_results_object(
-        self, rst_path: Path = None, max_wait=RESULTS_WAIT_MAX
+        self, rst_path: Path = None, max_wait: int = RESULTS_WAIT_MAX
     ) -> Result:
         """Extract results object from results file (.rst) of current Ansys instance.
 
@@ -81,7 +79,7 @@ class ResultsHandler:
 
         return self.ansys.result
 
-    def extract_raw_results(self, retained_nodes: Sequence = None) -> Tuple[dict]:
+    def extract_raw_results(self, retained_nodes: Sequence[int] = None) -> tuple[dict]:
         """Extract coordinates, displacemenets, and reaction forces from retained nodes.
         Each node's data is stored in a dict, with dicts stored in a tuple.
 
@@ -96,7 +94,6 @@ class ResultsHandler:
         """
         if retained_nodes is None:
             retained_nodes = self.retained_nodes
-
         result = self.get_results_object()
 
         coord = result.mesh.nodes
@@ -105,16 +102,15 @@ class ResultsHandler:
         self.ansys.post1()
         retained_results = []
         for node_num in retained_nodes:
-            node_results = {}
             node_index = np.argwhere(nnum == node_num)[0, 0]
-            node_results["coord"] = coord[node_index]
-            node_results["disp"] = disp[node_index]
-            node_results["force"] = self.extract_reaction_forces(node_number=node_num)
+            node_results = {
+                "coord": coord[node_index],
+                "disp": disp[node_index],
+                "force": self.extract_reaction_forces(node_number=node_num),
+            }
 
             retained_results.append(node_results)
-
         self.retained_results = tuple(retained_results)
-
         return self.retained_results
 
     def extract_reaction_forces(self, node_number: int) -> np.ndarray:
@@ -128,41 +124,16 @@ class ResultsHandler:
         Returns:
             np.ndarray: Vector of reaction force components, shape=(3,)
         """
-        force_n = []
-        for i in range(3):
-            appended = False
-            while not appended:
-                force_n.append(
-                    self.ansys.get(
-                        par="rforce",
-                        entity="NODE",
-                        entnum=node_number,
-                        item1="RF",
-                        it1num=f"F{AXES[i]}",
-                    )
-                )
-
-                if type(force_n[-1]) == float and force_n[-1] != "":
-                    appended = True
-                    continue
-                else:
-                    try:
-                        time.sleep(1)
-                        force_n[-1] = self.ansys.parameters["rforce"]
-                        if type(force_n[-1]) == float and force_n[-1] != "":
-                            appended = True
-                            continue
-                    except:
-                        print(f"Retrieval failed. Trying again: {node_number}, {i}")
-                        force_n.pop()
-
-            # force_n.append(self.ansys.parameters[f"RFORCE{i+1}"])
-        assert len(force_n) == 3, f"Force vector is wrong size: {len(force_n)}"
+        force_n = [0.0, 0.0, 0.0]
+        vals, nnums, comps = self.ansys.result.nodal_reaction_forces(0)
+        idx = nnums == node_number
+        for val, comp in zip(vals[idx], comps[idx]):
+            force_n[comp - 1] = val
         return np.array(force_n)
 
     def calculate_macro_tensors(
-        self, load_case: int, retained_results: Tuple[dict] = None
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        self, load_case: int, retained_results: tuple[dict] = None
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Calculate the macroscopic tensors for the current load case using the
         retained node results.
 
@@ -238,7 +209,8 @@ class ResultsHandler:
 
     @staticmethod
     def calculate_displacement_gradient(
-        retained_coords: Sequence[np.ndarray], retained_disps: Sequence[np.ndarray],
+        retained_coords: Sequence[np.ndarray],
+        retained_disps: Sequence[np.ndarray],
     ) -> np.ndarray:
         """Calculate the macroscopic displacement gradient tensor using retained node
         results.
@@ -263,7 +235,8 @@ class ResultsHandler:
 
     @staticmethod
     def calculate_macro_strain(
-        retained_coords: Sequence[np.ndarray], retained_disps: Sequence[np.ndarray],
+        retained_coords: Sequence[np.ndarray],
+        retained_disps: Sequence[np.ndarray],
     ) -> np.ndarray:
         """Calculate the macroscopic strain tensor using retained node results. Uses
         macroscopic displacement gradient.
@@ -282,7 +255,7 @@ class ResultsHandler:
         )
         return 0.5 * (disp_grad + np.transpose(disp_grad))
 
-    def calculate_properties(self, load_case: int) -> dict:
+    def calculate_properties(self, load_case: int) -> dict[str, np.ndarray]:
         """Calculate effective property sets for this load case, using retained node
         results. Effective properties are stored in a dict of 1D arrays like so:
         "elasticModuli":  [E11, E22, E33]
@@ -368,7 +341,7 @@ class ResultsHandler:
     @staticmethod
     def collect_expected_properties(
         results: dict,
-        expected_property_sets: Sequence[Sequence],
+        expected_property_sets: Sequence[Sequence[str]],
         num_load_cases: int,
         labels: Sequence[str] = None,
     ) -> pd.DataFrame:
@@ -377,7 +350,7 @@ class ResultsHandler:
         Args:
             results (dict): Dictionary containing dictionary of calculated properties
                 for each load case
-            expected_property_sets (Sequence[Sequence]): List of property strings
+            expected_property_sets (Sequence[Sequence[str]]): List of property strings
                 requested from load cases.
             num_load_cases (int): Total number of load cases
             labels (Sequence[str], optional): List of labels for each load case.
@@ -405,8 +378,7 @@ class ResultsHandler:
         key_map = {"E": "elasticModuli", "G": "shearModuli", "v": "poissonsRatios"}
         index_map = dict(
             zip(["".join(pair) for pair in permutations("123", r=2)], range(6))
-        )
-        index_map.update(dict(zip(["11", "22", "33"], range(3))))
+        ) | dict(zip(["11", "22", "33"], range(3)))
 
         # Create dataframe and add labels if given
         df_index = list(np.unique(np.hstack(expected_property_sets)))

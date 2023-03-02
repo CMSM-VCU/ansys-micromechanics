@@ -1,6 +1,7 @@
-from typing import Sequence, Tuple
+from typing import Sequence
 
 import numpy as np
+from loguru import logger
 
 from ansysmicro.utils import decorate_all_methods, logger_wraps, round_to_sigfigs
 
@@ -20,9 +21,9 @@ class PBCHandler:
     def __init__(self, testrunner):
         self.ansys = testrunner.ansys
         self.retained_nodes = testrunner.retained_nodes
-        self.mesh_extents = testrunner.mesh_extents()
+        self.mesh_extents = testrunner.mesh_extents
 
-    def apply_periodic_conditions(self):
+    def apply_periodic_conditions(self) -> None:
         """Apply periodic boundary constraints to Ansys RVE using constraint equations
         applied to displacements of nodes on opposite faces and the retained nodes.
 
@@ -35,9 +36,9 @@ class PBCHandler:
 
         rn = self.retained_nodes
 
-        print("Applying periodic BCs to face set ", end="")
+        logger.info("Applying periodic BCs to face set:")
         for i, pair_set in enumerate(pair_sets):
-            print(f"{i}... ", end="")
+            logger.opt(raw=True).info(f"{i}... ")
             # with self.ansys.chain_commands:
             with self.ansys.non_interactive:
                 for pair in pair_set:
@@ -55,9 +56,10 @@ class PBCHandler:
                             node1=rn[0], lab1=ax, c1=1,
                         )
                         # fmt: on
+        logger.opt(raw=True).info("\n")
         # Can I get the number of constraint equations to use as a return value?
 
-    def find_node_pairs(self, mesh_extents: np.ndarray) -> Sequence[np.ndarray]:
+    def find_node_pairs(self, mesh_extents: np.ndarray) -> list[np.ndarray]:
         """Identify the pairs of corresponding nodes on each pair of opposite faces of
         RVE. Returns 3 (n,2) arrays, where each row holds the two numbers of the node
         pair, one array per pair of opposite faces
@@ -67,7 +69,7 @@ class PBCHandler:
             mesh/domain.
 
         Returns:
-            Sequence[np.ndarray]: 3 arrays containing node number pairs for each opposite
+            list[np.ndarray]: 3 arrays containing node number pairs for each opposite
             face pair.
         """
         pair_sets = []
@@ -134,15 +136,15 @@ class PBCHandler:
         return nodes
 
     def get_opposite_face_nodes(
-        self, axis: str, axis_extents: Sequence[float], tolerance: float = ""
-    ) -> Tuple[np.ndarray]:
+        self, axis: str, axis_extents: Sequence[float], tolerance: float | str = ""
+    ) -> tuple[np.ndarray]:
         """Obtain coordinates and numbers of nodes on opposite faces of RVE.
 
         Args:
             axis (str): Axis string for Ansys selection command ("X", "Y", or "Z").
             axis_extents (Sequence[float]): Coordinates of opposite faces, [low, high].
             tolerance (float, optional): Tolerance value to use for Ansys selection
-                commands. Defaults to "".
+                commands. Defaults to "" (Ansys interprets empty string as default).
 
         Returns:
             Tuple[np.ndarray]: Four arrays containing node coordinates and numbers for
@@ -163,7 +165,7 @@ class PBCHandler:
         nnum_neg = np.reshape(self.ansys.mesh.nnum, (-1, 1))
 
         assert nodes_pos.shape == nodes_neg.shape, (
-            f"Different number of nodes selected on opposite faces: "
+            "Different number of nodes selected on opposite faces: "
             + f"{nodes_pos.shape=}, {nodes_neg.shape=}"
         )
 
@@ -184,16 +186,15 @@ class PBCHandler:
         """
         if np.array_equal(arr1, arr2):
             return True
-        else:
-            # Identify bad elements for debugging
-            print(np.max(np.abs(arr1 - arr2)))
-            bad_idx = np.argwhere(np.not_equal(arr1, arr2))
-            bad_arr1 = arr1[bad_idx[:, 0]]
-            bad_arr2 = arr2[bad_idx[:, 0]]
-            diff = np.abs(bad_arr1 - bad_arr2)
-            culprits = diff.argsort(axis=0)[-1]
-            x_bad = (bad_arr1[culprits[0]], bad_arr2[culprits[0]])
-            y_bad = (bad_arr1[culprits[1]], bad_arr2[culprits[1]])
 
-            print(x_bad, y_bad)
-            return False
+        # Identify bad elements for debugging
+        logger.debug(f"{np.max(np.abs(arr1 - arr2))=}")
+        bad_idx = np.argwhere(np.not_equal(arr1, arr2))
+        bad_arr1 = arr1[bad_idx[:, 0]]
+        bad_arr2 = arr2[bad_idx[:, 0]]
+        diff = np.abs(bad_arr1 - bad_arr2)
+        culprits = diff.argsort(axis=0)[-1]
+        x_bad = bad_arr1[culprits[0]], bad_arr2[culprits[0]]
+        y_bad = bad_arr1[culprits[1]], bad_arr2[culprits[1]]
+        logger.debug(f"{x_bad=}, {y_bad=}")
+        return False

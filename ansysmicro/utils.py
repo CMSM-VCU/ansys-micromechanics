@@ -1,15 +1,18 @@
 import functools
 import time
 from pathlib import Path
-from typing import Callable, Sequence, Tuple, Union
-from warnings import warn
+from typing import Callable, Sequence
 
 import numpy as np
 from loguru import logger
 
 
-def logger_wraps(_func: Callable = None, *, entry=True, exit=True, level="DEBUG"):
+def logger_wraps(
+    _func: Callable = None, *, entry=True, exit=True, level="TRACE"
+) -> Callable:
     """Crazy logging decorator, adjusted to enable use in decorate_all_methods function.
+    From loguru documentation:
+    loguru.readthedocs.io/en/stable/resources/recipes.html#logging-entry-and-exit-of-functions-with-a-decorator
 
     Args:
         _func (Callable, optional): Function to be wrapped. Defaults to None.
@@ -38,7 +41,7 @@ def logger_wraps(_func: Callable = None, *, entry=True, exit=True, level="DEBUG"
         return logger_wrapper(_func)
 
 
-def decorate_all_methods(decorator: Callable, *args, **kwargs):
+def decorate_all_methods(decorator: Callable, *args, **kwargs) -> Callable:
     """Wrap all methods (callable attributes) in a class with the given decorator
     function.
 
@@ -50,7 +53,9 @@ def decorate_all_methods(decorator: Callable, *args, **kwargs):
         for attr in class_.__dict__:
             if callable(getattr(class_, attr)):
                 setattr(
-                    class_, attr, decorator(getattr(class_, attr), *args, **kwargs),
+                    class_,
+                    attr,
+                    decorator(getattr(class_, attr), *args, **kwargs),
                 )
         return class_
 
@@ -63,7 +68,7 @@ def definitely_delete_file(
     max_wait: int = 5,
     return_waited: bool = False,
     warn_on_fail: bool = False,
-) -> Union[bool, Tuple[bool, int]]:
+) -> bool | tuple[bool, int]:
     """Delete the file specified by an absolute or relative path, and wait until the
     file is reported as no longer existing.
 
@@ -97,7 +102,7 @@ def definitely_delete_file(
     deleted = False
     while waited < max_wait:
         if path.exists():
-            print("File not deleted yet. Checking again in 1 second...")
+            logger.debug("File not deleted yet. Checking again in 1 second...")
             time.sleep(1)
             waited += 1
             continue
@@ -107,7 +112,7 @@ def definitely_delete_file(
     else:
         msg = f"File not deleted after waiting {waited} seconds."
         if warn_on_fail:
-            warn(msg)
+            logger.warning(msg)
         else:
             raise Exception(msg)
 
@@ -122,7 +127,7 @@ def definitely_find_file(
     max_wait: int = 5,
     return_waited: bool = False,
     warn_on_fail: bool = False,
-) -> Union[bool, Tuple[bool, int]]:
+) -> bool | tuple[bool, int]:
     """Try to find a file, and wait until the file exists and has nonzero size.
 
     Args:
@@ -150,21 +155,21 @@ def definitely_find_file(
                 found = path.stat().st_size > 0
                 break
             else:
-                print(
+                logger.debug(
                     f"File found, but size={path.stat().st_size}. Checking again in 1 second..."
                 )
                 time.sleep(1)
                 waited += 1
                 continue
         else:
-            print("File not found. Checking again in 1 second...")
+            logger.debug("File not found. Checking again in 1 second...")
             time.sleep(1)
             waited += 1
             continue
     else:
         msg = f"File not found with nonzero size after waiting {waited} seconds."
         if warn_on_fail:
-            warn(msg)
+            logger.warning(msg)
         else:
             raise Exception(msg)
 

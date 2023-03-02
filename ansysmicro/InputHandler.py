@@ -1,8 +1,8 @@
 import json
 import pathlib
-from typing import List
 
 import jsonschema
+from loguru import logger
 
 from .utils import decorate_all_methods, logger_wraps
 
@@ -23,7 +23,7 @@ class InputHandler:
         if schema_file_path:
             self.schema = InputHandler.load_schema(schema_file_path)
         else:
-            print("Creating input handler with no schema...")
+            logger.debug("Creating input handler with no schema...")
 
     @staticmethod
     def load_schema(schema_file_path: str) -> dict:
@@ -88,12 +88,12 @@ class InputHandler:
             return InputHandler.validate_dict_against_schema(
                 input_dict, self.schema, raise_failure
             )
-        else:
-            print("InputHandler: No schema loaded")
-            return False
+
+        logger.warning("InputHandler: No schema loaded")
+        return False
 
     def load_input_files(
-        self, input_file_paths: List[str], check_first: bool = True
+        self, input_file_paths: list[str], check_first: bool = True
     ) -> int:
         """Load, parse, and check a series of input files from a list of paths. Input
         files must be in JSON format and are loaded using json.load(). Checking
@@ -106,7 +106,7 @@ class InputHandler:
         the key "path".
 
         Args:
-            input_file_paths (List[str]): List of absolute or relative paths to input
+            input_file_paths (list[str]): List of absolute or relative paths to input
                 files.
             check_first (bool, optional): Whether to check the input file against the
                 JSON schema before keeping. Defaults to True.
@@ -127,7 +127,7 @@ class InputHandler:
         return len(self.input_dicts)
 
     @property
-    def get_required_properties(self) -> List[str]:
+    def get_required_properties(self) -> list[str]:
         """Get list of required properties from this InputHandler's schema.
         Note: This currently only accesses the top level of required properties. This
         provides no information on required properties of properties, etc.
@@ -136,10 +136,10 @@ class InputHandler:
         How to do required properties of optional properties though?
 
         Returns:
-            List: List of names of top-level required properties.
+            list: List of names of top-level required properties.
         """
         if self.schema:
             return self.schema["required"]
-        else:
-            print("InputHandler: No schema loaded")
-            return False
+
+        logger.warning("InputHandler: No schema loaded")
+        return False

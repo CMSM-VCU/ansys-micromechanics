@@ -1,8 +1,10 @@
 from pathlib import Path
-from typing import Any, List
+from typing import Any
 
 import numpy as np
+from loguru import logger
 
+from ansysmicro.RecursiveNamespace import RecursiveNamespace
 from ansysmicro.utils import decorate_all_methods, logger_wraps
 
 from .AnsysContainer import AnsysContainer
@@ -15,10 +17,11 @@ from .ResultsHandler import ResultsHandler
 class TestRunner:
     ansys: Any  #: pyansys.mapdl_corba.MapdlCorba # don't know how to type hint this
     launch_options: dict
-    retained_nodes: List[int]
-    retained_results: List[dict]
+    retained_nodes: list[int]
+    _retained_nodes: list[int] = None
+    retained_results: list[dict]
 
-    def __init__(self, test_case, options=None):
+    def __init__(self, test_case, options: dict = None):
         """See pyansys documentation for launch options such as job directory and executable path.
 
         Args:
@@ -30,20 +33,11 @@ class TestRunner:
         self.test_case.debug_results = {}
         self.launch_options = options
         self.rst_path = None
-        try:
-            self.jobname = options["jobname"]
-        except:
-            print("No jobname found. Defaulting to `file`")
-            self.jobname = "file"
-        try:
-            self.jobdir = options["run_location"] + "\\"
-        except:
-            print("No jobdir found. Defaulting to `.\`")
-            self.jobdir = ".\\"
+        self.jobname = options.get("jobname", default="file")
+        self.jobdir = options.get("jobdir", default=".\\")
 
-    def run(self):
-        """Execute the full test process. Launches and closes an Ansys instance.
-        """
+    def run(self) -> RecursiveNamespace:
+        """Execute the full test process. Launches and closes an Ansys instance."""
         with AnsysContainer(self.launch_options) as self.ansys:
             self.ansys.finish()
             self.ansys.clear()
@@ -51,24 +45,21 @@ class TestRunner:
             results = self.run_test_sequence()
         return results
 
-    def prepare_mesh(self):
+    def prepare_mesh(self) -> None:
         """Execute the meshing and problem setup. These are the parts that do not change
         with load cases.
         """
-        if self.test_case.mesh_type == "centroid":
-            self.generate_base_mesh(**self.test_case.mesh)
-            self.assign_element_materials()
-        elif self.test_case.mesh_type == "external":
-            self.load_external_mesh(**self.test_case.mesh)
+        assert (
+            self.test_case.mesh_type == "external"
+        ), f"Invalid mesh type label: {self.test_case.mesh_type}"
+        self.load_external_mesh(**self.test_case.mesh)
         self.debug_stat()
         self.define_materials(self.test_case.materials)
-        self.get_retained_nodes()
         self.pbc_handler = PBCHandler(self)
         self.pbc_handler.apply_periodic_conditions()
 
-    def run_test_sequence(self):
-        """Execute the load cases and process results.
-        """
+    def run_test_sequence(self) -> RecursiveNamespace:
+        """Execute the load cases and process results."""
         self.results_handler = ResultsHandler(self)
         self.loading_handler = LoadingHandler(self)
         for load_case in np.arange(self.test_case.num_load_cases) + 1:
@@ -79,9 +70,9 @@ class TestRunner:
                 self.loading_handler.tensors[load_case - 1]
             )
 
-            print(f"Beginning solve for {load_case=}")
+            logger.info(f"Beginning solve for {load_case=}")
             self.solve()
-            print(f"Finished solve for {load_case=}")
+            logger.info(f"Finished solve for {load_case=}")
             self.debug_stat()
             self.ansys.post1()
             self.ansys.set("last")
@@ -106,7 +97,7 @@ class TestRunner:
         elementFileAbsolutePath: str,
         csysFileAbsolutePath: str = None,
         **kwargs,
-    ):
+    ) -> tuple[int, int]:
         """Generate a mesh from a pair of preexisting node and element files, in Ansys
         NWRITE/NREAD and EWRITE/EREAD format.
 
@@ -118,16 +109,21 @@ class TestRunner:
         Returns:
             tuple(int, int): tuple containing number of nodes and elements in loaded mesh
         """
+        logger.info(f"Using {elementType=}")
+        logger.info(
+            f"Reading mesh files {nodeFileAbsolutePath=} and {elementFileAbsolutePath=}"
+        )
         self.ansys.prep7()
         self.ansys.et(1, elementType)
         try:
             self.ansys.nread(nodeFileAbsolutePath)
             self.ansys.eread(elementFileAbsolutePath)
         except Exception as err:
-            print(
+            logger.warning(
                 "Load failed. Likely caused by bad file name. ",
                 "Attempting with symbolic links...",
             )
+
             self.load_mesh_with_symlinks(nodeFileAbsolutePath, elementFileAbsolutePath)
 
         assert self.ansys.mesh.n_node > 0, "No nodes loaded."
@@ -135,20 +131,20 @@ class TestRunner:
 
         if csysFileAbsolutePath:
             self.load_coordinate_systems(csysFileAbsolutePath)
-        else:
-            if self.ansys.get("_", "ELEM", 0, "ESYM", "MAX") > 0:
-                print(
-                    "Warning: Elements have non-default csys numbers, ",
-                    "but no coordinate systems were provided. ",
-                    "Setting all csys numbers to 0...",
-                )
-                self.ansys.emodif("ALL", "ESYS", 0)
+        elif self.ansys.get("_", "ELEM", 0, "ESYM", "MAX") > 0:
+            logger.warning(
+                "Warning: Elements have non-default csys numbers, ",
+                "but no coordinate systems were provided. ",
+                "Setting all csys numbers to 0...",
+            )
+
+            self.ansys.emodif("ALL", "ESYS", 0)
         self.ansys.prep7()
         self.ansys.nummrg("NODE")
+        return self.ansys.mesh.n_node, self.ansys.mesh.n_elem
 
-        return (self.ansys.mesh.n_node, self.ansys.mesh.n_elem)
-
-    def load_coordinate_systems(self, csysFileAbsolutePath):
+    def load_coordinate_systems(self, csysFileAbsolutePath: str) -> None:
+        logger.info(f"Reading coordinate systems file {csysFileAbsolutePath=}")
         csys_nums, *csys_angles = np.genfromtxt(
             csysFileAbsolutePath, delimiter=",", unpack=True
         )
@@ -158,7 +154,16 @@ class TestRunner:
 
         self.ansys.csys()  # Reset to global cartesian
 
-    def get_retained_nodes(self):
+    @property
+    def retained_nodes(self) -> list[int]:
+        if self._retained_nodes:
+            return self._retained_nodes
+
+        self._retained_nodes = self._get_retained_nodes()
+        logger.info(f"Retained node numbers are {self._retained_nodes}")
+        return self._retained_nodes
+
+    def _get_retained_nodes(self) -> list[int]:
         """Get the numbers of the retained nodes in the current mesh.
 
         Returns:
@@ -171,15 +176,9 @@ class TestRunner:
             [(0, 0), (1, 0), (2, 1)],
         ]
 
-        extents = self.mesh_extents()
+        extents = self.mesh_extents
         node_coords = [[extents[index] for index in node] for node in coord_indices]
-
-        self.retained_nodes = []
-
-        for node in node_coords:
-            self.retained_nodes.append(self.get_node_num_at_loc(*node))
-
-        return self.retained_nodes  # for logging purposes
+        return [self.get_node_num_at_loc(*node) for node in node_coords]
 
     def get_node_num_at_loc(self, x: float, y: float, z: float) -> int:
         """Get the number of the node at, or closest to, the specifed xyz location.
@@ -196,7 +195,7 @@ class TestRunner:
             int: number of closest node
         """
         inline = f"node({x},{y},{z})"
-        self.ansys.run("NODE_NUMBER_TEMP=" + inline)
+        self.ansys.run(f"NODE_NUMBER_TEMP={inline}")
         return int(self.ansys.parameters["node_number_temp"])
 
     def select_node_at_loc(self, x: float, y: float, z: float, kind: str = "S") -> int:
@@ -215,7 +214,7 @@ class TestRunner:
         self.ansys.nsel(kind, "NODE", "", nnum)
         return nnum
 
-    def define_materials(self, materials):
+    def define_materials(self, materials: list[RecursiveNamespace]) -> None:
         """Define the material properties in Ansys. Linear isotropic and linear
         orthotropic are currently supported.
 
@@ -234,104 +233,68 @@ class TestRunner:
 
         self.ansys.prep7()
         for material in materials:
-            id = material.materialIndex
+            id_ = material.materialIndex
             if material.materialType == "isotropic":
-                self.ansys.mp("EX", id, material.elasticModuli[0])
-                self.ansys.mp("PRXY", id, material.poissonsRatios[0])
+                self.ansys.mp("EX", id_, material.elasticModuli[0])
+                self.ansys.mp("PRXY", id_, material.poissonsRatios[0])
             elif material.materialType == "orthotropic":
                 for i in range(3):
-                    self.ansys.mp(e_str[i], id, material.elasticModuli[i])
-                    self.ansys.mp(g_str[i], id, material.shearModuli[i])
-                    self.ansys.mp(pr_str[i], id, material.poissonsRatios[i])
+                    self.ansys.mp(e_str[i], id_, material.elasticModuli[i])
+                    self.ansys.mp(g_str[i], id_, material.shearModuli[i])
+                    self.ansys.mp(pr_str[i], id_, material.poissonsRatios[i])
         # How do I verify that materials were input correctly? How do I access the
         # materials from self.ansys?
         return
 
-    def solve(self):
-        """Calculate the solution for the current load case.
-        """
+    def solve(self) -> str:
+        """Calculate the solution for the current load case."""
         # with self.ansys.non_interactive:
         self.ansys.slashsolu()
         self.ansys.allsel()
         return self.ansys.solve()
 
-    def mesh_extents(self, current: bool = False) -> np.ndarray:
+    @property
+    def mesh_extents(self) -> np.ndarray:
         """Calculate +/- xyz extents of mesh.
-
-        Args:
-            current (bool, optional): calculate extents of currently selected mesh. Defaults to False.
 
         Returns:
             np.ndarray: extents formatted as [[-x,+x], [-y,+y], [-z,+z]]
         """
-        if not current:
-            return np.reshape(self.ansys.mesh.grid.bounds, (-1, 2))
-        else:
-            mins = self.ansys.mesh.nodes.min(axis=0)
-            maxs = self.ansys.mesh.nodes.max(axis=0)
-            return np.column_stack((mins, maxs))
+        return np.reshape(self.ansys.mesh.grid.bounds, (-1, 2))
 
-    def debug_stat(self):
-        print(self.ansys.lsoper())
-        print(self.ansys.stat())
-        print(self.ansys.fecons())
-        print(self.ansys.stat())
-        print(self.ansys.ceqn())
-        print(self.ansys.stat())
-
-    def generate_base_mesh(
-        self, elementType: str, domainSideLength: float, elementSpacing: float, **kwargs
-    ):
-        """DEPRECATED: Generate uniform cubic mesh according to overall side length and
-        element edge length. Assumes a cube centered around (0,0,0).
-
-        Args:
-            elementType (str): Ansys element type used to create this mesh
-            domainSideLength (float): side length of cubic domain
-            elementSpacing (float): target element edge length
+    @property
+    def selected_mesh_extents(self) -> np.ndarray:
+        """Calculate +/- xyz extents of currently selected mesh.
 
         Returns:
-            tuple(int, int): tuple containing number of nodes and elements in generated mesh
+            np.ndarray: extents formatted as [[-x,+x], [-y,+y], [-z,+z]]
         """
-        half_side = domainSideLength / 2
-        self.ansys.prep7()
-        self.ansys.block(
-            -half_side, half_side, -half_side, half_side, -half_side, half_side,
+        mins = self.ansys.mesh.nodes.min(axis=0)
+        maxs = self.ansys.mesh.nodes.max(axis=0)
+        return np.column_stack((mins, maxs))
+
+    def debug_stat(self) -> None:
+        logger.debug("Debug stats:")
+        logger.opt(raw=True).debug(
+            f"{self.ansys.lsoper()}\n"
+            + f"{self.ansys.stat()}\n"
+            + f"{self.ansys.fecons()}\n"
+            + f"{self.ansys.stat()}\n"
+            + f"{self.ansys.ceqn()}\n"
+            + f"{self.ansys.stat()}\n"
         )
 
-        self.ansys.et(1, elementType)
-        self.ansys.lesize("ALL", elementSpacing)
-        self.ansys.mshkey(1)
-        self.ansys.vmesh("ALL")
-
-        assert self.ansys.mesh.n_node > 0, "No nodes generated."
-        assert self.ansys.mesh.n_elem > 0, "No elements generated."
-        return (self.ansys.mesh.n_node, self.ansys.mesh.n_elem)
-
-    def assign_element_materials(self):
-        """DEPRECATED: Assign material numbers to elements located by their centroids.
-
-        This implementation is probably super slow
-        Individual emodif commands may be extra slow, so try adding to component
-        per material number, then emodif on each component
-        """
-        self.ansys.prep7()
-        for element in self.test_case.mesh.locationsWithId:
-            self.ansys.esel("S", "CENT", "X", element[0])
-            self.ansys.esel("R", "CENT", "Y", element[1])
-            self.ansys.esel("R", "CENT", "Z", element[2])
-            self.ansys.emodif("ALL", "MAT", element[3])
-
-    def load_mesh_with_symlinks(self, nodeFileAbsolutePath, elementFileAbsolutePath):
-        temp_path_base = self.jobdir + ".temp_mesh_file"
+    def load_mesh_with_symlinks(
+        self, nodeFileAbsolutePath: str, elementFileAbsolutePath: str
+    ) -> None:
+        temp_path_base = f"{self.jobdir}.temp_mesh_file"
         try:
-            temp_node = Path(temp_path_base + ".node").symlink_to(nodeFileAbsolutePath)
-            temp_elem = Path(temp_path_base + ".elem").symlink_to(
+            temp_node = Path(f"{temp_path_base}.node").symlink_to(nodeFileAbsolutePath)
+            temp_elem = Path(f"{temp_path_base}.elem").symlink_to(
                 elementFileAbsolutePath
             )
-        except OSError as symLinkError:
-            print("ERROR: User does not have privileges to create symbolic links.")
-            raise symLinkError
+        except OSError:
+            logger.exception("User does not have privileges to create symbolic links.")
         else:
             self.ansys.nread(temp_node)
             self.ansys.eread(temp_elem)
