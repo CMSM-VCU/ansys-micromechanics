@@ -35,7 +35,9 @@ class TestRunner:
         self.rst_path = None
         self.jobname = options.get("jobname", "file")
         self.jobdir = options.get("jobdir", ".\\")
-        self.is_interactive = options.get("interactive", False)
+
+        self.pause_results = options.get("pause_results", False)
+        self.pause_debug = options.get("pause_debug", False)
 
     def run(self) -> RecursiveNamespace:
         """Execute the full test process. Launches and closes an Ansys instance."""
@@ -54,15 +56,19 @@ class TestRunner:
             self.test_case.mesh_type == "external"
         ), f"Invalid mesh type label: {self.test_case.mesh_type}"
         self.load_external_mesh(**self.test_case.mesh)
+        self.debug_pause("mesh loaded")
         self.debug_stat()
         self.define_materials(self.test_case.materials)
+        self.debug_pause("materials defined")
         self.pbc_handler = PBCHandler(self)
         self.pbc_handler.apply_periodic_conditions()
+        self.debug_pause("periodic BCs applied")
 
     def run_test_sequence(self) -> RecursiveNamespace:
         """Execute the load cases and process results."""
         self.results_handler = ResultsHandler(self)
         self.loading_handler = LoadingHandler(self)
+        self.debug_pause("test cycle start")
         for load_case in np.arange(self.test_case.num_load_cases) + 1:
             self.results_handler.clear_results()
             self.load_case = load_case
@@ -71,19 +77,21 @@ class TestRunner:
                 self.loading_handler.tensors[load_case - 1]
             )
 
+            self.debug_pause("before solve")
             logger.info(f"Beginning solve for {load_case=}")
             self.solve()
             logger.info(f"Finished solve for {load_case=}")
             self.debug_stat()
             self.ansys.post1()
             self.ansys.set("last")
+            self.debug_pause("after solve")
 
             self.rst_path = Path(self.ansys._result_file)
             self.results_handler.rst_path = self.rst_path
             self.results_handler.extract_raw_results()
             self.results_handler.calculate_properties(load_case)
 
-            self.interactive_pause()
+            self.results_pause()
 
         return ResultsHandler.compile_results(
             results=self.results_handler.results,
@@ -276,10 +284,24 @@ class TestRunner:
         maxs = self.ansys.mesh.nodes.max(axis=0)
         return np.column_stack((mins, maxs))
 
-    def interactive_pause(self) -> None:
-        if not self.is_interactive:
+    def results_pause(self) -> None:
+        if not self.pause_results:
             return
-        answer = input("\033[92m\nOpen GUI to view results? (y/[n]): \033[0m")
+        self._pause_prompt(message="Open GUI to view results?")
+
+    def debug_pause(self, desc: str = "") -> None:
+        if not self.pause_debug:
+            return
+        if desc:
+            desc = f" ({desc})"
+        self._pause_prompt(message=f"Open GUI for debug?{desc}")
+
+    def _pause_prompt(self, message: str = "Open GUI?") -> None:
+        green = "\033[92m"
+        nocolor = "\033[0m"
+        prompt = f"{green}\n{message} (y/[n]): {nocolor}"
+
+        answer = input(prompt)
         if answer.lower().strip().startswith("y"):
             self.ansys.open_gui()
 
