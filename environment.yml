@@ -8,6 +8,7 @@ dependencies:
     - jsonschema
     - loguru
     - pandas
+    - pyvista=0.38
     - pip
     - pip:
-          - ansys-mapdl-core
+          - ansys-mapdl-core==0.63
